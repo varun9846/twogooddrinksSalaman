@@ -7,29 +7,19 @@ import { useUiStore } from "@/store/useUiStore";
 const navItems = [
   { label: "Home", href: "/" },
   { label: "Products", href: "/shop" },
-  // {
-  //   label: "Products",
-  //   href: "/shop",
-  //   children: [
-  //     { label: "All Products", href: "/shop" },
-  //     { label: "Product Details", href: "/product" },
-  //   ],
-  // },
+  
   {
     label: "Wellness Journal",
     href: "/wellness-journal",
     children: [
-      { label: "Hydration Tips", href: "/hydration-tips" },
-      { label: "Herbal Drink Benefits", href: "/herbal-benefits" },
-      { label: "Healthy Lifestyle", href: "/healthy-lifestyle" },
-      { label: "Wellness Drink Recipes", href: "/wellness-recipes" },
-      { label: "Nutrition Guides", href: "/nutrition-guides" },
-      { label: "Daily Wellness Habits", href: "/daily-wellness" },
+      { label: "Hydration Tips", href: "/wellness-journal/hydration-tips" },
+      { label: "Herbal Drink Benefits", href: "/wellness-journal/herbal-benefits" },
+      { label: "Healthy Lifestyle", href: "/wellness-journal/healthy-lifestyle" },
     ],
   },
   // { label: "Shop Locator", href: "/shop-locator" },
-  { label: "About Us", href: "/about" },
-  { label: "Contact Us", href: "/contact" },
+  { label: "About Us", href: "/about-us" },
+  { label: "Contact Us", href: "/contact-us" },
 ];
 
 const accountLinks = [
