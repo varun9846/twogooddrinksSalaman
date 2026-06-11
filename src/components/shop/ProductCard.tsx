@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Product } from "@/lib/products";
+import ProductActions from "@/components/shop/ProductActions";
 
 interface ProductCardProps {
   product: Product;
@@ -69,6 +70,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.Tag}
           </span>
         </div>
+
+        <ProductActions productId={product.id} compact />
       </div>
     </div>
   );

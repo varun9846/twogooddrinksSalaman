@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
+import AuthProvider from "@/components/providers/AuthProvider";
 import CartSidebar from "@/components/common/CartSidebar";
 import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
 import "remixicon/fonts/remixicon.css";
 
 export const metadata: Metadata = {
-  title: "2good - eCommerce Platform",
-  description: "Next-gen storefront experience built with Next.js",
+  title: "2gooD - Wellness Drinks Store",
+  description: "Hydration products, wellness drinks, herbal infusions, and healthy essentials.",
 };
 
 export default function RootLayout({
@@ -18,10 +19,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased bg-slate-50 text-slate-900">
-        <CartSidebar />
-        <Header />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
+        <AuthProvider>
+          <CartSidebar />
+          <Header />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

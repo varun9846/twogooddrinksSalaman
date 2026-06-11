@@ -11,10 +11,13 @@
   "dependencies": {
     "lucide-react": "^1.17.0",
     "next": "16.2.7",
-    "react": "19.2.4",
-    "react-dom": "^19.2.4",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "remixicon": "^4.9.1",
-    "zustand": "^5.0.14"
+    "zustand": "^5.0.14",
+    "bcryptjs": "^3.0.2",
+    "next-auth": "^5.0.0-beta.29",
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -24,6 +27,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@types/pg": "^8.11.10"
   }
 }
