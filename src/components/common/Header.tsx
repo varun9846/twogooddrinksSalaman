@@ -40,6 +40,17 @@ export default function Header() {
     }
   }, [status, fetchCart, clearLocalCart]);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setMobileOpen(false);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [mobileOpen]);
+
   const cartCount = cart?.item_count || 0;
 
   return (
@@ -163,10 +174,17 @@ export default function Header() {
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/70 lg:hidden">
-          <aside className="h-full w-[340px] max-w-[85vw] bg-white px-5 py-4">
+        <div
+          className="fixed inset-0 z-[60] overflow-y-auto bg-black/70 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        >
+          <aside
+            className="h-full w-[340px] max-w-[85vw] overflow-y-auto bg-white px-5 py-4 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="mb-5 flex items-center justify-between border-b border-[#eee] pb-3">
               <span className="font-Poppins text-base font-semibold text-[#3d4750]">2gooD Menu</span>
+              <span className="rounded-full bg-[#6c7fd8]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6c7fd8]">Menu</span>
               <button type="button" onClick={() => setMobileOpen(false)} className="text-2xl text-red-500" aria-label="Close menu">
                 ×
               </button>

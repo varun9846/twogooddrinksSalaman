@@ -141,7 +141,7 @@ export default function HomePage() {
               Hydrate • Heal • Feel Good
             </p>
 
-            <h1 className="mb-[22px] text-[52px] font-bold leading-[1.15] text-[#3d4750] max-[768px]:text-[36px]">
+            <h1 className="mb-[22px] text-[40px] font-bold leading-[1.12] text-[#3d4750] sm:text-[46px] lg:text-[52px]">
               Discover <span className="text-[#6c7fd8]">2gooD Wellness</span>{" "}
               Products for Everyday Living
             </h1>
@@ -168,7 +168,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative flex items-center justify-center">
+          <div className="relative flex min-w-0 items-center justify-center">
             <div className="absolute -right-8 top-8 h-[520px] w-[520px] rounded-full bg-[#eef1ff] opacity-60 blur-3xl" />
             <div className="group relative overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.08)]">
               <img

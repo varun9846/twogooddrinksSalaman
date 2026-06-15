@@ -137,7 +137,7 @@ export default function ShopPage() {
 
   return (
     <main>
-      <section className="section-shop py-[50px] max-[767px]:py-[35px]">
+      <section className="section-shop overflow-x-hidden py-[50px] max-[767px]:py-[35px]">
         <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
           <div className="mb-[35px] text-center">
             <p className="font-Poppins text-[14px] text-[#6c7fd8] font-medium mb-[8px]">
@@ -153,7 +153,7 @@ export default function ShopPage() {
 
           <div className="flex flex-wrap mx-[-12px]">
             <aside className="min-[992px]:w-[25%] w-full px-[12px] order-2 max-[991px]:order-1 max-[991px]:mb-[35px]">
-              <div className="bb-shop-sidebar sticky top-[100px] space-y-[24px]">
+              <div className="bb-shop-sidebar sticky top-[88px] space-y-[24px] lg:top-[100px]">
                 <div className="sidebar-block bg-white border border-[#e5e7eb] rounded-[20px] p-[24px] shadow-sm">
                   <h4 className="font-quicksand text-[18px] font-bold text-[#1f2937] mb-[18px]">
                     Search
