@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import ProductCard from "@/components/shop/ProductCard";
 import ProductActions from "@/components/shop/ProductActions";
 import { getRelatedProducts, products } from "@/lib/products";
-import { productsService } from "@/lib/services/productsService";
+import { getProductById as getProductByIdFromDb } from "@/lib/services/product.service";
+import type { ProductDto } from "@/types/product";
 
 interface ProductDetailsPageProps {
   params: Promise<{
@@ -12,15 +13,14 @@ interface ProductDetailsPageProps {
 }
 
 export function generateStaticParams() {
-  return products.map((product) => ({
+  return products.map((product: ProductDto) => ({
     productId: product.id,
   }));
 }
 
 export default async function ProductDetailsPage({ params }: ProductDetailsPageProps) {
   const { productId } = await params;
-  const data = await productsService.getProductById(productId);
-  const product = data?.product ?? null;
+  const product = await getProductByIdFromDb(productId);
 
   if (!product) {
     notFound();
@@ -105,7 +105,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
               <h2 className="font-quicksand text-[30px] font-bold text-[#3d4750]">Related Products</h2>
             </div>
             <div className="grid grid-cols-1 gap-[24px] min-[576px]:grid-cols-2 min-[992px]:grid-cols-4">
-              {relatedProducts?.map((relatedProduct) => (
+              {relatedProducts?.map((relatedProduct: ProductDto) => (
                 <ProductCard key={relatedProduct.id} product={relatedProduct} />
               ))}
             </div>

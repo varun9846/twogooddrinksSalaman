@@ -1421,70 +1421,6 @@ ON CONFLICT (email) DO UPDATE SET
   updated_at = NOW();
 ````
 
-## File: src/app/about-us/page.tsx
-````typescript
-import Link from "next/link";
-export default function AboutPage() {
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-16">
-      <section className="rounded-[32px] bg-white p-10 shadow-sm md:p-16">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-          <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
-              About 2gooD
-            </p>
-            <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
-              Wellness products designed for daily refreshment.
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-              2gooD is built to bring the premium UI of the Blueberry theme into a fast Next.js storefront with clean
-              navigation and modern responsive layout.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/shop"
-                className="rounded-full bg-[#6c7fd8] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
-              >
-                Browse Wellness Products
-              </Link>
-              <Link
-                href="/contact-us"
-                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#6c7fd8] hover:text-[#6c7fd8]"
-              >
-                Contact Us
-              </Link>
-            </div>
-          </div>
-          <div className="rounded-[28px] bg-[#f8fafc] p-8">
-            <h2 className="text-2xl font-semibold text-slate-900">Why 2gooD?</h2>
-            <ul className="mt-6 space-y-5 text-slate-600">
-              <li className="flex gap-3">
-                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-[#6c7fd8]">
-                  ✓
-                </span>
-                <span>Clean, lifestyle-first product presentation.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-[#6c7fd8]">
-                  ✓
-                </span>
-                <span>Reusable components with Next.js routing.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-[#6c7fd8]">
-                  ✓
-                </span>
-                <span>Optimized for future backend integration.</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
-````
-
 ## File: src/app/api/auth/[...nextauth]/route.ts
 ````typescript
 export const runtime = "nodejs";
@@ -1518,71 +1454,6 @@ export async function GET(request: Request) {
     console.error("PRODUCTS_GET_ERROR", error);
     return jsonError("Failed to fetch products", 500);
   }
-}
-````
-
-## File: src/app/contact-us/page.tsx
-````typescript
-export default function ContactPage() {
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-16">
-      <section className="grid gap-10 rounded-[32px] bg-white p-10 shadow-sm md:grid-cols-[1.2fr_0.8fr] md:p-16">
-        <div>
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
-            Get in touch
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
-            Contact our wellness team.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            Have a question about your order, product details, or the upcoming integration? Send us a message and we will
-            respond quickly.
-          </p>
-        </div>
-        <form className="space-y-5 rounded-[28px] bg-[#f8fafc] p-8">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="name">
-              Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              placeholder="Your name"
-              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder="Your email"
-              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="message">
-              Message
-            </label>
-            <textarea
-              id="message"
-              rows={5}
-              placeholder="How can we help you?"
-              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
-            />
-          </div>
-          <button
-            type="submit"
-            className="rounded-full bg-[#6c7fd8] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
-          >
-            Send Message
-          </button>
-        </form>
-      </section>
-    </div>
-  );
 }
 ````
 
@@ -1917,161 +1788,6 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 export default prisma;
-````
-
-## File: src/lib/products.data.ts
-````typescript
-import type { ProductDto } from "@/types/product";
-export const products: ProductDto[] = [
-  {
-    id: "pure-spring-water-daily-pack",
-    product_name: "Pure Spring Water Daily Pack",
-    product_description: "Clean and refreshing bottled water for everyday hydration.",
-    product_category: "Natural Drinking Water",
-    price: "$15",
-    Stock: 24,
-    image: "/assets/img/new-product/1.jpg",
-    Badge: "New",
-    Tag: "Hydration",
-  },
-  {
-    id: "roofaza-jeera-refresh-drink",
-    product_name: "Roofaza Jeera Refresh Drink",
-    product_description: "A refreshing cumin-based drink crafted for flavorful hydration.",
-    product_category: "Jeera Drink",
-    price: "$25",
-    Stock: 18,
-    image: "/assets/img/new-product/2.jpg",
-    Badge: "Popular",
-    Tag: "Wellness Drink",
-  },
-  {
-    id: "blueberry-jeera-crunch-mix",
-    product_name: "BlueBerry Jeera Crunch Mix",
-    product_description: "Light, flavorful snack bites for mindful everyday munching.",
-    product_category: "Healthy Snacks",
-    price: "$10",
-    Stock: 30,
-    image: "/assets/img/new-product/3.jpg",
-    Badge: "Best Seller",
-    Tag: "Snack",
-  },
-  {
-    id: "calm-herbal-orange-refill-pack",
-    product_name: "Calm Herbal Orange Refill Pack",
-    product_description: "A soothing infusion blend made for restful, calming moments.",
-    product_category: "Herbal Infusion",
-    price: "$25",
-    Stock: 16,
-    image: "/assets/img/new-product/4.jpg",
-    Badge: "New",
-    Tag: "Herbal",
-  },
-  {
-    id: "avacardo-cumin-wellness-jar",
-    product_name: "Avacardo Cumin Wellness Jar",
-    product_description: "Pantry essential made to elevate wellness drinks and recipes.",
-    product_category: "Wellness Jar",
-    price: "$32",
-    Stock: 14,
-    image: "/assets/img/new-product/5.jpg",
-    Badge: "Trending",
-    Tag: "Wellness",
-  },
-  {
-    id: "cardamom-herbal-tea-blend",
-    product_name: "Cardamom Herbal Tea Blend",
-    product_description: "A warm and aromatic blend perfect for daily tea rituals.",
-    product_category: "Herbal Tea",
-    price: "$41",
-    Stock: 20,
-    image: "/assets/img/new-product/6.jpg",
-    Badge: "Premium",
-    Tag: "Tea",
-  },
-  {
-    id: "spiced-millet-energy-bites",
-    product_name: "Spiced Millet Energy Bites",
-    product_description: "Nutritious crunchy bites made for wholesome snacking.",
-    product_category: "Healthy Snacks",
-    price: "$29",
-    Stock: 22,
-    image: "/assets/img/new-product/7.jpg",
-    Badge: "Hot",
-    Tag: "Energy",
-  },
-  {
-    id: "date-sweetened-wellness-dip",
-    product_name: "Date Sweetened Wellness Dip",
-    product_description: "Naturally sweet dip for healthy snack platters and light bites.",
-    product_category: "Wellness Dip",
-    price: "$9",
-    Stock: 12,
-    image: "/assets/img/new-product/8.jpg",
-    Badge: "Sale",
-    Tag: "Dip",
-  },
-  {
-    id: "daily-hydration-combo-pack",
-    product_name: "Daily Hydration Combo Pack",
-    product_description: "A convenient starter bundle with everyday wellness essentials.",
-    product_category: "Combo Pack",
-    price: "$35",
-    Stock: 10,
-    image: "/assets/img/new-product/10.jpg",
-    Badge: "Combo",
-    Tag: "Hydration",
-  },
-  {
-    id: "lemon-jeera-spark-drink",
-    product_name: "Lemon Jeera Spark Drink",
-    product_description: "Bright citrus flavor paired with a refreshing jeera twist.",
-    product_category: "Jeera Drink",
-    price: "$22",
-    Stock: 26,
-    image: "/assets/img/new-product/11.jpg",
-    Badge: "Fresh",
-    Tag: "Citrus",
-  },
-  {
-    id: "herb-crisp-snack-box",
-    product_name: "Herb Crisp Snack Box",
-    product_description: "Oven-crisp savory snack box with balanced herbal seasoning.",
-    product_category: "Healthy Snacks",
-    price: "$18",
-    Stock: 28,
-    image: "/assets/img/new-product/12.jpg",
-    Badge: "New",
-    Tag: "Snack",
-  },
-  {
-    id: "velvet-herbal-trail-mix",
-    product_name: "Velvet Herbal Trail Mix",
-    product_description: "Crunchy snack blend for smart and satisfying snacking breaks.",
-    product_category: "Trail Mix",
-    price: "$25",
-    Stock: 15,
-    image: "/assets/img/new-product/13.jpg",
-    Badge: "Popular",
-    Tag: "Trail Mix",
-  },
-];
-export const getProductById = (id: string) => {
-  return products.find((product) => product.id === id);
-};
-export const getRelatedProducts = (product: ProductDto) => {
-  return products
-    .filter(
-      (item) =>
-        item.id !== product.id &&
-        (item.product_category === product.product_category || item.Tag === product.Tag),
-    )
-    .slice(0, 4);
-};
-export const productCategories = Array.from(
-  new Set(products.map((product) => product.product_category)),
-);
-export const productTags = Array.from(new Set(products.map((product) => product.Tag)));
 ````
 
 ## File: src/lib/services/cart.service.ts
@@ -2794,6 +2510,70 @@ export default function LoginPage() {
 }
 ````
 
+## File: src/app/about-us/page.tsx
+````typescript
+import Link from "next/link";
+export default function AboutPage() {
+  return (
+    <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <section className="rounded-[32px] bg-white p-10 shadow-sm md:p-16">
+        <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+          <div>
+            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
+              About 2gooD
+            </p>
+            <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+              Wellness products designed for daily refreshment.
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+              2gooD is built to bring the premium UI of the Blueberry theme into a fast Next.js storefront with clean
+              navigation and modern responsive layout.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/shop"
+                className="rounded-full bg-[#6c7fd8] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
+              >
+                Browse Wellness Products
+              </Link>
+              <Link
+                href="/contact-us"
+                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#6c7fd8] hover:text-[#6c7fd8]"
+              >
+                Contact Us
+              </Link>
+            </div>
+          </div>
+          <div className="rounded-[28px] bg-[#f8fafc] p-8">
+            <h2 className="text-2xl font-semibold text-slate-900">Why 2gooD?</h2>
+            <ul className="mt-6 space-y-5 text-slate-600">
+              <li className="flex gap-3">
+                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-[#6c7fd8]">
+                  ✓
+                </span>
+                <span>Clean, lifestyle-first product presentation.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-[#6c7fd8]">
+                  ✓
+                </span>
+                <span>Reusable components with Next.js routing.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-[#6c7fd8]">
+                  ✓
+                </span>
+                <span>Optimized for future backend integration.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+````
+
 ## File: src/app/api/cart/add/route.ts
 ````typescript
 export const runtime = "nodejs";
@@ -2946,6 +2726,71 @@ export default function CheckoutPage() {
         </div>
       </section>
     </main>
+  );
+}
+````
+
+## File: src/app/contact-us/page.tsx
+````typescript
+export default function ContactPage() {
+  return (
+    <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <section className="grid gap-10 rounded-[32px] bg-white p-10 shadow-sm md:grid-cols-[1.2fr_0.8fr] md:p-16">
+        <div>
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
+            Get in touch
+          </p>
+          <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+            Contact our wellness team.
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+            Have a question about your order, product details, or the upcoming integration? Send us a message and we will
+            respond quickly.
+          </p>
+        </div>
+        <form className="space-y-5 rounded-[28px] bg-[#f8fafc] p-8">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="name">
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              placeholder="Your name"
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="Your email"
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="message">
+              Message
+            </label>
+            <textarea
+              id="message"
+              rows={5}
+              placeholder="How can we help you?"
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
+            />
+          </div>
+          <button
+            type="submit"
+            className="rounded-full bg-[#6c7fd8] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
+          >
+            Send Message
+          </button>
+        </form>
+      </section>
+    </div>
   );
 }
 ````
@@ -3839,50 +3684,153 @@ export default function Footer() {
 }
 ````
 
-## File: src/styles/globals.css
-````css
-@import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-:root {
-  color-scheme: light;
-  background: #f8f8fb;
-  color: #0f172a;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+## File: src/lib/products.data.ts
+````typescript
+import type { ProductDto } from "@/types/product";
+export const products: ProductDto[] = [
+  {
+    id: "pure-spring-water-daily-pack",
+    product_name: "Pure Spring Water Daily Pack",
+    product_description: "Clean and refreshing bottled water for everyday hydration.",
+    product_category: "Natural Drinking Water",
+    price: "$15",
+    Stock: 24,
+    image: "/assets/img/new-product/1.jpg",
+    Badge: "New",
+    Tag: "Hydration",
+  },
+  {
+    id: "roofaza-jeera-refresh-drink",
+    product_name: "Roofaza Jeera Refresh Drink",
+    product_description: "A refreshing cumin-based drink crafted for flavorful hydration.",
+    product_category: "Jeera Drink",
+    price: "$25",
+    Stock: 18,
+    image: "/assets/img/new-product/2.jpg",
+    Badge: "Popular",
+    Tag: "Wellness Drink",
+  },
+  {
+    id: "blueberry-jeera-crunch-mix",
+    product_name: "BlueBerry Jeera Crunch Mix",
+    product_description: "Light, flavorful snack bites for mindful everyday munching.",
+    product_category: "Healthy Snacks",
+    price: "$10",
+    Stock: 30,
+    image: "/assets/img/new-product/3.jpg",
+    Badge: "Best Seller",
+    Tag: "Snack",
+  },
+  {
+    id: "calm-herbal-orange-refill-pack",
+    product_name: "Calm Herbal Orange Refill Pack",
+    product_description: "A soothing infusion blend made for restful, calming moments.",
+    product_category: "Herbal Infusion",
+    price: "$25",
+    Stock: 16,
+    image: "/assets/img/new-product/4.jpg",
+    Badge: "New",
+    Tag: "Herbal",
+  },
+  {
+    id: "avacardo-cumin-wellness-jar",
+    product_name: "Avacardo Cumin Wellness Jar",
+    product_description: "Pantry essential made to elevate wellness drinks and recipes.",
+    product_category: "Wellness Jar",
+    price: "$32",
+    Stock: 14,
+    image: "/assets/img/new-product/5.jpg",
+    Badge: "Trending",
+    Tag: "Wellness",
+  },
+  {
+    id: "cardamom-herbal-tea-blend",
+    product_name: "Cardamom Herbal Tea Blend",
+    product_description: "A warm and aromatic blend perfect for daily tea rituals.",
+    product_category: "Herbal Tea",
+    price: "$41",
+    Stock: 20,
+    image: "/assets/img/new-product/6.jpg",
+    Badge: "Premium",
+    Tag: "Tea",
+  },
+  {
+    id: "spiced-millet-energy-bites",
+    product_name: "Spiced Millet Energy Bites",
+    product_description: "Nutritious crunchy bites made for wholesome snacking.",
+    product_category: "Healthy Snacks",
+    price: "$29",
+    Stock: 22,
+    image: "/assets/img/new-product/7.jpg",
+    Badge: "Hot",
+    Tag: "Energy",
+  },
+  {
+    id: "date-sweetened-wellness-dip",
+    product_name: "Date Sweetened Wellness Dip",
+    product_description: "Naturally sweet dip for healthy snack platters and light bites.",
+    product_category: "Wellness Dip",
+    price: "$9",
+    Stock: 12,
+    image: "/assets/img/new-product/8.jpg",
+    Badge: "Sale",
+    Tag: "Dip",
+  },
+  {
+    id: "daily-hydration-combo-pack",
+    product_name: "Daily Hydration Combo Pack",
+    product_description: "A convenient starter bundle with everyday wellness essentials.",
+    product_category: "Combo Pack",
+    price: "$35",
+    Stock: 10,
+    image: "/assets/img/new-product/10.jpg",
+    Badge: "Combo",
+    Tag: "Hydration",
+  },
+  {
+    id: "lemon-jeera-spark-drink",
+    product_name: "Lemon Jeera Spark Drink",
+    product_description: "Bright citrus flavor paired with a refreshing jeera twist.",
+    product_category: "Jeera Drink",
+    price: "$22",
+    Stock: 26,
+    image: "/assets/img/new-product/11.jpg",
+    Badge: "Fresh",
+    Tag: "Citrus",
+  },
+  {
+    id: "herb-crisp-snack-box",
+    product_name: "Herb Crisp Snack Box",
+    product_description: "Oven-crisp savory snack box with balanced herbal seasoning.",
+    product_category: "Healthy Snacks",
+    price: "$18",
+    Stock: 28,
+    image: "/assets/img/new-product/12.jpg",
+    Badge: "New",
+    Tag: "Snack",
+  },
+  {
+    id: "velvet-herbal-trail-mix",
+    product_name: "Velvet Herbal Trail Mix",
+    product_description: "Crunchy snack blend for smart and satisfying snacking breaks.",
+    product_category: "Trail Mix",
+    price: "$25",
+    Stock: 15,
+    image: "/assets/img/new-product/13.jpg",
+    Badge: "Popular",
+    Tag: "Trail Mix",
+  },
+];
+export function getProductById(productId: string) {
+  return products.find((product) => product.id === productId) ?? null;
 }
-* {
-  box-sizing: border-box;
+export function getRelatedProducts(product: ProductDto) {
+  return products
+    .filter((item) => item.id !== product.id && item.product_category === product.product_category)
+    .slice(0, 4);
 }
-html {
-  scroll-behavior: smooth;
-}
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #f8f8fb;
-  color: #0f172a;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  overflow-x: hidden;
-}
-a {
-  color: inherit;
-  text-decoration: none;
-}
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-.sidebar-transition {
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-}
+export const productCategories = Array.from(new Set(products.map((product) => product.product_category)));
+export const productTags = Array.from(new Set(products.map((product) => product.Tag)));
 ````
 
 ## File: src/app/(auth)/register/page.tsx
@@ -4190,36 +4138,59 @@ export const useCartStore = create<CartState>((set) => ({
 }));
 ````
 
-## File: src/app/layout.tsx
-````typescript
-import type { Metadata } from "next";
-import "@/styles/globals.css";
-import AuthProvider from "@/components/providers/AuthProvider";
-import CartSidebar from "@/components/common/CartSidebar";
-import Footer from "@/components/common/Footer";
-import Header from "@/components/common/Header";
-import "remixicon/fonts/remixicon.css";
-export const metadata: Metadata = {
-  title: "2gooD - Wellness Drinks Store",
-  description: "Hydration products, wellness drinks, herbal infusions, and healthy essentials.",
-};
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <body className="antialiased bg-slate-50 text-slate-900">
-        <AuthProvider>
-          <CartSidebar />
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-        </AuthProvider>
-      </body>
-    </html>
-  );
+## File: src/styles/globals.css
+````css
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+  color-scheme: light;
+  background: #f8f8fb;
+  color: #0f172a;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  width: 100%;
+  background: #f8f8fb;
+  color: #0f172a;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow-x: hidden;
+}
+html,
+body,
+main,
+section {
+  width: 100%;
+}
+main {
+  overflow-x: clip;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.sidebar-transition {
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 ````
 
@@ -4329,6 +4300,94 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
 }
 ````
 
+## File: src/lib/products.ts
+````typescript
+export type { ProductDto as Product } from "@/types/product";
+export {
+  products,
+  getProductById,
+  getRelatedProducts,
+  productCategories,
+  productTags,
+} from "./products.data";
+````
+
+## File: package.json
+````json
+{
+  "name": "twogooddrinks",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "jumpstart": "next build && next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "axios": "^1.17.0",
+    "bcryptjs": "^3.0.2",
+    "lucide-react": "^1.17.0",
+    "next": "16.2.7",
+    "next-auth": "^5.0.0-beta.29",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "remixicon": "^4.9.1",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.7",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+````
+
+## File: src/app/layout.tsx
+````typescript
+import type { Metadata } from "next";
+import "@/styles/globals.css";
+import AuthProvider from "@/components/providers/AuthProvider";
+import CartSidebar from "@/components/common/CartSidebar";
+import Footer from "@/components/common/Footer";
+import Header from "@/components/common/Header";
+import "remixicon/fonts/remixicon.css";
+export const metadata: Metadata = {
+  title: "2gooD - Wellness Drinks Store",
+  description: "Hydration products, wellness drinks, herbal infusions, and healthy essentials.",
+};
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased bg-slate-50 text-slate-900">
+        <AuthProvider>
+          <CartSidebar />
+          <Header />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}
+````
+
 ## File: src/components/common/Header.tsx
 ````typescript
 "use client";
@@ -4367,6 +4426,14 @@ export default function Header() {
       clearLocalCart();
     }
   }, [status, fetchCart, clearLocalCart]);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setMobileOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [mobileOpen]);
   const cartCount = cart?.item_count || 0;
   return (
     <header className="bb-header sticky top-0 z-50 border-b border-[#eee] bg-white/95 backdrop-blur-sm">
@@ -4480,10 +4547,17 @@ export default function Header() {
         </div>
       </div>
       {mobileOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/70 lg:hidden">
-          <aside className="h-full w-[340px] max-w-[85vw] bg-white px-5 py-4">
+        <div
+          className="fixed inset-0 z-[60] overflow-y-auto bg-black/70 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        >
+          <aside
+            className="h-full w-[340px] max-w-[85vw] overflow-y-auto bg-white px-5 py-4 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="mb-5 flex items-center justify-between border-b border-[#eee] pb-3">
               <span className="font-Poppins text-base font-semibold text-[#3d4750]">2gooD Menu</span>
+              <span className="rounded-full bg-[#6c7fd8]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6c7fd8]">Menu</span>
               <button type="button" onClick={() => setMobileOpen(false)} className="text-2xl text-red-500" aria-label="Close menu">
                 ×
               </button>
@@ -4552,61 +4626,6 @@ export default function Header() {
       )}
     </header>
   );
-}
-````
-
-## File: src/lib/products.ts
-````typescript
-export type { ProductDto as Product } from "@/types/product";
-export {
-  products,
-  getProductById,
-  getRelatedProducts,
-  productCategories,
-  productTags,
-} from "./products.data";
-````
-
-## File: package.json
-````json
-{
-  "name": "twogooddrinks",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "jumpstart": "next build && next start",
-    "lint": "eslint",
-    "postinstall": "prisma generate",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio"
-  },
-  "dependencies": {
-    "@prisma/client": "^5.22.0",
-    "axios": "^1.17.0",
-    "bcryptjs": "^3.0.2",
-    "lucide-react": "^1.17.0",
-    "next": "16.2.7",
-    "next-auth": "^5.0.0-beta.29",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "remixicon": "^4.9.1",
-    "zustand": "^5.0.14"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.7",
-    "prisma": "^5.22.0",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
 }
 ````
 
@@ -4738,7 +4757,7 @@ export default function HomePage() {
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
               Hydrate • Heal • Feel Good
             </p>
-            <h1 className="mb-[22px] text-[52px] font-bold leading-[1.15] text-[#3d4750] max-[768px]:text-[36px]">
+            <h1 className="mb-[22px] text-[40px] font-bold leading-[1.12] text-[#3d4750] sm:text-[46px] lg:text-[52px]">
               Discover <span className="text-[#6c7fd8]">2gooD Wellness</span>{" "}
               Products for Everyday Living
             </h1>
@@ -4761,7 +4780,7 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-          <div className="relative flex items-center justify-center">
+          <div className="relative flex min-w-0 items-center justify-center">
             <div className="absolute -right-8 top-8 h-[520px] w-[520px] rounded-full bg-[#eef1ff] opacity-60 blur-3xl" />
             <div className="group relative overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.08)]">
               <img
@@ -5040,7 +5059,7 @@ export default function ShopPage() {
   }, []);
   return (
     <main>
-      <section className="section-shop py-[50px] max-[767px]:py-[35px]">
+      <section className="section-shop overflow-x-hidden py-[50px] max-[767px]:py-[35px]">
         <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
           <div className="mb-[35px] text-center">
             <p className="font-Poppins text-[14px] text-[#6c7fd8] font-medium mb-[8px]">
@@ -5055,7 +5074,7 @@ export default function ShopPage() {
           </div>
           <div className="flex flex-wrap mx-[-12px]">
             <aside className="min-[992px]:w-[25%] w-full px-[12px] order-2 max-[991px]:order-1 max-[991px]:mb-[35px]">
-              <div className="bb-shop-sidebar sticky top-[100px] space-y-[24px]">
+              <div className="bb-shop-sidebar sticky top-[88px] space-y-[24px] lg:top-[100px]">
                 <div className="sidebar-block bg-white border border-[#e5e7eb] rounded-[20px] p-[24px] shadow-sm">
                   <h4 className="font-quicksand text-[18px] font-bold text-[#1f2937] mb-[18px]">
                     Search
