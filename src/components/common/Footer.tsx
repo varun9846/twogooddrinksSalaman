@@ -90,13 +90,11 @@ export default function Footer() {
               <div className="mb-10 flex flex-col lg:mb-0">
                 <Link href="/" className="mb-7 flex items-center gap-3">
                   <img
-                    src="/assets/img/logo/logo-icon.png"
+                    src="/assets/img/logo/logo-icon2.png"
                     alt="2gooD logo icon"
-                    className="h-11 w-11 shrink-0 object-contain"
+                    className="h-16 w-16 shrink-0 object-contain"
                   />
-                  <span className="font-Poppins text-3xl font-bold tracking-[0.03rem] text-slate-700">
-                    2gooD
-                  </span>
+                 
                 </Link>
 
                 <p className="mb-7 max-w-[400px] font-Poppins text-[14px] leading-[27px] text-slate-500">
