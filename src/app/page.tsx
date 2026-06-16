@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AboutSection from "@/components/common/AboutSection";
 import { homeContent } from "@/lib/site-content";
-import { productsService, type ProductApiResponse } from "@/lib/services/productsService";
+import {
+  productsService,
+  type ProductApiResponse,
+} from "@/lib/services/productsService";
 
 const categories = [
   {
@@ -44,13 +47,15 @@ function SectionHeading({
 }) {
   return (
     <div className="mx-auto mb-10 max-w-2xl text-center">
-      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
+      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
         {eyebrow}
       </p>
       <h2 className="mt-3 text-3xl font-semibold text-slate-900 md:text-4xl">
         {title}
       </h2>
-      {text ? <p className="mt-4 text-sm leading-7 text-slate-600">{text}</p> : null}
+      {text ? (
+        <p className="mt-4 text-sm leading-7 text-slate-600">{text}</p>
+      ) : null}
     </div>
   );
 }
@@ -60,7 +65,7 @@ function HomeProductCard({ product }: { product: ProductApiResponse }) {
     <article className="group overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
       <div className="relative overflow-hidden border-b border-slate-100 bg-[#f8f8fb]">
         {product.Badge ? (
-          <span className="absolute left-4 top-4 z-10 rounded-full bg-[#6c7fd8] px-3 py-1 text-xs font-semibold text-white">
+          <span className="absolute left-4 top-4 z-10 rounded-full bg-[#0f766e] px-3 py-1 text-xs font-semibold text-white">
             {product.Badge}
           </span>
         ) : null}
@@ -87,11 +92,13 @@ function HomeProductCard({ product }: { product: ProductApiResponse }) {
             <span className="text-lg font-semibold text-slate-900">
               {product.price}
             </span>
-            <p className="mt-1 text-xs text-slate-500">Stock: {product.Stock}</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Stock: {product.Stock}
+            </p>
           </div>
           <Link
             href={`/shop/${product.id}`}
-            className="rounded-full bg-[#6c7fd8] px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
+            className="rounded-full bg-[#0f766e] px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
           >
             View
           </Link>
@@ -134,11 +141,11 @@ export default function HomePage() {
       <section className="overflow-hidden bg-[#f6f7ff]">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 md:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
           <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
               {homeContent.hero.eyebrow}
             </p>
             <h1 className="mb-[22px] text-[42px] font-bold leading-[1.12] text-[#3d4750] sm:text-[50px] lg:text-[62px]">
-              Pure Water. <span className="text-[#6c7fd8]">Pure Life.</span>
+              Pure Water. <span className="text-[#0f766e]">Pure Life.</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-slate-600">
               {homeContent.hero.description}
@@ -146,13 +153,13 @@ export default function HomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href={homeContent.hero.ctaHref}
-                className="rounded-full bg-[#6c7fd8] px-7 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
+                className="rounded-full bg-[#0f766e] px-7 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
               >
                 {homeContent.hero.ctaLabel}
               </Link>
               <Link
                 href={homeContent.hero.secondaryCtaHref}
-                className="rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:-translate-y-1 hover:border-[#6c7fd8] hover:text-[#6c7fd8] hover:shadow-lg"
+                className="rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:-translate-y-1 hover:border-[#0f766e] hover:text-[#0f766e] hover:shadow-lg"
               >
                 {homeContent.hero.secondaryCtaLabel}
               </Link>
@@ -174,12 +181,17 @@ export default function HomePage() {
       <section className="relative z-10 mx-auto -mt-8 max-w-7xl px-4 md:px-6">
         <div className="grid gap-4 rounded-[28px] bg-white p-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:grid-cols-2 lg:grid-cols-4">
           {homeContent.trustStats.map((stat) => (
-            <div key={stat.title} className="flex items-center gap-4 rounded-[20px] border border-slate-100 bg-white p-4">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-xl text-[#6c7fd8]">
+            <div
+              key={stat.title}
+              className="flex items-center gap-4 rounded-[20px] border border-slate-100 bg-white p-4"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#0f766e]/10 text-xl text-[#0f766e]">
                 {stat.icon}
               </span>
               <div>
-                <p className="text-sm font-semibold text-slate-900">{stat.title}</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {stat.title}
+                </p>
                 <p className="mt-1 text-xs text-slate-500">{stat.label}</p>
               </div>
             </div>
@@ -226,11 +238,15 @@ export default function HomePage() {
                 key={card.title}
                 className="rounded-[28px] border border-slate-100 bg-[#f8fafc] p-7 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
               >
-                <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#6c7fd8] text-lg font-bold text-white">
+                <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#0f766e] text-lg font-bold text-white">
                   {index + 1}
                 </span>
-                <h3 className="text-xl font-semibold text-slate-900">{card.title}</h3>
-                <p className="mt-4 text-sm leading-7 text-slate-600">{card.description}</p>
+                <h3 className="text-xl font-semibold text-slate-900">
+                  {card.title}
+                </h3>
+                <p className="mt-4 text-sm leading-7 text-slate-600">
+                  {card.description}
+                </p>
               </article>
             ))}
           </div>
@@ -257,7 +273,7 @@ export default function HomePage() {
           <div className="mt-10 text-center">
             <Link
               href="/shop"
-              className="inline-flex rounded-full bg-[#6c7fd8] px-7 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
+              className="inline-flex rounded-full bg-[#0f766e] px-7 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
             >
               View All Products
             </Link>
@@ -281,7 +297,7 @@ export default function HomePage() {
             </p>
             <Link
               href="/shop"
-              className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#6c7fd8] hover:text-white"
+              className="mt-6 inline-flex rounded-full bg-[#0f766e] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
             >
               Order Now
             </Link>
@@ -298,11 +314,12 @@ export default function HomePage() {
               Bulk Supply for Offices
             </h3>
             <p className="mt-3 text-slate-600">
-              Need regular water delivery for your office or business? We can help.
+              Need regular water delivery for your office or business? We can
+              help.
             </p>
             <Link
               href="/contact-us"
-              className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#6c7fd8] hover:text-white"
+              className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:text-white"
             >
               Contact Us
             </Link>
@@ -327,7 +344,7 @@ export default function HomePage() {
       </section> */}
 
       <section className="mx-auto max-w-7xl px-4 pb-12 pt-16 md:px-6">
-        <div className="group relative overflow-hidden rounded-[24px] bg-[#6c7fd8] p-8 shadow-[0_15px_35px_rgba(108,127,216,0.25)] md:p-14">
+        <div className="group relative overflow-hidden rounded-[24px] bg-[#0f766e] p-8 shadow-[0_15px_35px_rgba(108,127,216,0.25)] md:p-14">
           <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-xl" />
           <div className="absolute -left-20 -bottom-20 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
           <div className="relative z-10 grid items-center gap-8 lg:grid-cols-5">
@@ -339,13 +356,14 @@ export default function HomePage() {
                 Need water delivered regularly?
               </h2>
               <p className="mt-3 max-w-xl text-[14px] leading-[24px] text-white/90">
-                Send us your requirement for home, office, or bulk supply and our team will get back to you quickly.
+                Send us your requirement for home, office, or bulk supply and
+                our team will get back to you quickly.
               </p>
             </div>
             <div className="w-full text-center lg:col-span-2 lg:text-right">
               <Link
                 href="/contact-us"
-                className="inline-flex rounded-[10px] bg-[#2b2b2d] px-7 py-3 text-[14px] font-semibold tracking-[0.03rem] text-white transition-all duration-300 hover:bg-white hover:text-[#6c7fd8]"
+                className="inline-flex rounded-[10px] bg-white px-7 py-3 text-[14px] font-bold tracking-[0.03rem] text-[#0f766e] transition-all duration-300 hover:bg-white/90"
               >
                 Contact 2goodplus
               </Link>

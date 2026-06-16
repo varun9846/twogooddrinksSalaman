@@ -48,7 +48,7 @@ export default function CartSidebar() {
                 <Link
                   href="/login?callbackUrl=/shop"
                   onClick={toggleCart}
-                  className="inline-flex rounded-md bg-[#6c7fd8] px-5 py-3 text-sm font-medium text-white hover:bg-[#5a6cb8]"
+                  className="inline-flex rounded-md bg-[#0f766e] px-5 py-3 text-sm font-medium text-white hover:bg-[#5a6cb8]"
                 >
                   Login
                 </Link>
@@ -118,7 +118,7 @@ export default function CartSidebar() {
             <Link
               href="/my-cart"
               onClick={toggleCart}
-              className="block w-full rounded-md bg-[#6c7fd8] py-3 text-center font-medium text-white transition-colors hover:bg-[#5a6cb8]"
+              className="block w-full rounded-md bg-[#0f766e] py-3 text-center font-medium text-white transition-colors hover:bg-[#5a6cb8]"
             >
               View My Cart
             </Link>

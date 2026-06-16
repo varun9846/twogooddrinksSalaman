@@ -20,7 +20,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </Link>
 
         {product.Badge && (
-          <span className="absolute top-[15px] left-[15px] bg-[#6c7fd8] text-white text-[12px] font-Poppins px-[12px] py-[4px] rounded-[20px]">
+          <span className="absolute top-[15px] left-[15px] bg-[#0f766e] text-white text-[12px] font-Poppins px-[12px] py-[4px] rounded-[20px]">
             {product.Badge}
           </span>
         )}
@@ -44,7 +44,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <h4 className="bb-pro-title mb-[8px] text-[16px] leading-[18px]">
           <Link
             href={`/shop/${product.id}`}
-            className="font-quicksand block whitespace-nowrap overflow-hidden text-ellipsis text-[15px] leading-[18px] text-[#3d4750] font-semibold tracking-[0.03rem] hover:text-[#6c7fd8]"
+            className="font-quicksand block whitespace-nowrap overflow-hidden text-ellipsis text-[15px] leading-[18px] text-[#3d4750] font-semibold tracking-[0.03rem] hover:text-[#0f766e]"
           >
             {product.product_name}
           </Link>
@@ -67,7 +67,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <div className="mt-[14px]">
-          <span className="inline-block text-[12px] font-Poppins text-[#6c7fd8] bg-[#f1f3ff] px-[10px] py-[4px] rounded-full">
+          <span className="inline-block text-[12px] font-Poppins text-[#0f766e] bg-[#f1f3ff] px-[10px] py-[4px] rounded-full">
             {product.Tag}
           </span>
         </div>

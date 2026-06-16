@@ -51,7 +51,7 @@ function LoginForm() {
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
           placeholder="you@example.com"
         />
       </div>
@@ -63,7 +63,7 @@ function LoginForm() {
           required
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
           placeholder="Enter password"
         />
       </div>
@@ -71,14 +71,14 @@ function LoginForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-[12px] bg-[#6c7fd8] px-[20px] py-[13px] font-Poppins text-[14px] font-semibold text-white transition hover:bg-[#5a6cb8] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-[12px] bg-[#0f766e] px-[20px] py-[13px] font-Poppins text-[14px] font-semibold text-white transition hover:bg-[#5a6cb8] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Signing in..." : "Login"}
       </button>
 
       <p className="text-center font-Poppins text-[14px] text-[#686e7d]">
         New customer?{" "}
-        <Link href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-[#6c7fd8]">
+        <Link href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-[#0f766e]">
           Create account
         </Link>
       </p>
@@ -96,7 +96,7 @@ export default function LoginPage() {
           </div>
 
           <div className="p-[32px] md:p-[44px]">
-            <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#6c7fd8]">Welcome back</p>
+            <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#0f766e]">Welcome back</p>
             <h1 className="mb-[24px] font-quicksand text-[32px] font-bold text-[#3d4750]">Login to continue</h1>
             <Suspense>
               <LoginForm />

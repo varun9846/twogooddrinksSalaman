@@ -30,7 +30,7 @@ export default function MyCartClient() {
         <p className="mt-3 font-Poppins text-[#686e7d]">Add wellness products from the shop to continue.</p>
         <Link
           href="/shop"
-          className="mt-6 inline-flex rounded-[12px] bg-[#6c7fd8] px-[24px] py-[12px] font-Poppins text-[14px] font-semibold text-white hover:bg-[#5a6cb8]"
+          className="mt-6 inline-flex rounded-[12px] bg-[#0f766e] px-[24px] py-[12px] font-Poppins text-[14px] font-semibold text-white hover:bg-[#5a6cb8]"
         >
           Continue Shopping
         </Link>
@@ -117,7 +117,7 @@ export default function MyCartClient() {
         </div>
         <Link
           href="/checkout"
-          className="mt-[22px] block w-full rounded-[12px] bg-[#6c7fd8] px-[20px] py-[13px] text-center font-Poppins text-[14px] font-semibold text-white hover:bg-[#5a6cb8]"
+          className="mt-[22px] block w-full rounded-[12px] bg-[#0f766e] px-[20px] py-[13px] text-center font-Poppins text-[14px] font-semibold text-white hover:bg-[#5a6cb8]"
         >
           Pay Now
         </Link>

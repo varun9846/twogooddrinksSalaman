@@ -80,15 +80,15 @@ export default function HealthyLifestylePage() {
         
         {/* Breadcrumb Navigation */}
         <nav className="mb-8 flex items-center text-[13px] font-medium text-[#686e7d]">
-          <Link href="/" className="hover:text-[#6c7fd8] transition-colors duration-200">Home</Link>
+          <Link href="/" className="hover:text-[#0f766e] transition-colors duration-200">Home</Link>
           <span className="mx-2 text-[#cbd5e1]">/</span>
-          <Link href="/wellness-journal" className="hover:text-[#6c7fd8] transition-colors duration-200">Wellness Journal</Link>
+          <Link href="/wellness-journal" className="hover:text-[#0f766e] transition-colors duration-200">Wellness Journal</Link>
           <span className="mx-2 text-[#cbd5e1]">/</span>
-          <span className="text-[#6c7fd8]">Healthy Lifestyle</span>
+          <span className="text-[#0f766e]">Healthy Lifestyle</span>
         </nav>
 
         {/* Hero Section Banner */}
-        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#6c7fd8] via-[#5a6fc9] to-[#4a5cb8] p-8 md:p-16 text-white shadow-[0_20px_40px_-10px_rgba(108,127,216,0.3)] mb-14">
+        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0f766e] via-[#5a6fc9] to-[#4a5cb8] p-8 md:p-16 text-white shadow-[0_20px_40px_-10px_rgba(108,127,216,0.3)] mb-14">
           <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
           <div className="absolute -left-10 bottom-0 h-60 w-60 rounded-full bg-[#2b2b2d]/10 blur-3xl" aria-hidden="true" />
           
@@ -110,7 +110,7 @@ export default function HealthyLifestylePage() {
         {/* The 4 Pillars of Health Grid */}
         <div className="mb-16">
           <div className="mb-8 flex items-center gap-3">
-            <span className="h-8 w-1 rounded-full bg-[#6c7fd8]" />
+            <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
             <h2 className="text-[22px] font-bold text-[#2b2b2d]">The Four Pillars of Vitality</h2>
           </div>
           
@@ -118,7 +118,7 @@ export default function HealthyLifestylePage() {
             {lifestylePillars.map((pillar) => (
               <article 
                 key={pillar.title}
-                className="group relative flex flex-col justify-between rounded-[24px] border border-[#eef0f4] bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-10px_rgba(43,43,45,0.08)] hover:border-[#6c7fd8]/30"
+                className="group relative flex flex-col justify-between rounded-[24px] border border-[#eef0f4] bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-10px_rgba(43,43,45,0.08)] hover:border-[#0f766e]/30"
               >
                 <div>
                   <div className={`inline-flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold tracking-wide rounded-lg border mb-5 ${pillar.color}`}>
@@ -126,11 +126,11 @@ export default function HealthyLifestylePage() {
                     {pillar.category}
                   </div>
                   
-                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8f9fa] ${pillar.iconColor} transition-colors duration-300 group-hover:bg-[#6c7fd8] group-hover:text-white`}>
+                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8f9fa] ${pillar.iconColor} transition-colors duration-300 group-hover:bg-[#0f766e] group-hover:text-white`}>
                     {pillar.icon}
                   </div>
 
-                  <h3 className="text-[18px] font-bold leading-[24px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#6c7fd8]">
+                  <h3 className="text-[18px] font-bold leading-[24px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#0f766e]">
                     {pillar.title}
                   </h3>
                   
@@ -147,10 +147,10 @@ export default function HealthyLifestylePage() {
         <div className="mb-16">
           <div className="mb-8 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="h-8 w-1 rounded-full bg-[#6c7fd8]" />
+              <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
               <h2 className="text-[22px] font-bold text-[#2b2b2d]">Latest Editorial Insights</h2>
             </div>
-            <Link href="/wellness-journal" className="hidden md:inline-flex items-center gap-1 text-[14px] font-semibold text-[#6c7fd8] hover:text-[#5a6fc9] transition-colors">
+            <Link href="/wellness-journal" className="hidden md:inline-flex items-center gap-1 text-[14px] font-semibold text-[#0f766e] hover:text-[#5a6fc9] transition-colors">
               View all articles
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </Link>
@@ -166,17 +166,17 @@ export default function HealthyLifestylePage() {
                 {/* Abstract Visual Header for Article Card */}
                 <div className="h-40 w-full bg-gradient-to-br from-[#f3f1ff] to-[#eef0f4] relative overflow-hidden">
                   <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity duration-500">
-                    <svg className="w-24 h-24 text-[#6c7fd8]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+                    <svg className="w-24 h-24 text-[#0f766e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
                   </div>
                   <div className="absolute top-4 left-4">
-                    <span className="inline-block rounded-full bg-white/80 backdrop-blur-sm px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#6c7fd8] border border-[#6c7fd8]/20">
+                    <span className="inline-block rounded-full bg-white/80 backdrop-blur-sm px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#0f766e] border border-[#0f766e]/20">
                       {article.tag}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex flex-col flex-grow p-6">
-                  <h3 className="text-[18px] font-bold leading-[26px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#6c7fd8]">
+                  <h3 className="text-[18px] font-bold leading-[26px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#0f766e]">
                     {article.title}
                   </h3>
                   <p className="text-[14px] leading-[24px] text-[#686e7d] mb-4 flex-grow">
@@ -192,7 +192,7 @@ export default function HealthyLifestylePage() {
           </div>
           
           <div className="mt-6 text-center md:hidden">
-            <Link href="/wellness-journal" className="inline-flex items-center gap-1 text-[14px] font-semibold text-[#6c7fd8] hover:text-[#5a6fc9] transition-colors">
+            <Link href="/wellness-journal" className="inline-flex items-center gap-1 text-[14px] font-semibold text-[#0f766e] hover:text-[#5a6fc9] transition-colors">
               View all articles
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </Link>
@@ -200,12 +200,12 @@ export default function HealthyLifestylePage() {
         </div>
 
         {/* Bottom Community / Newsletter Callout Banner */}
-        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#f3f1ff] via-white to-[#f8f9fa] border border-[#6c7fd8]/10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#6c7fd8]/5 blur-3xl" />
+        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#f3f1ff] via-white to-[#f8f9fa] border border-[#0f766e]/10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#0f766e]/5 blur-3xl" />
           
           <div className="relative z-10 max-w-xl">
             <h3 className="text-[22px] font-bold text-[#2b2b2d] flex items-center gap-3">
-              <svg className="w-6 h-6 text-[#6c7fd8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               Join the 2gooD Wellness Community
@@ -219,9 +219,9 @@ export default function HealthyLifestylePage() {
             <input 
               type="email" 
               placeholder="Enter your email" 
-              className="h-12 w-full md:w-72 rounded-xl border border-[#e2e8f0] bg-white px-4 text-[14px] text-[#2b2b2d] outline-none transition-all duration-200 placeholder:text-[#94a3b8] focus:border-[#6c7fd8] focus:ring-4 focus:ring-[#6c7fd8]/10"
+              className="h-12 w-full md:w-72 rounded-xl border border-[#e2e8f0] bg-white px-4 text-[14px] text-[#2b2b2d] outline-none transition-all duration-200 placeholder:text-[#94a3b8] focus:border-[#0f766e] focus:ring-4 focus:ring-[#0f766e]/10"
             />
-            <button className="h-12 whitespace-nowrap inline-flex items-center justify-center rounded-xl bg-[#6c7fd8] px-6 text-[14px] font-semibold text-white shadow-lg shadow-[#6c7fd8]/20 transition-all duration-300 hover:bg-[#2b2b2d] hover:shadow-xl hover:-translate-y-0.5">
+            <button className="h-12 whitespace-nowrap inline-flex items-center justify-center rounded-xl bg-[#0f766e] px-6 text-[14px] font-semibold text-white shadow-lg shadow-[#0f766e]/20 transition-all duration-300 hover:bg-[#2b2b2d] hover:shadow-xl hover:-translate-y-0.5">
               Subscribe
             </button>
           </div>

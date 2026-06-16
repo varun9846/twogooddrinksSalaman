@@ -127,13 +127,13 @@ export default function Header() {
           <p>Hydrate • Heal • Feel Good</p>
 
           <div className="hidden items-center gap-5 md:flex">
-            <Link href="/login" className="hover:text-[#6c7fd8]">
+            <Link href="/login" className="hover:text-[#0f766e]">
               Sign In
             </Link>
-            <Link href="/register" className="hover:text-[#6c7fd8]">
+            <Link href="/register" className="hover:text-[#0f766e]">
               Create Account
             </Link>
-            <Link href="/checkout" className="hover:text-[#6c7fd8]">
+            <Link href="/checkout" className="hover:text-[#0f766e]">
               Checkout
             </Link>
           </div>
@@ -166,7 +166,7 @@ export default function Header() {
           />
           <button
             type="submit"
-            className="flex h-12 w-14 items-center justify-center bg-[#6c7fd8] text-white"
+            className="flex h-12 w-14 items-center justify-center bg-[#0f766e] text-white"
             aria-label="Search"
           >
             <Search size={20} />
@@ -176,7 +176,7 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-3">
           <Link
             href="/login"
-            className="hidden items-center gap-2 text-sm text-gray-600 hover:text-[#6c7fd8] sm:flex"
+            className="hidden items-center gap-2 text-sm text-gray-600 hover:text-[#0f766e] sm:flex"
           >
             <User size={21} />
             <span>Account</span>
@@ -184,22 +184,22 @@ export default function Header() {
 
           <Link
             href="/wishlist"
-            className="relative rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#6c7fd8]"
+            className="relative rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#0f766e]"
             aria-label="Wishlist"
           >
             <Heart size={21} />
-            <span className="absolute -right-2 -top-2 grid h-5 w-5 place-items-center rounded-full bg-[#6c7fd8] text-xs text-white">
+            <span className="absolute -right-2 -top-2 grid h-5 w-5 place-items-center rounded-full bg-[#0f766e] text-xs text-white">
               3
             </span>
           </Link>
 
           <Link
             href="/cart"
-            className="relative rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#6c7fd8]"
+            className="relative rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#0f766e]"
             aria-label="Cart"
           >
             <ShoppingBag size={21} />
-            <span className="absolute -right-2 -top-2 grid h-5 w-5 place-items-center rounded-full bg-[#6c7fd8] text-xs text-white">
+            <span className="absolute -right-2 -top-2 grid h-5 w-5 place-items-center rounded-full bg-[#0f766e] text-xs text-white">
               4
             </span>
           </Link>
@@ -212,7 +212,7 @@ export default function Header() {
             <Link
               key={item.label}
               href={item.href}
-              className="font-medium text-[#3d4750] transition hover:text-[#6c7fd8]"
+              className="font-medium text-[#3d4750] transition hover:text-[#0f766e]"
             >
               {item.label}
             </Link>
@@ -320,7 +320,7 @@ function FooterColumn({
           <li key={item}>
             <Link
               href="#"
-              className="text-sm text-[#686e7d] transition hover:text-[#6c7fd8]"
+              className="text-sm text-[#686e7d] transition hover:text-[#0f766e]"
             >
               {item}
             </Link>
@@ -376,22 +376,22 @@ export default function Footer() {
 
           <ul className="space-y-4 text-sm leading-6 text-[#686e7d]">
             <li className="flex gap-3">
-              <MapPin className="mt-1 shrink-0 text-[#6c7fd8]" size={18} />
+              <MapPin className="mt-1 shrink-0 text-[#0f766e]" size={18} />
               <span>971 Lajamni, Motavarachha, Surat, Gujarat, Bharat 394101.</span>
             </li>
 
             <li className="flex items-center gap-3">
-              <Phone className="shrink-0 text-[#6c7fd8]" size={18} />
-              <Link href="tel:+009876543210" className="hover:text-[#6c7fd8]">
+              <Phone className="shrink-0 text-[#0f766e]" size={18} />
+              <Link href="tel:+009876543210" className="hover:text-[#0f766e]">
                 +00 9876543210
               </Link>
             </li>
 
             <li className="flex items-center gap-3">
-              <Mail className="shrink-0 text-[#6c7fd8]" size={18} />
+              <Mail className="shrink-0 text-[#0f766e]" size={18} />
               <Link
                 href="mailto:example@email.com"
-                className="hover:text-[#6c7fd8]"
+                className="hover:text-[#0f766e]"
               >
                 example@email.com
               </Link>
@@ -669,7 +669,7 @@ function ProductCard({
     <article className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative aspect-square overflow-hidden bg-[#f8f8fb]">
         {product.badge && (
-          <span className="absolute left-3 top-3 z-10 rounded-full bg-[#6c7fd8] px-3 py-1 text-xs font-semibold text-white">
+          <span className="absolute left-3 top-3 z-10 rounded-full bg-[#0f766e] px-3 py-1 text-xs font-semibold text-white">
             {product.badge}
           </span>
         )}
@@ -682,7 +682,7 @@ function ProductCard({
       </div>
 
       <div className="p-5">
-        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[#6c7fd8]">
+        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[#0f766e]">
           {product.category}
         </p>
 
@@ -712,7 +712,7 @@ export default function HomePage() {
       <section className="overflow-hidden bg-[#f8f8fb]">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
           <div>
-            <p className="mb-4 font-medium text-[#6c7fd8]">
+            <p className="mb-4 font-medium text-[#0f766e]">
               Hydrate • Heal • Feel Good
             </p>
 
@@ -729,13 +729,13 @@ export default function HomePage() {
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 href="/products"
-                className="rounded-xl bg-[#6c7fd8] px-7 py-3 font-semibold text-white transition hover:bg-[#5667c8]"
+                className="rounded-xl bg-[#0f766e] px-7 py-3 font-semibold text-white transition hover:bg-[#5667c8]"
               >
                 Shop Now
               </Link>
               <Link
                 href="/about-us"
-                className="rounded-xl border border-gray-200 bg-white px-7 py-3 font-semibold text-[#3d4750] transition hover:border-[#6c7fd8] hover:text-[#6c7fd8]"
+                className="rounded-xl border border-gray-200 bg-white px-7 py-3 font-semibold text-[#3d4750] transition hover:border-[#0f766e] hover:text-[#0f766e]"
               >
                 Our Story
               </Link>
@@ -857,13 +857,13 @@ export default function HomePage() {
       <section className="bg-[url('/assets/img/banner-two/banner.png')] bg-cover bg-center py-20">
         <div className="mx-auto max-w-7xl px-4">
           <div className="max-w-lg rounded-3xl bg-white/90 p-8 shadow-sm backdrop-blur">
-            <p className="font-semibold text-[#6c7fd8]">Wellness Offer</p>
+            <p className="font-semibold text-[#0f766e]">Wellness Offer</p>
             <h3 className="mt-3 text-4xl font-bold text-[#3d4750]">
               Natural Drinks for Better Days
             </h3>
             <Link
               href="/products"
-              className="mt-7 inline-flex rounded-xl bg-[#6c7fd8] px-7 py-3 font-semibold text-white"
+              className="mt-7 inline-flex rounded-xl bg-[#0f766e] px-7 py-3 font-semibold text-white"
             >
               Shop Now
             </Link>
@@ -972,7 +972,7 @@ export default function HomePage() {
               />
 
               <div className="p-5">
-                <p className="mb-3 text-xs uppercase tracking-wide text-[#6c7fd8]">
+                <p className="mb-3 text-xs uppercase tracking-wide text-[#0f766e]">
                   {blog.date} - {blog.tag}
                 </p>
                 <h3 className="font-semibold leading-7 text-[#3d4750]">
@@ -985,7 +985,7 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-16">
-        <div className="rounded-3xl bg-[#6c7fd8] px-6 py-12 text-center text-white md:px-12">
+        <div className="rounded-3xl bg-[#0f766e] px-6 py-12 text-center text-white md:px-12">
           <h2 className="text-3xl font-bold md:text-4xl">Newsletter.</h2>
           <p className="mx-auto mt-3 max-w-2xl text-white/85">
             Subscribe for wellness product updates, offers, and healthy daily

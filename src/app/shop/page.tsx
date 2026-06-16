@@ -143,7 +143,7 @@ export default function ShopPage() {
       <section className="section-shop overflow-x-hidden py-[50px] max-[767px]:py-[35px]">
         <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
           <div className="mb-[35px] text-center">
-            <p className="font-Poppins text-[14px] text-[#6c7fd8] font-medium mb-[8px]">
+            <p className="font-Poppins text-[14px] text-[#0f766e] font-medium mb-[8px]">
               Hydrate • Heal • Feel Good
             </p>
             <h1 className="font-quicksand text-[34px] max-[767px]:text-[28px] font-bold text-[#3d4750] mb-[10px]">
@@ -165,7 +165,7 @@ export default function ShopPage() {
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder="Search products..."
-                    className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+                    className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
                   />
                 </div>
 
@@ -269,7 +269,7 @@ export default function ShopPage() {
                 <select
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value)}
-                  className="rounded-[12px] border border-[#e5e7eb] bg-white px-[14px] py-[10px] font-Poppins text-[14px] text-[#4b5563] outline-none focus:border-[#6c7fd8]"
+                  className="rounded-[12px] border border-[#e5e7eb] bg-white px-[14px] py-[10px] font-Poppins text-[14px] text-[#4b5563] outline-none focus:border-[#0f766e]"
                 >
                   <option value="latest">Sort by latest</option>
                   <option value="name">Sort by name</option>

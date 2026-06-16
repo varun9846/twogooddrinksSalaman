@@ -33,9 +33,9 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
       <section className="section-product py-[50px] max-[767px]:py-[35px]">
         <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
           <div className="mb-[25px] font-Poppins text-[14px] text-[#686e7d]">
-            <Link href="/" className="hover:text-[#6c7fd8]">Home</Link>
+            <Link href="/" className="hover:text-[#0f766e]">Home</Link>
             <span className="mx-2">/</span>
-            <Link href="/shop" className="hover:text-[#6c7fd8]">Shop</Link>
+            <Link href="/shop" className="hover:text-[#0f766e]">Shop</Link>
             <span className="mx-2">/</span>
             <span className="text-[#3d4750]">{product.product_name}</span>
           </div>
@@ -51,12 +51,12 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
 
             <div>
               {product.Badge ? (
-                <span className="mb-[14px] inline-block rounded-full bg-[#6c7fd8] px-[12px] py-[5px] font-Poppins text-[12px] font-semibold text-white">
+                <span className="mb-[14px] inline-block rounded-full bg-[#0f766e] px-[12px] py-[5px] font-Poppins text-[12px] font-semibold text-white">
                   {product.Badge}
                 </span>
               ) : null}
 
-              <p className="font-Poppins text-[14px] font-medium text-[#6c7fd8]">
+              <p className="font-Poppins text-[14px] font-medium text-[#0f766e]">
                 {product.product_category}
               </p>
 
@@ -72,7 +72,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
                 <span className="font-quicksand text-[28px] font-bold text-[#3d4750]">
                   {product.price}
                 </span>
-                <span className="rounded-full bg-[#f1f3ff] px-[12px] py-[6px] font-Poppins text-[13px] text-[#6c7fd8]">
+                <span className="rounded-full bg-[#f1f3ff] px-[12px] py-[6px] font-Poppins text-[13px] text-[#0f766e]">
                   {product.Tag}
                 </span>
                 <span className="font-Poppins text-[14px] text-[#686e7d]">
