@@ -71,7 +71,7 @@ function RegisterForm() {
           required
           value={form.name}
           onChange={(event) => updateField("name", event.target.value)}
-          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
           placeholder="Full name"
         />
       </div>
@@ -83,7 +83,7 @@ function RegisterForm() {
           required
           value={form.email}
           onChange={(event) => updateField("email", event.target.value)}
-          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
           placeholder="you@example.com"
         />
       </div>
@@ -96,7 +96,7 @@ function RegisterForm() {
           minLength={6}
           value={form.password}
           onChange={(event) => updateField("password", event.target.value)}
-          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
           placeholder="Minimum 6 characters"
         />
       </div>
@@ -107,7 +107,7 @@ function RegisterForm() {
           <input
             value={form.phone_number}
             onChange={(event) => updateField("phone_number", event.target.value)}
-            className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+            className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
             placeholder="Phone number"
           />
         </div>
@@ -117,7 +117,7 @@ function RegisterForm() {
           <input
             value={form.address}
             onChange={(event) => updateField("address", event.target.value)}
-            className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+            className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
             placeholder="Address"
           />
         </div>
@@ -126,14 +126,14 @@ function RegisterForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-[12px] bg-[#6c7fd8] px-[20px] py-[13px] font-Poppins text-[14px] font-semibold text-white transition hover:bg-[#5a6cb8] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-[12px] bg-[#0f766e] px-[20px] py-[13px] font-Poppins text-[14px] font-semibold text-white transition hover:bg-[#5a6cb8] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Creating account..." : "Create Account"}
       </button>
 
       <p className="text-center font-Poppins text-[14px] text-[#686e7d]">
         Already have an account?{" "}
-        <Link href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-[#6c7fd8]">
+        <Link href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-[#0f766e]">
           Login
         </Link>
       </p>
@@ -146,7 +146,7 @@ export default function RegisterPage() {
     <main>
       <section className="py-[60px]">
         <div className="mx-auto max-w-[760px] rounded-[24px] bg-white p-[32px] shadow-sm md:p-[44px]">
-          <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#6c7fd8]">Join 2gooD</p>
+          <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#0f766e]">Join 2gooD</p>
           <h1 className="mb-[24px] font-quicksand text-[32px] font-bold text-[#3d4750]">Create your account</h1>
           <Suspense>
             <RegisterForm />

@@ -11,10 +11,10 @@ const wellnessCategories = [
 
 const companyLinks = [
   { label: "About us", href: "/about" },
-  { label: "Delivery", href: "/track-order" },
-  { label: "Legal Notice", href: "/faq" },
-  { label: "Terms & conditions", href: "/terms" },
-  { label: "Secure payment", href: "/checkout" },
+  // { label: "Delivery", href: "/track-order" },
+  // { label: "Legal Notice", href: "/faq" },
+  // { label: "Terms & conditions", href: "/terms" },
+  // { label: "Secure payment", href: "/checkout" },
   { label: "Contact us", href: "/contact" },
 ];
 
@@ -68,7 +68,7 @@ function FooterColumn({
           <li key={item.label} className="mb-4">
             <Link
               href={item.href}
-              className="font-Poppins text-[14px] leading-5 text-slate-300 transition hover:text-[#6c7fd8]"
+              className="font-Poppins text-[14px] leading-5 text-slate-300 transition hover:text-[#0f766e]"
             >
               {item.label}
             </Link>
@@ -147,7 +147,7 @@ export default function Footer() {
                 </h4>
                 <ul>
                   <li className="mb-4 flex items-start">
-                    <span className="mr-3 mt-1 text-[#6c7fd8]">📍</span>
+                    <span className="mr-3 mt-1 text-[#0f766e]">📍</span>
                     <p className="font-Poppins text-[14px] leading-7 text-slate-500">
                       Plot No. 24, DIC Industrial Estate, Rania, Kanpur Dehat -
                       209304, Uttar Pradesh, India
@@ -155,38 +155,38 @@ export default function Footer() {
                   </li>
 
                   <li className="mb-4 flex items-center">
-                    <span className="mr-3 text-[#6c7fd8]">☎</span>
+                    <span className="mr-3 text-[#0f766e]">☎</span>
                     <Link
                       href="tel:+919967399880"
-                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#6c7fd8]"
+                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#0f766e]"
                     >
                       +91 99673 99880
                     </Link>
                   </li>
 
                   {/* <li className="mb-4 flex items-center">
-                    <span className="mr-3 text-[#6c7fd8]">💬</span>
+                    <span className="mr-3 text-[#0f766e]">💬</span>
                     <Link
                       href="https://wa.me/919967399880"
                       target="_blank"
-                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#6c7fd8]"
+                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#0f766e]"
                     >
                       Chat on WhatsApp
                     </Link>
                   </li> */}
 
                   <li className="mb-4 flex items-center">
-                    <span className="mr-3 text-[#6c7fd8]">✉</span>
+                    <span className="mr-3 text-[#0f766e]">✉</span>
                     <Link
                       href="mailto:Corporate@gmhospitality.in"
-                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#6c7fd8]"
+                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#0f766e]"
                     >
                       Corporate@gmhospitality.in
                     </Link>
                   </li>
 
                   <li className="mb-5 flex items-start">
-                    <span className="mr-3 mt-1 text-[#6c7fd8]">🕒</span>
+                    <span className="mr-3 mt-1 text-[#0f766e]">🕒</span>
                     <p className="font-Poppins text-[14px] leading-7 text-slate-500">
                       Monday – Saturday
                       <br />
@@ -199,7 +199,7 @@ export default function Footer() {
                     <li className="pr-[5px]">
                       <Link
                         href="#"
-                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
                       >
                         <i className="ri-facebook-fill text-[16px] text-white"></i>
                       </Link>
@@ -208,7 +208,7 @@ export default function Footer() {
                     <li className="pr-[5px]">
                       <Link
                         href="#"
-                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
                       >
                         <i className="ri-twitter-fill text-[16px] text-white"></i>
                       </Link>
@@ -217,7 +217,7 @@ export default function Footer() {
                     <li className="pr-[5px]">
                       <Link
                         href="#"
-                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
                       >
                         <i className="ri-linkedin-fill text-[16px] text-white"></i>
                       </Link>
@@ -226,7 +226,7 @@ export default function Footer() {
                     <li className="pr-[5px]">
                       <Link
                         href="#"
-                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
                       >
                         <i className="ri-instagram-line text-[16px] text-white"></i>
                       </Link>
@@ -244,7 +244,7 @@ export default function Footer() {
               Copyright © 2026{" "}
               <Link
                 href="/"
-                className="font-medium text-[#6c7fd8] transition hover:text-white"
+                className="font-medium text-[#0f766e] transition hover:text-white"
               >
                 2gooD
               </Link>{" "}

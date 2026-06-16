@@ -10,7 +10,7 @@ export default function ContactPage() {
     <main className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
       <section className="grid gap-10 rounded-[32px] bg-white p-8 shadow-sm md:grid-cols-[1.1fr_0.9fr] md:p-12 lg:p-16">
         <div>
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
             {contactContent.eyebrow}
           </p>
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
@@ -29,7 +29,7 @@ export default function ContactPage() {
                 id="name"
                 type="text"
                 placeholder="Your name"
-                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
+                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
               />
             </div>
             <div>
@@ -40,7 +40,7 @@ export default function ContactPage() {
                 id="email"
                 type="email"
                 placeholder="Your email"
-                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
+                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
               />
             </div>
             <div>
@@ -51,12 +51,12 @@ export default function ContactPage() {
                 id="message"
                 rows={5}
                 placeholder="How can we help you?"
-                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
+                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
               />
             </div>
             <button
               type="submit"
-              className="rounded-full bg-[#6c7fd8] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
+              className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
             >
               Send Message
             </button>
@@ -71,7 +71,7 @@ export default function ContactPage() {
           <div className="mt-6 space-y-5 text-sm leading-7 text-slate-600">
             <div>
               <p className="font-semibold text-slate-900">Phone</p>
-              <a href={`tel:${contactContent.phone}`} className="hover:text-[#6c7fd8]">
+              <a href={`tel:${contactContent.phone}`} className="hover:text-[#0f766e]">
                 {contactContent.phone}
               </a>
             </div>
@@ -82,7 +82,7 @@ export default function ContactPage() {
                 href={whatsappHref}
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-[#6c7fd8]"
+                className="hover:text-[#0f766e]"
               >
                 Chat with us on WhatsApp →
               </a>
@@ -90,7 +90,7 @@ export default function ContactPage() {
 
             <div>
               <p className="font-semibold text-slate-900">Email</p>
-              <a href={`mailto:${contactContent.email}`} className="hover:text-[#6c7fd8]">
+              <a href={`mailto:${contactContent.email}`} className="hover:text-[#0f766e]">
                 {contactContent.email}
               </a>
             </div>

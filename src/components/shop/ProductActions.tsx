@@ -79,7 +79,7 @@ export default function ProductActions({ productId, compact = false }: ProductAc
         </button>
       </div>
 
-      {message ? <p className="mt-2 text-center text-[12px] text-[#6c7fd8]">{message}</p> : null}
+      {message ? <p className="mt-2 text-center text-[12px] text-[#0f766e]">{message}</p> : null}
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function AboutSection({ variant = "page" }: AboutSectionProps) {
       <div className="rounded-[32px] bg-white p-8 shadow-sm md:p-12 lg:p-16">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
               {aboutContent.eyebrow}
             </p>
 
@@ -38,13 +38,13 @@ export default function AboutSection({ variant = "page" }: AboutSectionProps) {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/shop"
-                className="rounded-full bg-[#6c7fd8] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
+                className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
               >
                 Order Water
               </Link>
               <Link
                 href="/contact-us"
-                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#6c7fd8] hover:text-[#6c7fd8]"
+                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#0f766e] hover:text-[#0f766e]"
               >
                 Contact Us
               </Link>
@@ -58,7 +58,7 @@ export default function AboutSection({ variant = "page" }: AboutSectionProps) {
             <ul className="mt-6 space-y-5 text-slate-600">
               {aboutContent.highlights.map((highlight) => (
                 <li key={highlight} className="flex gap-3">
-                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-[#6c7fd8]">
+                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
                     ✓
                   </span>
                   <span>{highlight}</span>
@@ -67,7 +67,7 @@ export default function AboutSection({ variant = "page" }: AboutSectionProps) {
             </ul>
 
             <div className="mt-8 rounded-[24px] bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#6c7fd8]">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0f766e]">
                 Our promise
               </p>
               <p className="mt-3 text-sm leading-7 text-slate-600">

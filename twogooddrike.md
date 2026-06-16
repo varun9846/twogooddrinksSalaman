@@ -294,13 +294,13 @@ export default function Header() {
           <p>Hydrate • Heal • Feel Good</p>
 
           <div className="hidden items-center gap-5 md:flex">
-            <Link href="/login" className="hover:text-[#6c7fd8]">
+            <Link href="/login" className="hover:text-[#0f766e]">
               Sign In
             </Link>
-            <Link href="/register" className="hover:text-[#6c7fd8]">
+            <Link href="/register" className="hover:text-[#0f766e]">
               Create Account
             </Link>
-            <Link href="/checkout" className="hover:text-[#6c7fd8]">
+            <Link href="/checkout" className="hover:text-[#0f766e]">
               Checkout
             </Link>
           </div>
@@ -333,7 +333,7 @@ export default function Header() {
           />
           <button
             type="submit"
-            className="flex h-12 w-14 items-center justify-center bg-[#6c7fd8] text-white"
+            className="flex h-12 w-14 items-center justify-center bg-[#0f766e] text-white"
             aria-label="Search"
           >
             <Search size={20} />
@@ -343,7 +343,7 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-3">
           <Link
             href="/login"
-            className="hidden items-center gap-2 text-sm text-gray-600 hover:text-[#6c7fd8] sm:flex"
+            className="hidden items-center gap-2 text-sm text-gray-600 hover:text-[#0f766e] sm:flex"
           >
             <User size={21} />
             <span>Account</span>
@@ -351,22 +351,22 @@ export default function Header() {
 
           <Link
             href="/wishlist"
-            className="relative rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#6c7fd8]"
+            className="relative rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#0f766e]"
             aria-label="Wishlist"
           >
             <Heart size={21} />
-            <span className="absolute -right-2 -top-2 grid h-5 w-5 place-items-center rounded-full bg-[#6c7fd8] text-xs text-white">
+            <span className="absolute -right-2 -top-2 grid h-5 w-5 place-items-center rounded-full bg-[#0f766e] text-xs text-white">
               3
             </span>
           </Link>
 
           <Link
             href="/cart"
-            className="relative rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#6c7fd8]"
+            className="relative rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#0f766e]"
             aria-label="Cart"
           >
             <ShoppingBag size={21} />
-            <span className="absolute -right-2 -top-2 grid h-5 w-5 place-items-center rounded-full bg-[#6c7fd8] text-xs text-white">
+            <span className="absolute -right-2 -top-2 grid h-5 w-5 place-items-center rounded-full bg-[#0f766e] text-xs text-white">
               4
             </span>
           </Link>
@@ -379,7 +379,7 @@ export default function Header() {
             <Link
               key={item.label}
               href={item.href}
-              className="font-medium text-[#3d4750] transition hover:text-[#6c7fd8]"
+              className="font-medium text-[#3d4750] transition hover:text-[#0f766e]"
             >
               {item.label}
             </Link>
@@ -487,7 +487,7 @@ function FooterColumn({
           <li key={item}>
             <Link
               href="#"
-              className="text-sm text-[#686e7d] transition hover:text-[#6c7fd8]"
+              className="text-sm text-[#686e7d] transition hover:text-[#0f766e]"
             >
               {item}
             </Link>
@@ -543,22 +543,22 @@ export default function Footer() {
 
           <ul className="space-y-4 text-sm leading-6 text-[#686e7d]">
             <li className="flex gap-3">
-              <MapPin className="mt-1 shrink-0 text-[#6c7fd8]" size={18} />
+              <MapPin className="mt-1 shrink-0 text-[#0f766e]" size={18} />
               <span>971 Lajamni, Motavarachha, Surat, Gujarat, Bharat 394101.</span>
             </li>
 
             <li className="flex items-center gap-3">
-              <Phone className="shrink-0 text-[#6c7fd8]" size={18} />
-              <Link href="tel:+009876543210" className="hover:text-[#6c7fd8]">
+              <Phone className="shrink-0 text-[#0f766e]" size={18} />
+              <Link href="tel:+009876543210" className="hover:text-[#0f766e]">
                 +00 9876543210
               </Link>
             </li>
 
             <li className="flex items-center gap-3">
-              <Mail className="shrink-0 text-[#6c7fd8]" size={18} />
+              <Mail className="shrink-0 text-[#0f766e]" size={18} />
               <Link
                 href="mailto:example@email.com"
-                className="hover:text-[#6c7fd8]"
+                className="hover:text-[#0f766e]"
               >
                 example@email.com
               </Link>
@@ -836,7 +836,7 @@ function ProductCard({
     <article className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative aspect-square overflow-hidden bg-[#f8f8fb]">
         {product.badge && (
-          <span className="absolute left-3 top-3 z-10 rounded-full bg-[#6c7fd8] px-3 py-1 text-xs font-semibold text-white">
+          <span className="absolute left-3 top-3 z-10 rounded-full bg-[#0f766e] px-3 py-1 text-xs font-semibold text-white">
             {product.badge}
           </span>
         )}
@@ -849,7 +849,7 @@ function ProductCard({
       </div>
 
       <div className="p-5">
-        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[#6c7fd8]">
+        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[#0f766e]">
           {product.category}
         </p>
 
@@ -879,7 +879,7 @@ export default function HomePage() {
       <section className="overflow-hidden bg-[#f8f8fb]">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
           <div>
-            <p className="mb-4 font-medium text-[#6c7fd8]">
+            <p className="mb-4 font-medium text-[#0f766e]">
               Hydrate • Heal • Feel Good
             </p>
 
@@ -896,13 +896,13 @@ export default function HomePage() {
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 href="/products"
-                className="rounded-xl bg-[#6c7fd8] px-7 py-3 font-semibold text-white transition hover:bg-[#5667c8]"
+                className="rounded-xl bg-[#0f766e] px-7 py-3 font-semibold text-white transition hover:bg-[#5667c8]"
               >
                 Shop Now
               </Link>
               <Link
                 href="/about-us"
-                className="rounded-xl border border-gray-200 bg-white px-7 py-3 font-semibold text-[#3d4750] transition hover:border-[#6c7fd8] hover:text-[#6c7fd8]"
+                className="rounded-xl border border-gray-200 bg-white px-7 py-3 font-semibold text-[#3d4750] transition hover:border-[#0f766e] hover:text-[#0f766e]"
               >
                 Our Story
               </Link>
@@ -1024,13 +1024,13 @@ export default function HomePage() {
       <section className="bg-[url('/assets/img/banner-two/banner.png')] bg-cover bg-center py-20">
         <div className="mx-auto max-w-7xl px-4">
           <div className="max-w-lg rounded-3xl bg-white/90 p-8 shadow-sm backdrop-blur">
-            <p className="font-semibold text-[#6c7fd8]">Wellness Offer</p>
+            <p className="font-semibold text-[#0f766e]">Wellness Offer</p>
             <h3 className="mt-3 text-4xl font-bold text-[#3d4750]">
               Natural Drinks for Better Days
             </h3>
             <Link
               href="/products"
-              className="mt-7 inline-flex rounded-xl bg-[#6c7fd8] px-7 py-3 font-semibold text-white"
+              className="mt-7 inline-flex rounded-xl bg-[#0f766e] px-7 py-3 font-semibold text-white"
             >
               Shop Now
             </Link>
@@ -1139,7 +1139,7 @@ export default function HomePage() {
               />
 
               <div className="p-5">
-                <p className="mb-3 text-xs uppercase tracking-wide text-[#6c7fd8]">
+                <p className="mb-3 text-xs uppercase tracking-wide text-[#0f766e]">
                   {blog.date} - {blog.tag}
                 </p>
                 <h3 className="font-semibold leading-7 text-[#3d4750]">
@@ -1152,7 +1152,7 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-16">
-        <div className="rounded-3xl bg-[#6c7fd8] px-6 py-12 text-center text-white md:px-12">
+        <div className="rounded-3xl bg-[#0f766e] px-6 py-12 text-center text-white md:px-12">
           <h2 className="text-3xl font-bold md:text-4xl">Newsletter.</h2>
           <p className="mx-auto mt-3 max-w-2xl text-white/85">
             Subscribe for wellness product updates, offers, and healthy daily
@@ -1350,7 +1350,7 @@ export default function MyCartPage() {
       <section className="py-[50px] max-[767px]:py-[35px]">
         <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
           <div className="mb-[30px] text-center">
-            <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#6c7fd8]">Checkout Preview</p>
+            <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#0f766e]">Checkout Preview</p>
             <h1 className="font-quicksand text-[34px] font-bold text-[#3d4750] max-[767px]:text-[28px]">
               My Cart
             </h1>
@@ -1392,7 +1392,7 @@ export default function MyCartClient() {
         <p className="mt-3 font-Poppins text-[#686e7d]">Add wellness products from the shop to continue.</p>
         <Link
           href="/shop"
-          className="mt-6 inline-flex rounded-[12px] bg-[#6c7fd8] px-[24px] py-[12px] font-Poppins text-[14px] font-semibold text-white hover:bg-[#5a6cb8]"
+          className="mt-6 inline-flex rounded-[12px] bg-[#0f766e] px-[24px] py-[12px] font-Poppins text-[14px] font-semibold text-white hover:bg-[#5a6cb8]"
         >
           Continue Shopping
         </Link>
@@ -1473,7 +1473,7 @@ export default function MyCartClient() {
         </div>
         <Link
           href="/checkout"
-          className="mt-[22px] block w-full rounded-[12px] bg-[#6c7fd8] px-[20px] py-[13px] text-center font-Poppins text-[14px] font-semibold text-white hover:bg-[#5a6cb8]"
+          className="mt-[22px] block w-full rounded-[12px] bg-[#0f766e] px-[20px] py-[13px] text-center font-Poppins text-[14px] font-semibold text-white hover:bg-[#5a6cb8]"
         >
           Pay Now
         </Link>
@@ -1565,7 +1565,7 @@ export default function ProductActions({ productId, compact = false }: ProductAc
           Buy Now
         </button>
       </div>
-      {message ? <p className="mt-2 text-center text-[12px] text-[#6c7fd8]">{message}</p> : null}
+      {message ? <p className="mt-2 text-center text-[12px] text-[#0f766e]">{message}</p> : null}
     </div>
   );
 }
@@ -2435,7 +2435,7 @@ function LoginForm() {
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
           placeholder="you@example.com"
         />
       </div>
@@ -2446,20 +2446,20 @@ function LoginForm() {
           required
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
           placeholder="Enter password"
         />
       </div>
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-[12px] bg-[#6c7fd8] px-[20px] py-[13px] font-Poppins text-[14px] font-semibold text-white transition hover:bg-[#5a6cb8] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-[12px] bg-[#0f766e] px-[20px] py-[13px] font-Poppins text-[14px] font-semibold text-white transition hover:bg-[#5a6cb8] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Signing in..." : "Login"}
       </button>
       <p className="text-center font-Poppins text-[14px] text-[#686e7d]">
         New customer?{" "}
-        <Link href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-[#6c7fd8]">
+        <Link href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-[#0f766e]">
           Create account
         </Link>
       </p>
@@ -2475,7 +2475,7 @@ export default function LoginPage() {
             <img src="/assets/img/login/login.png" alt="Login" className="h-full w-full object-cover" />
           </div>
           <div className="p-[32px] md:p-[44px]">
-            <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#6c7fd8]">Welcome back</p>
+            <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#0f766e]">Welcome back</p>
             <h1 className="mb-[24px] font-quicksand text-[32px] font-bold text-[#3d4750]">Login to continue</h1>
             <Suspense>
               <LoginForm />
@@ -2497,7 +2497,7 @@ export default function AboutPage() {
       <section className="rounded-[32px] bg-white p-10 shadow-sm md:p-16">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
               About 2gooD
             </p>
             <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
@@ -2510,13 +2510,13 @@ export default function AboutPage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/shop"
-                className="rounded-full bg-[#6c7fd8] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
+                className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
               >
                 Browse Wellness Products
               </Link>
               <Link
                 href="/contact-us"
-                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#6c7fd8] hover:text-[#6c7fd8]"
+                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#0f766e] hover:text-[#0f766e]"
               >
                 Contact Us
               </Link>
@@ -2526,19 +2526,19 @@ export default function AboutPage() {
             <h2 className="text-2xl font-semibold text-slate-900">Why 2gooD?</h2>
             <ul className="mt-6 space-y-5 text-slate-600">
               <li className="flex gap-3">
-                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-[#6c7fd8]">
+                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
                   ✓
                 </span>
                 <span>Clean, lifestyle-first product presentation.</span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-[#6c7fd8]">
+                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
                   ✓
                 </span>
                 <span>Reusable components with Next.js routing.</span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-[#6c7fd8]">
+                <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
                   ✓
                 </span>
                 <span>Optimized for future backend integration.</span>
@@ -2718,14 +2718,14 @@ export default function CheckoutPage() {
       <section className="py-[60px]">
         <div className="mx-auto max-w-[760px] px-4">
           <div className="rounded-[24px] bg-white p-[36px] text-center shadow-sm">
-            <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#6c7fd8]">Payment Gateway</p>
+            <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#0f766e]">Payment Gateway</p>
             <h1 className="font-quicksand text-[32px] font-bold text-[#3d4750]">Payment will be integrated later</h1>
             <p className="mt-[14px] font-Poppins text-[15px] leading-[26px] text-[#686e7d]">
               Your cart is ready. The payment provider can be connected here in the next phase.
             </p>
             <Link
               href="/my-cart"
-              className="mt-[24px] inline-flex rounded-[12px] bg-[#6c7fd8] px-[24px] py-[12px] font-Poppins text-[14px] font-semibold text-white hover:bg-[#5a6cb8]"
+              className="mt-[24px] inline-flex rounded-[12px] bg-[#0f766e] px-[24px] py-[12px] font-Poppins text-[14px] font-semibold text-white hover:bg-[#5a6cb8]"
             >
               Back to My Cart
             </Link>
@@ -2744,7 +2744,7 @@ export default function ContactPage() {
     <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
       <section className="grid gap-10 rounded-[32px] bg-white p-10 shadow-sm md:grid-cols-[1.2fr_0.8fr] md:p-16">
         <div>
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
             Get in touch
           </p>
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
@@ -2764,7 +2764,7 @@ export default function ContactPage() {
               id="name"
               type="text"
               placeholder="Your name"
-              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
             />
           </div>
           <div>
@@ -2775,7 +2775,7 @@ export default function ContactPage() {
               id="email"
               type="email"
               placeholder="Your email"
-              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
             />
           </div>
           <div>
@@ -2786,12 +2786,12 @@ export default function ContactPage() {
               id="message"
               rows={5}
               placeholder="How can we help you?"
-              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#6c7fd8]"
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
             />
           </div>
           <button
             type="submit"
-            className="rounded-full bg-[#6c7fd8] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
+            className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
           >
             Send Message
           </button>
@@ -2882,14 +2882,14 @@ export default function HealthyLifestylePage() {
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         {}
         <nav className="mb-8 flex items-center text-[13px] font-medium text-[#686e7d]">
-          <Link href="/" className="hover:text-[#6c7fd8] transition-colors duration-200">Home</Link>
+          <Link href="/" className="hover:text-[#0f766e] transition-colors duration-200">Home</Link>
           <span className="mx-2 text-[#cbd5e1]">/</span>
-          <Link href="/wellness-journal" className="hover:text-[#6c7fd8] transition-colors duration-200">Wellness Journal</Link>
+          <Link href="/wellness-journal" className="hover:text-[#0f766e] transition-colors duration-200">Wellness Journal</Link>
           <span className="mx-2 text-[#cbd5e1]">/</span>
-          <span className="text-[#6c7fd8]">Healthy Lifestyle</span>
+          <span className="text-[#0f766e]">Healthy Lifestyle</span>
         </nav>
         {}
-        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#6c7fd8] via-[#5a6fc9] to-[#4a5cb8] p-8 md:p-16 text-white shadow-[0_20px_40px_-10px_rgba(108,127,216,0.3)] mb-14">
+        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0f766e] via-[#5a6fc9] to-[#4a5cb8] p-8 md:p-16 text-white shadow-[0_20px_40px_-10px_rgba(108,127,216,0.3)] mb-14">
           <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
           <div className="absolute -left-10 bottom-0 h-60 w-60 rounded-full bg-[#2b2b2d]/10 blur-3xl" aria-hidden="true" />
           <div className="relative z-10 max-w-3xl">
@@ -2909,24 +2909,24 @@ export default function HealthyLifestylePage() {
         {}
         <div className="mb-16">
           <div className="mb-8 flex items-center gap-3">
-            <span className="h-8 w-1 rounded-full bg-[#6c7fd8]" />
+            <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
             <h2 className="text-[22px] font-bold text-[#2b2b2d]">The Four Pillars of Vitality</h2>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {lifestylePillars.map((pillar) => (
               <article
                 key={pillar.title}
-                className="group relative flex flex-col justify-between rounded-[24px] border border-[#eef0f4] bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-10px_rgba(43,43,45,0.08)] hover:border-[#6c7fd8]/30"
+                className="group relative flex flex-col justify-between rounded-[24px] border border-[#eef0f4] bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-10px_rgba(43,43,45,0.08)] hover:border-[#0f766e]/30"
               >
                 <div>
                   <div className={`inline-flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold tracking-wide rounded-lg border mb-5 ${pillar.color}`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${pillar.iconColor.replace('text', 'bg')}`} />
                     {pillar.category}
                   </div>
-                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8f9fa] ${pillar.iconColor} transition-colors duration-300 group-hover:bg-[#6c7fd8] group-hover:text-white`}>
+                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8f9fa] ${pillar.iconColor} transition-colors duration-300 group-hover:bg-[#0f766e] group-hover:text-white`}>
                     {pillar.icon}
                   </div>
-                  <h3 className="text-[18px] font-bold leading-[24px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#6c7fd8]">
+                  <h3 className="text-[18px] font-bold leading-[24px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#0f766e]">
                     {pillar.title}
                   </h3>
                   <p className="text-[14px] leading-[24px] text-[#686e7d]">
@@ -2941,10 +2941,10 @@ export default function HealthyLifestylePage() {
         <div className="mb-16">
           <div className="mb-8 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="h-8 w-1 rounded-full bg-[#6c7fd8]" />
+              <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
               <h2 className="text-[22px] font-bold text-[#2b2b2d]">Latest Editorial Insights</h2>
             </div>
-            <Link href="/wellness-journal" className="hidden md:inline-flex items-center gap-1 text-[14px] font-semibold text-[#6c7fd8] hover:text-[#5a6fc9] transition-colors">
+            <Link href="/wellness-journal" className="hidden md:inline-flex items-center gap-1 text-[14px] font-semibold text-[#0f766e] hover:text-[#5a6fc9] transition-colors">
               View all articles
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </Link>
@@ -2959,16 +2959,16 @@ export default function HealthyLifestylePage() {
                 {}
                 <div className="h-40 w-full bg-gradient-to-br from-[#f3f1ff] to-[#eef0f4] relative overflow-hidden">
                   <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity duration-500">
-                    <svg className="w-24 h-24 text-[#6c7fd8]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+                    <svg className="w-24 h-24 text-[#0f766e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
                   </div>
                   <div className="absolute top-4 left-4">
-                    <span className="inline-block rounded-full bg-white/80 backdrop-blur-sm px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#6c7fd8] border border-[#6c7fd8]/20">
+                    <span className="inline-block rounded-full bg-white/80 backdrop-blur-sm px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#0f766e] border border-[#0f766e]/20">
                       {article.tag}
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-col flex-grow p-6">
-                  <h3 className="text-[18px] font-bold leading-[26px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#6c7fd8]">
+                  <h3 className="text-[18px] font-bold leading-[26px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#0f766e]">
                     {article.title}
                   </h3>
                   <p className="text-[14px] leading-[24px] text-[#686e7d] mb-4 flex-grow">
@@ -2983,18 +2983,18 @@ export default function HealthyLifestylePage() {
             ))}
           </div>
           <div className="mt-6 text-center md:hidden">
-            <Link href="/wellness-journal" className="inline-flex items-center gap-1 text-[14px] font-semibold text-[#6c7fd8] hover:text-[#5a6fc9] transition-colors">
+            <Link href="/wellness-journal" className="inline-flex items-center gap-1 text-[14px] font-semibold text-[#0f766e] hover:text-[#5a6fc9] transition-colors">
               View all articles
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
             </Link>
           </div>
         </div>
         {}
-        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#f3f1ff] via-white to-[#f8f9fa] border border-[#6c7fd8]/10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#6c7fd8]/5 blur-3xl" />
+        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#f3f1ff] via-white to-[#f8f9fa] border border-[#0f766e]/10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#0f766e]/5 blur-3xl" />
           <div className="relative z-10 max-w-xl">
             <h3 className="text-[22px] font-bold text-[#2b2b2d] flex items-center gap-3">
-              <svg className="w-6 h-6 text-[#6c7fd8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               Join the 2gooD Wellness Community
@@ -3007,9 +3007,9 @@ export default function HealthyLifestylePage() {
             <input
               type="email"
               placeholder="Enter your email"
-              className="h-12 w-full md:w-72 rounded-xl border border-[#e2e8f0] bg-white px-4 text-[14px] text-[#2b2b2d] outline-none transition-all duration-200 placeholder:text-[#94a3b8] focus:border-[#6c7fd8] focus:ring-4 focus:ring-[#6c7fd8]/10"
+              className="h-12 w-full md:w-72 rounded-xl border border-[#e2e8f0] bg-white px-4 text-[14px] text-[#2b2b2d] outline-none transition-all duration-200 placeholder:text-[#94a3b8] focus:border-[#0f766e] focus:ring-4 focus:ring-[#0f766e]/10"
             />
-            <button className="h-12 whitespace-nowrap inline-flex items-center justify-center rounded-xl bg-[#6c7fd8] px-6 text-[14px] font-semibold text-white shadow-lg shadow-[#6c7fd8]/20 transition-all duration-300 hover:bg-[#2b2b2d] hover:shadow-xl hover:-translate-y-0.5">
+            <button className="h-12 whitespace-nowrap inline-flex items-center justify-center rounded-xl bg-[#0f766e] px-6 text-[14px] font-semibold text-white shadow-lg shadow-[#0f766e]/20 transition-all duration-300 hover:bg-[#2b2b2d] hover:shadow-xl hover:-translate-y-0.5">
               Subscribe
             </button>
           </div>
@@ -3064,19 +3064,19 @@ export default function HerbalBenefitsPage() {
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         {}
         <nav className="mb-8 flex items-center text-[13px] font-medium text-[#686e7d]">
-          <Link href="/" className="hover:text-[#6c7fd8] transition-colors duration-200">Home</Link>
+          <Link href="/" className="hover:text-[#0f766e] transition-colors duration-200">Home</Link>
           <span className="mx-2 text-[#cbd5e1]">/</span>
-          <Link href="/wellness-journal" className="hover:text-[#6c7fd8] transition-colors duration-200">Wellness Journal</Link>
+          <Link href="/wellness-journal" className="hover:text-[#0f766e] transition-colors duration-200">Wellness Journal</Link>
           <span className="mx-2 text-[#cbd5e1]">/</span>
-          <span className="text-[#6c7fd8]">Herbal Drink Benefits</span>
+          <span className="text-[#0f766e]">Herbal Drink Benefits</span>
         </nav>
         {}
         <div className="mb-14 max-w-3xl">
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#6c7fd8]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#6c7fd8]">
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#0f766e]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0f766e]">
             Botanical Almanac
           </span>
           <h1 className="mt-5 text-4xl font-bold tracking-tight text-[#2b2b2d] md:text-5xl leading-[1.15]">
-            The Clinical Advantages of <span className="text-[#6c7fd8]">Standardized Herbal Infusions</span>
+            The Clinical Advantages of <span className="text-[#0f766e]">Standardized Herbal Infusions</span>
           </h1>
           <p className="mt-5 text-[16px] leading-[28px] text-[#686e7d] max-w-2xl">
             Every drink is formulated to marry time-tested Ayurvedic insights with precise contemporary biological standards. Sip with true structural intention.
@@ -3087,7 +3087,7 @@ export default function HerbalBenefitsPage() {
           {benefitsData.map((item) => (
             <article
               key={item.title}
-              className="group relative flex flex-col justify-between rounded-[24px] border border-[#eef0f4] bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-10px_rgba(43,43,45,0.08)] hover:border-[#6c7fd8]/30"
+              className="group relative flex flex-col justify-between rounded-[24px] border border-[#eef0f4] bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-10px_rgba(43,43,45,0.08)] hover:border-[#0f766e]/30"
             >
               <div>
                 {}
@@ -3095,7 +3095,7 @@ export default function HerbalBenefitsPage() {
                   <span className={`h-1.5 w-1.5 rounded-full ${item.iconColor.replace('text', 'bg')}`} />
                   {item.category}
                 </span>
-                <h2 className="text-[18px] font-bold leading-[24px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#6c7fd8]">
+                <h2 className="text-[18px] font-bold leading-[24px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#0f766e]">
                   {item.title}
                 </h2>
                 <p className="text-[14px] leading-[24px] text-[#686e7d] mb-6">
@@ -3119,12 +3119,12 @@ export default function HerbalBenefitsPage() {
           ))}
         </div>
         {}
-        <section className="mt-16 rounded-[32px] bg-gradient-to-br from-[#f3f1ff] via-white to-[#f8f9fa] border border-[#6c7fd8]/10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden">
+        <section className="mt-16 rounded-[32px] bg-gradient-to-br from-[#f3f1ff] via-white to-[#f8f9fa] border border-[#0f766e]/10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden">
           {}
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#6c7fd8]/5 blur-3xl" />
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#0f766e]/5 blur-3xl" />
           <div className="relative z-10 max-w-xl">
             <h3 className="text-[22px] font-bold text-[#2b2b2d] flex items-center gap-3">
-              <svg className="w-6 h-6 text-[#6c7fd8]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               Zero Refined Sugars. Zero Syrups. Pure Extractions.
             </h3>
             <p className="text-[15px] leading-[26px] text-[#686e7d] mt-3">
@@ -3133,7 +3133,7 @@ export default function HerbalBenefitsPage() {
           </div>
           <Link
             href="/shop"
-            className="relative z-10 whitespace-nowrap h-12 inline-flex items-center justify-center rounded-xl bg-[#6c7fd8] px-8 text-[15px] font-semibold text-white shadow-lg shadow-[#6c7fd8]/20 transition-all duration-300 hover:bg-[#2b2b2d] hover:shadow-xl hover:-translate-y-0.5"
+            className="relative z-10 whitespace-nowrap h-12 inline-flex items-center justify-center rounded-xl bg-[#0f766e] px-8 text-[15px] font-semibold text-white shadow-lg shadow-[#0f766e]/20 transition-all duration-300 hover:bg-[#2b2b2d] hover:shadow-xl hover:-translate-y-0.5"
           >
             Shop the Infusions Range
           </Link>
@@ -3164,14 +3164,14 @@ export default function HydrationTipsPage() {
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         {}
         <nav className="mb-8 flex items-center text-[13px] font-medium text-[#686e7d]">
-          <Link href="/" className="hover:text-[#6c7fd8] transition-colors duration-200">Home</Link>
+          <Link href="/" className="hover:text-[#0f766e] transition-colors duration-200">Home</Link>
           <span className="mx-2 text-[#cbd5e1]">/</span>
-          <Link href="/wellness-journal" className="hover:text-[#6c7fd8] transition-colors duration-200">Wellness Journal</Link>
+          <Link href="/wellness-journal" className="hover:text-[#0f766e] transition-colors duration-200">Wellness Journal</Link>
           <span className="mx-2 text-[#cbd5e1]">/</span>
-          <span className="text-[#6c7fd8]">Hydration Tips</span>
+          <span className="text-[#0f766e]">Hydration Tips</span>
         </nav>
         {}
-        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#6c7fd8] via-[#5a6fc9] to-[#4a5cb8] p-8 md:p-16 text-white shadow-[0_20px_40px_-10px_rgba(108,127,216,0.3)] mb-12">
+        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0f766e] via-[#5a6fc9] to-[#4a5cb8] p-8 md:p-16 text-white shadow-[0_20px_40px_-10px_rgba(108,127,216,0.3)] mb-12">
           <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
           <div className="absolute -left-10 bottom-0 h-60 w-60 rounded-full bg-[#2b2b2d]/10 blur-3xl" aria-hidden="true" />
           <div className="relative z-10 max-w-2xl">
@@ -3193,7 +3193,7 @@ export default function HydrationTipsPage() {
             {}
             <div className="rounded-[24px] border border-[#eef0f4] bg-white p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               <h2 className="text-[22px] font-bold text-[#2b2b2d] mb-8 flex items-center gap-3">
-                <span className="h-8 w-1 rounded-full bg-[#6c7fd8]" />
+                <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
                 Strategic Daily Hydration Rules
               </h2>
               <div className="space-y-8">
@@ -3202,23 +3202,23 @@ export default function HydrationTipsPage() {
                     num: "01",
                     title: "The Golden Morning Glass",
                     desc: "Drink 16oz of ambient water immediately upon waking. Sleep naturally dehydrates your system; jumpstart your digestion and wake up your internal organs before adding coffee or food.",
-                    icon: <svg className="w-6 h-6 text-[#6c7fd8]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    icon: <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                   },
                   {
                     num: "02",
                     title: "Interval Sipping Over Gulping",
                     desc: "Your body absorbs fluid best when consumed steadily in small increments. Chugging large volumes overrides renal capacity, sending water straight out of your system without structural absorption.",
-                    icon: <svg className="w-6 h-6 text-[#6c7fd8]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    icon: <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   },
                   {
                     num: "03",
                     title: "Pre-empt Hunger Triggers",
                     desc: "Mild dehydration frequently mimics food cravings in the brain. Drink a glass of water 20 minutes before regular meal slots to ground genuine nutritional signals.",
-                    icon: <svg className="w-6 h-6 text-[#6c7fd8]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                    icon: <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                   }
                 ].map((item) => (
                   <div key={item.num} className="group flex gap-5 items-start">
-                    <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#6c7fd8]/5 text-[#6c7fd8] transition-colors duration-300 group-hover:bg-[#6c7fd8] group-hover:text-white">
+                    <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0f766e]/5 text-[#0f766e] transition-colors duration-300 group-hover:bg-[#0f766e] group-hover:text-white">
                       {item.icon}
                     </div>
                     <div>
@@ -3251,7 +3251,7 @@ export default function HydrationTipsPage() {
 }
             {}
             <div className="relative overflow-hidden rounded-[24px] bg-[#2b2b2d] p-8 text-center text-white shadow-xl">
-              <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-[#6c7fd8]/20 blur-3xl" />
+              <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-[#0f766e]/20 blur-3xl" />
               <div className="relative z-10">
                 <h4 className="text-[20px] font-bold mb-3">Looking for More Flavor?</h4>
                 <p className="text-[14px] text-white/70 leading-[24px] mb-6">
@@ -3259,7 +3259,7 @@ export default function HydrationTipsPage() {
                 </p>
                 <Link
                   href="/shop"
-                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#6c7fd8] px-6 text-[14px] font-semibold text-white transition-all duration-300 hover:bg-white hover:text-[#2b2b2d] hover:shadow-lg"
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0f766e] px-6 text-[14px] font-semibold text-white transition-all duration-300 hover:bg-white hover:text-[#2b2b2d] hover:shadow-lg"
                 >
                   Explore Infusions
                 </Link>
@@ -3387,7 +3387,7 @@ export default function CartSidebar() {
                 <Link
                   href="/login?callbackUrl=/shop"
                   onClick={toggleCart}
-                  className="inline-flex rounded-md bg-[#6c7fd8] px-5 py-3 text-sm font-medium text-white hover:bg-[#5a6cb8]"
+                  className="inline-flex rounded-md bg-[#0f766e] px-5 py-3 text-sm font-medium text-white hover:bg-[#5a6cb8]"
                 >
                   Login
                 </Link>
@@ -3452,7 +3452,7 @@ export default function CartSidebar() {
             <Link
               href="/my-cart"
               onClick={toggleCart}
-              className="block w-full rounded-md bg-[#6c7fd8] py-3 text-center font-medium text-white transition-colors hover:bg-[#5a6cb8]"
+              className="block w-full rounded-md bg-[#0f766e] py-3 text-center font-medium text-white transition-colors hover:bg-[#5a6cb8]"
             >
               View My Cart
             </Link>
@@ -3530,7 +3530,7 @@ function FooterColumn({
           <li key={item.label} className="mb-4">
             <Link
               href={item.href}
-              className="font-Poppins text-[14px] leading-5 text-slate-300 transition hover:text-[#6c7fd8]"
+              className="font-Poppins text-[14px] leading-5 text-slate-300 transition hover:text-[#0f766e]"
             >
               {item.label}
             </Link>
@@ -3601,25 +3601,25 @@ export default function Footer() {
                 </h4>
                 <ul>
                   <li className="mb-4 flex items-start">
-                    <span className="mr-3 mt-1 text-[#6c7fd8]">📍</span>
+                    <span className="mr-3 mt-1 text-[#0f766e]">📍</span>
                     <p className="font-Poppins text-[14px] leading-7 text-slate-500">
                       971 Lajamni, Motavarachha, Surat, Gujarat, Bharat 394101.
                     </p>
                   </li>
                   <li className="mb-4 flex items-center">
-                    <span className="mr-3 text-[#6c7fd8]">☎</span>
+                    <span className="mr-3 text-[#0f766e]">☎</span>
                     <Link
                       href="tel:+009876543210"
-                      className="font-Poppins text-[14px] text-slate-300 transition hover:text-[#6c7fd8]"
+                      className="font-Poppins text-[14px] text-slate-300 transition hover:text-[#0f766e]"
                     >
                       +00 9876543210
                     </Link>
                   </li>
                   <li className="mb-5 flex items-center">
-                    <span className="mr-3 text-[#6c7fd8]">✉</span>
+                    <span className="mr-3 text-[#0f766e]">✉</span>
                     <Link
                       href="mailto:example@email.com"
-                      className="font-Poppins text-[14px] text-slate-300 transition hover:text-[#6c7fd8]"
+                      className="font-Poppins text-[14px] text-slate-300 transition hover:text-[#0f766e]"
                     >
                       example@email.com
                     </Link>
@@ -3629,7 +3629,7 @@ export default function Footer() {
                   <li className="pr-[5px]">
                     <Link
                       href="#"
-                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
                     >
                       <i className="ri-facebook-fill text-[16px] text-white"></i>
                     </Link>
@@ -3637,7 +3637,7 @@ export default function Footer() {
                   <li className="pr-[5px]">
                     <Link
                       href="#"
-                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
                     >
                       <i className="ri-twitter-fill text-[16px] text-white"></i>
                     </Link>
@@ -3645,7 +3645,7 @@ export default function Footer() {
                   <li className="pr-[5px]">
                     <Link
                       href="#"
-                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
                     >
                       <i className="ri-linkedin-fill text-[16px] text-white"></i>
                     </Link>
@@ -3653,7 +3653,7 @@ export default function Footer() {
                   <li className="pr-[5px]">
                     <Link
                       href="#"
-                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
                     >
                       <i className="ri-instagram-line text-[16px] text-white"></i>
                     </Link>
@@ -3670,7 +3670,7 @@ export default function Footer() {
               Copyright © 2026{" "}
               <Link
                 href="/"
-                className="font-medium text-[#6c7fd8] transition hover:text-white"
+                className="font-medium text-[#0f766e] transition hover:text-white"
               >
                 2gooD
               </Link>{" "}
@@ -3755,7 +3755,7 @@ function RegisterForm() {
           required
           value={form.name}
           onChange={(event) => updateField("name", event.target.value)}
-          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
           placeholder="Full name"
         />
       </div>
@@ -3766,7 +3766,7 @@ function RegisterForm() {
           required
           value={form.email}
           onChange={(event) => updateField("email", event.target.value)}
-          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
           placeholder="you@example.com"
         />
       </div>
@@ -3778,7 +3778,7 @@ function RegisterForm() {
           minLength={6}
           value={form.password}
           onChange={(event) => updateField("password", event.target.value)}
-          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+          className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
           placeholder="Minimum 6 characters"
         />
       </div>
@@ -3788,7 +3788,7 @@ function RegisterForm() {
           <input
             value={form.phone_number}
             onChange={(event) => updateField("phone_number", event.target.value)}
-            className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+            className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
             placeholder="Phone number"
           />
         </div>
@@ -3797,7 +3797,7 @@ function RegisterForm() {
           <input
             value={form.address}
             onChange={(event) => updateField("address", event.target.value)}
-            className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+            className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
             placeholder="Address"
           />
         </div>
@@ -3805,13 +3805,13 @@ function RegisterForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-[12px] bg-[#6c7fd8] px-[20px] py-[13px] font-Poppins text-[14px] font-semibold text-white transition hover:bg-[#5a6cb8] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-[12px] bg-[#0f766e] px-[20px] py-[13px] font-Poppins text-[14px] font-semibold text-white transition hover:bg-[#5a6cb8] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Creating account..." : "Create Account"}
       </button>
       <p className="text-center font-Poppins text-[14px] text-[#686e7d]">
         Already have an account?{" "}
-        <Link href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-[#6c7fd8]">
+        <Link href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-[#0f766e]">
           Login
         </Link>
       </p>
@@ -3823,7 +3823,7 @@ export default function RegisterPage() {
     <main>
       <section className="py-[60px]">
         <div className="mx-auto max-w-[760px] rounded-[24px] bg-white p-[32px] shadow-sm md:p-[44px]">
-          <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#6c7fd8]">Join 2gooD</p>
+          <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#0f766e]">Join 2gooD</p>
           <h1 className="mb-[24px] font-quicksand text-[32px] font-bold text-[#3d4750]">Create your account</h1>
           <Suspense>
             <RegisterForm />
@@ -3855,7 +3855,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           />
         </Link>
         {product.Badge && (
-          <span className="absolute top-[15px] left-[15px] bg-[#6c7fd8] text-white text-[12px] font-Poppins px-[12px] py-[4px] rounded-[20px]">
+          <span className="absolute top-[15px] left-[15px] bg-[#0f766e] text-white text-[12px] font-Poppins px-[12px] py-[4px] rounded-[20px]">
             {product.Badge}
           </span>
         )}
@@ -3876,7 +3876,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <h4 className="bb-pro-title mb-[8px] text-[16px] leading-[18px]">
           <Link
             href={`/shop/${product.id}`}
-            className="font-quicksand block whitespace-nowrap overflow-hidden text-ellipsis text-[15px] leading-[18px] text-[#3d4750] font-semibold tracking-[0.03rem] hover:text-[#6c7fd8]"
+            className="font-quicksand block whitespace-nowrap overflow-hidden text-ellipsis text-[15px] leading-[18px] text-[#3d4750] font-semibold tracking-[0.03rem] hover:text-[#0f766e]"
           >
             {product.product_name}
           </Link>
@@ -3895,7 +3895,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </span>
         </div>
         <div className="mt-[14px]">
-          <span className="inline-block text-[12px] font-Poppins text-[#6c7fd8] bg-[#f1f3ff] px-[10px] py-[4px] rounded-full">
+          <span className="inline-block text-[12px] font-Poppins text-[#0f766e] bg-[#f1f3ff] px-[10px] py-[4px] rounded-full">
             {product.Tag}
           </span>
         </div>
@@ -4320,9 +4320,9 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
       <section className="section-product py-[50px] max-[767px]:py-[35px]">
         <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
           <div className="mb-[25px] font-Poppins text-[14px] text-[#686e7d]">
-            <Link href="/" className="hover:text-[#6c7fd8]">Home</Link>
+            <Link href="/" className="hover:text-[#0f766e]">Home</Link>
             <span className="mx-2">/</span>
-            <Link href="/shop" className="hover:text-[#6c7fd8]">Shop</Link>
+            <Link href="/shop" className="hover:text-[#0f766e]">Shop</Link>
             <span className="mx-2">/</span>
             <span className="text-[#3d4750]">{product.product_name}</span>
           </div>
@@ -4336,11 +4336,11 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
             </div>
             <div>
               {product.Badge ? (
-                <span className="mb-[14px] inline-block rounded-full bg-[#6c7fd8] px-[12px] py-[5px] font-Poppins text-[12px] font-semibold text-white">
+                <span className="mb-[14px] inline-block rounded-full bg-[#0f766e] px-[12px] py-[5px] font-Poppins text-[12px] font-semibold text-white">
                   {product.Badge}
                 </span>
               ) : null}
-              <p className="font-Poppins text-[14px] font-medium text-[#6c7fd8]">
+              <p className="font-Poppins text-[14px] font-medium text-[#0f766e]">
                 {product.product_category}
               </p>
               <h1 className="mt-[8px] font-quicksand text-[34px] max-[767px]:text-[28px] font-bold leading-tight text-[#3d4750]">
@@ -4353,7 +4353,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
                 <span className="font-quicksand text-[28px] font-bold text-[#3d4750]">
                   {product.price}
                 </span>
-                <span className="rounded-full bg-[#f1f3ff] px-[12px] py-[6px] font-Poppins text-[13px] text-[#6c7fd8]">
+                <span className="rounded-full bg-[#f1f3ff] px-[12px] py-[6px] font-Poppins text-[13px] text-[#0f766e]">
                   {product.Tag}
                 </span>
                 <span className="font-Poppins text-[14px] text-[#686e7d]">
@@ -4452,14 +4452,14 @@ export default function Header() {
               alt="2gooD Logo"
               className="h-10 w-10 shrink-0 object-contain max-[575px]:h-8 max-[575px]:w-8"
             />
-            <span className="font-Poppins text-3xl font-bold tracking-[0.03rem] text-[#2b2b2d] transition hover:text-[#6c7fd8] max-[575px]:text-2xl">
+            <span className="font-Poppins text-3xl font-bold tracking-[0.03rem] text-[#2b2b2d] transition hover:text-[#0f766e] max-[575px]:text-2xl">
               2gooD
             </span>
           </Link>
           <nav className="hidden items-center gap-8 font-Poppins text-[15px] font-medium text-[#3d4750] lg:flex">
             {navItems.map((item) => (
               <div key={item.label} className="group relative py-3">
-                <Link href={item.href} className="whitespace-nowrap transition hover:text-[#6c7fd8]">
+                <Link href={item.href} className="whitespace-nowrap transition hover:text-[#0f766e]">
                   {item.label}
                 </Link>
                 {item.children?.length ? (
@@ -4468,7 +4468,7 @@ export default function Header() {
                       <li key={child.href}>
                         <Link
                           href={child.href}
-                          className="block rounded-md px-3 py-2 text-sm font-normal text-[#686e7d] transition hover:text-[#6c7fd8]"
+                          className="block rounded-md px-3 py-2 text-sm font-normal text-[#686e7d] transition hover:text-[#0f766e]"
                         >
                           {child.label}
                         </Link>
@@ -4483,7 +4483,7 @@ export default function Header() {
             <div className="group relative">
               <button
                 type="button"
-                className="text-[#3d4750] transition hover:text-[#6c7fd8]"
+                className="text-[#3d4750] transition hover:text-[#0f766e]"
                 aria-label="Account"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -4497,7 +4497,7 @@ export default function Header() {
                       Hi, {session?.user?.name || "Customer"}
                     </li>
                     <li>
-                      <Link href="/my-cart" className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#6c7fd8]">
+                      <Link href="/my-cart" className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#0f766e]">
                         My Cart
                       </Link>
                     </li>
@@ -4505,7 +4505,7 @@ export default function Header() {
                       <button
                         type="button"
                         onClick={() => signOut({ callbackUrl: "/" })}
-                        className="block w-full rounded-md px-3 py-2 text-left text-sm text-[#686e7d] transition hover:text-[#6c7fd8]"
+                        className="block w-full rounded-md px-3 py-2 text-left text-sm text-[#686e7d] transition hover:text-[#0f766e]"
                       >
                         Logout
                       </button>
@@ -4514,12 +4514,12 @@ export default function Header() {
                 ) : (
                   <>
                     <li>
-                      <Link href="/login" className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#6c7fd8]">
+                      <Link href="/login" className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#0f766e]">
                         Sign In
                       </Link>
                     </li>
                     <li>
-                      <Link href="/register" className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#6c7fd8]">
+                      <Link href="/register" className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#0f766e]">
                         Create Account
                       </Link>
                     </li>
@@ -4530,20 +4530,20 @@ export default function Header() {
             <button
               type="button"
               onClick={toggleCart}
-              className="relative text-[#3d4750] transition hover:text-[#6c7fd8]"
+              className="relative text-[#3d4750] transition hover:text-[#0f766e]"
               aria-label="Cart"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
-              <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#6c7fd8] text-[11px] font-bold text-white">
+              <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#0f766e] text-[11px] font-bold text-white">
                 {cartCount}
               </span>
             </button>
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="hidden text-[#3d4750] transition hover:text-[#6c7fd8] max-lg:block"
+              className="hidden text-[#3d4750] transition hover:text-[#0f766e] max-lg:block"
               aria-label="Open menu"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -4564,7 +4564,7 @@ export default function Header() {
           >
             <div className="mb-5 flex items-center justify-between border-b border-[#eee] pb-3">
               <span className="font-Poppins text-base font-semibold text-[#3d4750]">2gooD Menu</span>
-              <span className="rounded-full bg-[#6c7fd8]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6c7fd8]">Menu</span>
+              <span className="rounded-full bg-[#0f766e]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0f766e]">Menu</span>
               <button type="button" onClick={() => setMobileOpen(false)} className="text-2xl text-red-500" aria-label="Close menu">
                 ×
               </button>
@@ -4586,7 +4586,7 @@ export default function Header() {
                           <Link
                             href={child.href}
                             onClick={() => setMobileOpen(false)}
-                            className="block py-2 pl-3 text-sm text-[#777] hover:text-[#6c7fd8]"
+                            className="block py-2 pl-3 text-sm text-[#777] hover:text-[#0f766e]"
                           >
                             {child.label}
                           </Link>
@@ -4679,7 +4679,7 @@ function SectionHeading({
 }) {
   return (
     <div className="mx-auto mb-10 max-w-2xl text-center">
-      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
+      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
         {eyebrow}
       </p>
       <h2 className="mt-3 text-3xl font-semibold text-slate-900 md:text-4xl">
@@ -4694,7 +4694,7 @@ function HomeProductCard({ product }: { product: ProductApiResponse }) {
     <article className="group overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
       <div className="relative overflow-hidden border-b border-slate-100 bg-[#f8f8fb]">
         {product.Badge ? (
-          <span className="absolute left-4 top-4 z-10 rounded-full bg-[#6c7fd8] px-3 py-1 text-xs font-semibold text-white">
+          <span className="absolute left-4 top-4 z-10 rounded-full bg-[#0f766e] px-3 py-1 text-xs font-semibold text-white">
             {product.Badge}
           </span>
         ) : null}
@@ -4725,7 +4725,7 @@ function HomeProductCard({ product }: { product: ProductApiResponse }) {
           </div>
           <Link
             href={`/shop/${product.id}`}
-            className="rounded-full bg-[#6c7fd8] px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
+            className="rounded-full bg-[#0f766e] px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
           >
             View
           </Link>
@@ -4761,11 +4761,11 @@ export default function HomePage() {
       <section className="overflow-hidden bg-[#f6f7ff]">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 md:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
           <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
               Hydrate • Heal • Feel Good
             </p>
             <h1 className="mb-[22px] text-[40px] font-bold leading-[1.12] text-[#3d4750] sm:text-[46px] lg:text-[52px]">
-              Discover <span className="text-[#6c7fd8]">2gooD Wellness</span>{" "}
+              Discover <span className="text-[#0f766e]">2gooD Wellness</span>{" "}
               Products for Everyday Living
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-slate-600">
@@ -4775,13 +4775,13 @@ export default function HomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/shop"
-                className="rounded-full bg-[#6c7fd8] px-7 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
+                className="rounded-full bg-[#0f766e] px-7 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
               >
                 Shop Now
               </Link>
               <Link
                 href="/about-us"
-                className="rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:-translate-y-1 hover:border-[#6c7fd8] hover:text-[#6c7fd8] hover:shadow-lg"
+                className="rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:-translate-y-1 hover:border-[#0f766e] hover:text-[#0f766e] hover:shadow-lg"
               >
                 Our Story
               </Link>
@@ -4842,7 +4842,7 @@ export default function HomePage() {
           <div className="mt-10 text-center">
             <Link
               href="/shop"
-              className="inline-flex rounded-full bg-[#6c7fd8] px-7 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
+              className="inline-flex rounded-full bg-[#0f766e] px-7 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
             >
               View All Products
             </Link>
@@ -4865,7 +4865,7 @@ export default function HomePage() {
             </p>
             <Link
               href="/shop"
-              className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#6c7fd8] hover:text-white"
+              className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:text-white"
             >
               Shop Now
             </Link>
@@ -4886,7 +4886,7 @@ export default function HomePage() {
             </p>
             <Link
               href="/shop"
-              className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#6c7fd8] hover:text-white"
+              className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:text-white"
             >
               Shop Now
             </Link>
@@ -4909,7 +4909,7 @@ export default function HomePage() {
         )}
       </section>
       <section className="mx-auto max-w-7xl px-4 pb-12 pt-16 md:px-6">
-        <div className="group relative overflow-hidden rounded-[24px] bg-[#6c7fd8] p-8 shadow-[0_15px_35px_rgba(108,127,216,0.25)] md:p-14">
+        <div className="group relative overflow-hidden rounded-[24px] bg-[#0f766e] p-8 shadow-[0_15px_35px_rgba(108,127,216,0.25)] md:p-14">
           <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-xl" />
           <div className="absolute -left-20 -bottom-20 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
           <div className="relative z-10 grid items-center gap-8 lg:grid-cols-5">
@@ -4935,7 +4935,7 @@ export default function HomePage() {
                 />
                 <button
                   type="submit"
-                  className="h-12 rounded-[10px] bg-[#2b2b2d] px-7 text-[14px] font-semibold tracking-[0.03rem] text-white transition-all duration-300 hover:bg-white hover:text-[#6c7fd8]"
+                  className="h-12 rounded-[10px] bg-[#2b2b2d] px-7 text-[14px] font-semibold tracking-[0.03rem] text-white transition-all duration-300 hover:bg-white hover:text-[#0f766e]"
                 >
                   Subscribe
                 </button>
@@ -5070,7 +5070,7 @@ export default function ShopPage() {
       <section className="section-shop overflow-x-hidden py-[50px] max-[767px]:py-[35px]">
         <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
           <div className="mb-[35px] text-center">
-            <p className="font-Poppins text-[14px] text-[#6c7fd8] font-medium mb-[8px]">
+            <p className="font-Poppins text-[14px] text-[#0f766e] font-medium mb-[8px]">
               Hydrate • Heal • Feel Good
             </p>
             <h1 className="font-quicksand text-[34px] max-[767px]:text-[28px] font-bold text-[#3d4750] mb-[10px]">
@@ -5091,7 +5091,7 @@ export default function ShopPage() {
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder="Search products..."
-                    className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#6c7fd8]"
+                    className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
                   />
                 </div>
                 <div className="sidebar-block bg-white border border-[#e5e7eb] rounded-[20px] p-[24px] shadow-sm">
@@ -5189,7 +5189,7 @@ export default function ShopPage() {
                 <select
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value)}
-                  className="rounded-[12px] border border-[#e5e7eb] bg-white px-[14px] py-[10px] font-Poppins text-[14px] text-[#4b5563] outline-none focus:border-[#6c7fd8]"
+                  className="rounded-[12px] border border-[#e5e7eb] bg-white px-[14px] py-[10px] font-Poppins text-[14px] text-[#4b5563] outline-none focus:border-[#0f766e]"
                 >
                   <option value="latest">Sort by latest</option>
                   <option value="name">Sort by name</option>
