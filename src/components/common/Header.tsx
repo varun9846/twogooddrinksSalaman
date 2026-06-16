@@ -8,7 +8,7 @@ import { useCartStore } from "@/store/useCartStore";
 
 const navItems = [
   { label: "Home", href: "/" },
-  { label: "Products", href: "/shop" },
+  // { label: "Products", href: "/shop" },
   {
     label: "Wellness Journal",
     href: "/wellness-journal",
