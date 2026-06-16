@@ -10,6 +10,8 @@ function getPriceNumber(price: string) {
 }
 
 export default function ShopPage() {
+
+  //// Make 1 state for page and use it for all. if need only only then make new state.
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
@@ -91,6 +93,7 @@ export default function ShopPage() {
     return result;
   }, [productsState, searchQuery, selectedCategory, selectedPrices, selectedTags, sortBy]);
 
+  // runs on every user intratction
   const hasActiveFilters =
     Boolean(searchQuery) || selectedCategory || selectedPrices.length > 0 || selectedTags.length > 0;
 
@@ -133,7 +136,7 @@ export default function ShopPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, []); 
 
   return (
     <main>
