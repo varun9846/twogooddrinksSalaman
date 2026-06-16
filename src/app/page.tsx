@@ -2,30 +2,32 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import AboutSection from "@/components/common/AboutSection";
+import { homeContent } from "@/lib/site-content";
 import { productsService, type ProductApiResponse } from "@/lib/services/productsService";
 
 const categories = [
   {
-    title: "Wellness Drinks",
-    subtitle: "Pure water & wellness drinks",
+    title: "Packaged Drinking Water",
+    subtitle: "Fresh sealed water for daily hydration",
     icon: "/assets/img/category/1.svg",
     color: "bg-[#fff1f1]",
   },
   {
-    title: "Herbal Care",
-    subtitle: "Natural blends & soothing sips",
+    title: "Home Delivery",
+    subtitle: "Bottles and jars delivered to your door",
     icon: "/assets/img/category/2.svg",
     color: "bg-[#e9fff8]",
   },
   {
-    title: "Jeera Drinks",
-    subtitle: "Refreshing everyday favorites",
+    title: "Office Hydration",
+    subtitle: "Reliable bulk water supply for teams",
     icon: "/assets/img/category/3.svg",
     color: "bg-[#f3f1ff]",
   },
   {
-    title: "Healthy Snacks",
-    subtitle: "Light bites for mindful tasting",
+    title: "Bulk Orders",
+    subtitle: "500ml, 1L packs, and 20L jars",
     icon: "/assets/img/category/4.svg",
     color: "bg-[#fff9e6]",
   },
@@ -62,7 +64,6 @@ function HomeProductCard({ product }: { product: ProductApiResponse }) {
             {product.Badge}
           </span>
         ) : null}
-
         <Link href={`/shop/${product.id}`}>
           <img
             src={product.image}
@@ -71,20 +72,16 @@ function HomeProductCard({ product }: { product: ProductApiResponse }) {
           />
         </Link>
       </div>
-
       <div className="p-6">
         <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
           {product.product_category}
         </p>
-
         <h3 className="mt-3 line-clamp-1 text-xl font-semibold text-slate-900">
           {product.product_name}
         </h3>
-
         <p className="mt-3 line-clamp-2 text-sm leading-7 text-slate-600">
           {product.product_description}
         </p>
-
         <div className="mt-5 flex items-end justify-between gap-3">
           <div>
             <span className="text-lg font-semibold text-slate-900">
@@ -92,7 +89,6 @@ function HomeProductCard({ product }: { product: ProductApiResponse }) {
             </span>
             <p className="mt-1 text-xs text-slate-500">Stock: {product.Stock}</p>
           </div>
-
           <Link
             href={`/shop/${product.id}`}
             className="rounded-full bg-[#6c7fd8] px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
@@ -124,6 +120,7 @@ export default function HomePage() {
     }
 
     loadProducts();
+
     return () => {
       cancelled = true;
     };
@@ -138,42 +135,35 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 md:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
           <div>
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#6c7fd8]">
-              Hydrate • Heal • Feel Good
+              {homeContent.hero.eyebrow}
             </p>
-
-            <h1 className="mb-[22px] text-[40px] font-bold leading-[1.12] text-[#3d4750] sm:text-[46px] lg:text-[52px]">
-              Discover <span className="text-[#6c7fd8]">2gooD Wellness</span>{" "}
-              Products for Everyday Living
+            <h1 className="mb-[22px] text-[42px] font-bold leading-[1.12] text-[#3d4750] sm:text-[50px] lg:text-[62px]">
+              Pure Water. <span className="text-[#6c7fd8]">Pure Life.</span>
             </h1>
-
             <p className="mt-6 max-w-xl text-base leading-8 text-slate-600">
-              Shop pure drinks, herbal infusions, seasonal wellness picks, and
-              mindful essentials made for a brighter daily routine.
+              {homeContent.hero.description}
             </p>
-
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/shop"
+                href={homeContent.hero.ctaHref}
                 className="rounded-full bg-[#6c7fd8] px-7 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
               >
-                Shop Now
+                {homeContent.hero.ctaLabel}
               </Link>
-
               <Link
-                href="/about-us"
+                href={homeContent.hero.secondaryCtaHref}
                 className="rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:-translate-y-1 hover:border-[#6c7fd8] hover:text-[#6c7fd8] hover:shadow-lg"
               >
-                Our Story
+                {homeContent.hero.secondaryCtaLabel}
               </Link>
             </div>
           </div>
-
           <div className="relative flex min-w-0 items-center justify-center">
             <div className="absolute -right-8 top-8 h-[520px] w-[520px] rounded-full bg-[#eef1ff] opacity-60 blur-3xl" />
             <div className="group relative overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.08)]">
               <img
-                src="/assets/img/hero/hero-1.png"
-                alt="2gooD wellness products"
+                src={homeContent.hero.image}
+                alt="2goodplus packaged drinking water"
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
             </div>
@@ -181,12 +171,27 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="relative z-10 mx-auto -mt-8 max-w-7xl px-4 md:px-6">
+        <div className="grid gap-4 rounded-[28px] bg-white p-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:grid-cols-2 lg:grid-cols-4">
+          {homeContent.trustStats.map((stat) => (
+            <div key={stat.title} className="flex items-center gap-4 rounded-[20px] border border-slate-100 bg-white p-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#6c7fd8]/10 text-xl text-[#6c7fd8]">
+                {stat.icon}
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-slate-900">{stat.title}</p>
+                <p className="mt-1 text-xs text-slate-500">{stat.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
         <SectionHeading
-          eyebrow="Shop by wellness"
-          title="Browse healthy drinks, herbal care, jeera blends, and mindful essentials."
+          eyebrow="Water solutions"
+          title="Packaged drinking water for homes, offices, and everyday use."
         />
-
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {categories.map((category) => (
             <Link
@@ -208,13 +213,38 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 md:px-6">
+      <section className="bg-white py-4">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <SectionHeading
+            eyebrow={homeContent.whyChoose.eyebrow}
+            title={homeContent.whyChoose.title}
+            text={homeContent.whyChoose.description}
+          />
+          <div className="grid gap-6 md:grid-cols-3">
+            {homeContent.whyChoose.cards.map((card, index) => (
+              <article
+                key={card.title}
+                className="rounded-[28px] border border-slate-100 bg-[#f8fafc] p-7 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+              >
+                <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#6c7fd8] text-lg font-bold text-white">
+                  {index + 1}
+                </span>
+                <h3 className="text-xl font-semibold text-slate-900">{card.title}</h3>
+                <p className="mt-4 text-sm leading-7 text-slate-600">{card.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <AboutSection variant="home" />
+
+      {/* <section className="mx-auto max-w-7xl px-4 md:px-6">
         <div className="rounded-[32px] bg-white p-8 shadow-sm">
           <SectionHeading
-            eyebrow="Featured wellness picks"
-            title="Customer favorites for taste, hydration, and everyday health."
+            eyebrow="Featured products"
+            title="Order fresh 2goodplus drinking water for daily hydration."
           />
-
           {loading ? (
             <p className="text-center text-sm text-slate-500">Loading featured products…</p>
           ) : (
@@ -224,7 +254,6 @@ export default function HomePage() {
               ))}
             </div>
           )}
-
           <div className="mt-10 text-center">
             <Link
               href="/shop"
@@ -234,60 +263,58 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-16 md:grid-cols-2 md:px-6">
         <article className="group relative overflow-hidden rounded-[30px] bg-[#edf1ff] p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
           <img
             src="/assets/img/banner-one/one.jpg"
-            alt="Healthy drinks"
+            alt="Packaged drinking water for home"
             className="absolute inset-0 h-full w-full object-cover opacity-35 transition-transform duration-700 group-hover:scale-110"
           />
           <div className="relative max-w-sm">
             <h3 className="text-2xl font-semibold text-slate-900">
-              Healthy Drinks & Smart Bites
+              Fresh Water for Your Family
             </h3>
             <p className="mt-3 text-slate-600">
-              Wholesome picks for busy days and mindful routines.
+              Clean packaged drinking water sealed fresh for everyday trust.
             </p>
             <Link
               href="/shop"
               className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#6c7fd8] hover:text-white"
             >
-              Shop Now
+              Order Now
             </Link>
           </div>
         </article>
-
         <article className="group relative overflow-hidden rounded-[30px] bg-[#fff7ea] p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
           <img
             src="/assets/img/banner-one/two.jpg"
-            alt="Pure water and herbal drinks"
+            alt="Bulk packaged water delivery"
             className="absolute inset-0 h-full w-full object-cover opacity-35 transition-transform duration-700 group-hover:scale-110"
           />
           <div className="relative max-w-sm">
             <h3 className="text-2xl font-semibold text-slate-900">
-              Pure Water & Herbal Drinks
+              Bulk Supply for Offices
             </h3>
             <p className="mt-3 text-slate-600">
-              Daily hydration that feels fresh, clean, and uplifting.
+              Need regular water delivery for your office or business? We can help.
             </p>
             <Link
-              href="/shop"
+              href="/contact-us"
               className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#6c7fd8] hover:text-white"
             >
-              Shop Now
+              Contact Us
             </Link>
           </div>
         </article>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
+      {/* <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
         <SectionHeading
-          eyebrow="New wellness arrivals"
-          title="Freshly added drinks, herbs, and healthier essentials."
+          eyebrow="More from 2goodplus"
+          title="Freshly added water packs and hydration essentials."
         />
-
         {loading ? (
           <p className="text-center text-sm text-slate-500">Loading new arrivals…</p>
         ) : (
@@ -297,43 +324,31 @@ export default function HomePage() {
             ))}
           </div>
         )}
-      </section>
+      </section> */}
 
       <section className="mx-auto max-w-7xl px-4 pb-12 pt-16 md:px-6">
         <div className="group relative overflow-hidden rounded-[24px] bg-[#6c7fd8] p-8 shadow-[0_15px_35px_rgba(108,127,216,0.25)] md:p-14">
           <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-xl" />
           <div className="absolute -left-20 -bottom-20 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-
           <div className="relative z-10 grid items-center gap-8 lg:grid-cols-5">
             <div className="text-center lg:col-span-3 lg:text-left">
               <span className="text-[12px] font-bold uppercase tracking-[0.25em] text-white/80">
                 Stay Connected
               </span>
               <h2 className="mt-2 text-3xl font-bold tracking-[0.02rem] text-white md:text-4xl">
-                Subscribe to our Newsletter
+                Need water delivered regularly?
               </h2>
               <p className="mt-3 max-w-xl text-[14px] leading-[24px] text-white/90">
-                Subscribe for wellness updates, best sellers, and fresh,
-                exclusive shopping offers right in your inbox.
+                Send us your requirement for home, office, or bulk supply and our team will get back to you quickly.
               </p>
             </div>
-
-            <div className="w-full lg:col-span-2">
-              <form className="flex w-full flex-col gap-3 rounded-none sm:flex-row sm:items-center sm:gap-2.5 sm:rounded-[12px] sm:border sm:border-white/20 sm:bg-white/10 sm:p-1.5 sm:backdrop-blur-sm">
-                <input
-                  type="email"
-                  placeholder="Enter your email address"
-                  className="h-12 w-full rounded-[10px] border border-white/20 bg-white px-5 text-[14px] text-[#2b2b2d] placeholder-[#686e7d] outline-none"
-                  required
-                />
-
-                <button
-                  type="submit"
-                  className="h-12 rounded-[10px] bg-[#2b2b2d] px-7 text-[14px] font-semibold tracking-[0.03rem] text-white transition-all duration-300 hover:bg-white hover:text-[#6c7fd8]"
-                >
-                  Subscribe
-                </button>
-              </form>
+            <div className="w-full text-center lg:col-span-2 lg:text-right">
+              <Link
+                href="/contact-us"
+                className="inline-flex rounded-[10px] bg-[#2b2b2d] px-7 py-3 text-[14px] font-semibold tracking-[0.03rem] text-white transition-all duration-300 hover:bg-white hover:text-[#6c7fd8]"
+              >
+                Contact 2goodplus
+              </Link>
             </div>
           </div>
         </div>

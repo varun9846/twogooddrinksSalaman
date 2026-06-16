@@ -145,73 +145,93 @@ export default function Footer() {
                 <h4 className="mb-5 border-b border-white/10 pb-4 font-quicksand text-[18px] font-bold text-slate-700">
                   Contact
                 </h4>
-
                 <ul>
                   <li className="mb-4 flex items-start">
                     <span className="mr-3 mt-1 text-[#6c7fd8]">📍</span>
                     <p className="font-Poppins text-[14px] leading-7 text-slate-500">
-                      971 Lajamni, Motavarachha, Surat, Gujarat, Bharat 394101.
+                      Plot No. 24, DIC Industrial Estate, Rania, Kanpur Dehat -
+                      209304, Uttar Pradesh, India
                     </p>
                   </li>
 
                   <li className="mb-4 flex items-center">
                     <span className="mr-3 text-[#6c7fd8]">☎</span>
                     <Link
-                      href="tel:+009876543210"
-                      className="font-Poppins text-[14px] text-slate-300 transition hover:text-[#6c7fd8]"
+                      href="tel:+919967399880"
+                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#6c7fd8]"
                     >
-                      +00 9876543210
+                      +91 99673 99880
                     </Link>
                   </li>
 
-                  <li className="mb-5 flex items-center">
+                  {/* <li className="mb-4 flex items-center">
+                    <span className="mr-3 text-[#6c7fd8]">💬</span>
+                    <Link
+                      href="https://wa.me/919967399880"
+                      target="_blank"
+                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#6c7fd8]"
+                    >
+                      Chat on WhatsApp
+                    </Link>
+                  </li> */}
+
+                  <li className="mb-4 flex items-center">
                     <span className="mr-3 text-[#6c7fd8]">✉</span>
                     <Link
-                      href="mailto:example@email.com"
-                      className="font-Poppins text-[14px] text-slate-300 transition hover:text-[#6c7fd8]"
+                      href="mailto:Corporate@gmhospitality.in"
+                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#6c7fd8]"
                     >
-                      example@email.com
+                      Corporate@gmhospitality.in
                     </Link>
+                  </li>
+
+                  <li className="mb-5 flex items-start">
+                    <span className="mr-3 mt-1 text-[#6c7fd8]">🕒</span>
+                    <p className="font-Poppins text-[14px] leading-7 text-slate-500">
+                      Monday – Saturday
+                      <br />
+                      8:00 AM – 8:00 PM
+                    </p>
                   </li>
                 </ul>
+  {/* 
+                  <ul className="flex flex-wrap items-center">
+                    <li className="pr-[5px]">
+                      <Link
+                        href="#"
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                      >
+                        <i className="ri-facebook-fill text-[16px] text-white"></i>
+                      </Link>
+                    </li>
 
-                <ul className="flex flex-wrap items-center">
-                  <li className="pr-[5px]">
-                    <Link
-                      href="#"
-                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
-                    >
-                      <i className="ri-facebook-fill text-[16px] text-white"></i>
-                    </Link>
-                  </li>
+                    <li className="pr-[5px]">
+                      <Link
+                        href="#"
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                      >
+                        <i className="ri-twitter-fill text-[16px] text-white"></i>
+                      </Link>
+                    </li>
 
-                  <li className="pr-[5px]">
-                    <Link
-                      href="#"
-                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
-                    >
-                      <i className="ri-twitter-fill text-[16px] text-white"></i>
-                    </Link>
-                  </li>
+                    <li className="pr-[5px]">
+                      <Link
+                        href="#"
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                      >
+                        <i className="ri-linkedin-fill text-[16px] text-white"></i>
+                      </Link>
+                    </li>
 
-                  <li className="pr-[5px]">
-                    <Link
-                      href="#"
-                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
-                    >
-                      <i className="ri-linkedin-fill text-[16px] text-white"></i>
-                    </Link>
-                  </li>
-
-                  <li className="pr-[5px]">
-                    <Link
-                      href="#"
-                      className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
-                    >
-                      <i className="ri-instagram-line text-[16px] text-white"></i>
-                    </Link>
-                  </li>
-                </ul>
+                    <li className="pr-[5px]">
+                      <Link
+                        href="#"
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#6c7fd8]"
+                      >
+                        <i className="ri-instagram-line text-[16px] text-white"></i>
+                      </Link>
+                    </li>
+                  </ul> */}
               </div>
             </div>
           </div>
