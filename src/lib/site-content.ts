@@ -6,7 +6,7 @@ export const homeContent = {
     description:
       "Every drop of 2goodplus packaged drinking water is purified through a 7-stage filtration process, tested to BIS standards, and sealed fresh — so you can trust every sip your family takes, every single day.",
     ctaLabel: "Order now →",
-    ctaHref: "/shop",
+    ctaHref: "/about-us",
     secondaryCtaLabel: "Contact for bulk orders",
     secondaryCtaHref: "/contact-us",
     image: "/assets/img/hero/hero-01.png",

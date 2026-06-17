@@ -296,7 +296,7 @@ export default function HomePage() {
               Clean packaged drinking water sealed fresh for everyday trust.
             </p>
             <Link
-              href="/shop"
+              href="/about-us"
               className="mt-6 inline-flex rounded-full bg-[#0f766e] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
             >
               Order Now

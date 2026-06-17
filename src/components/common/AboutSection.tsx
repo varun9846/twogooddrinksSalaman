@@ -37,7 +37,7 @@ export default function AboutSection({ variant = "page" }: AboutSectionProps) {
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/shop"
+                href="/about-us"
                 className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
               >
                 Order Water
