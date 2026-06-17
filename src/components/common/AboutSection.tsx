@@ -15,7 +15,7 @@ export default function AboutSection({ variant = "page" }: AboutSectionProps) {
       <div className="rounded-[32px] bg-white p-8 shadow-sm md:p-12 lg:p-16">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
           <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+            <p className="mb-4 text-xl font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
               {aboutContent.eyebrow}
             </p>
 
@@ -38,7 +38,7 @@ export default function AboutSection({ variant = "page" }: AboutSectionProps) {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/about-us"
-                className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5768b0]"
+                className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold !text-white transition hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
               >
                 Order Water
               </Link>

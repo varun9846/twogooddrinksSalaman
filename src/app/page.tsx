@@ -138,47 +138,53 @@ export default function HomePage() {
 
   return (
     <main className="pb-16">
-      <section className="overflow-hidden bg-[#f6f7ff]">
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 py-14 md:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
-          <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
-              {homeContent.hero.eyebrow}
-            </p>
-            <h1 className="mb-[22px] text-[42px] font-bold leading-[1.12] text-[#3d4750] sm:text-[50px] lg:text-[62px]">
-              Pure Water. <span className="text-[#0f766e]">Pure Life.</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-base leading-8 text-slate-600">
-              {homeContent.hero.description}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={homeContent.hero.ctaHref}
-                className="rounded-full bg-[#0f766e] px-7 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#5768b0] hover:shadow-lg"
-              >
-                {homeContent.hero.ctaLabel}
-              </Link>
-              <Link
-                href={homeContent.hero.secondaryCtaHref}
-                className="rounded-full border border-slate-200 bg-white px-7 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:-translate-y-1 hover:border-[#0f766e] hover:text-[#0f766e] hover:shadow-lg"
-              >
-                {homeContent.hero.secondaryCtaLabel}
-              </Link>
-            </div>
-          </div>
-          <div className="relative flex min-w-0 items-center justify-center">
-            <div className="absolute -right-8 top-8 h-[520px] w-[520px] rounded-full bg-[#eef1ff] opacity-60 blur-3xl" />
-            <div className="group relative overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.08)]">
-              <img
-                src={homeContent.hero.image}
-                alt="2goodplus packaged drinking water"
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+    
+      <section className="relative overflow-hidden bg-[#f6f7ff]">
+        <div className="relative min-h-[430px] lg:min-h-[460px]">
+          <img
+            src={homeContent.hero.image}
+            alt="2goodplus packaged drinking water"
+            className="absolute inset-0 h-full w-full object-cover object-bottom"
+          />
+
+          {/* dark/white overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/40 to-transparent" />
+
+          <div className="relative z-10 mx-auto flex min-h-[430px] max-w-7xl items-center px-4 py-16 md:px-6 lg:min-h-[460px]">
+            <div className="max-w-2xl py-8">
+              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+                {homeContent.hero.eyebrow}
+              </p>
+
+              <h1 className="mb-6 text-[42px] font-bold leading-[1.12] text-[#3d4750] sm:text-[52px] lg:text-[68px]">
+               <span className="text-[#0f766e]">  Pure Water.Pure Life.</span>
+              </h1>
+
+              <p className="max-w-xl text-base leading-8 text-slate-700">
+                {homeContent.hero.description}
+              </p>
+
+              <div className="mt-9 flex flex-wrap items-center gap-4">
+                <Link
+                  href={homeContent.hero.ctaHref}
+                  className="rounded-full bg-[#0f766e] px-5 py-4 text-base font-semibold !text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
+                >
+                  {homeContent.hero.ctaLabel}
+                </Link>
+
+                <Link
+                  href={homeContent.hero.secondaryCtaHref}
+                  className="rounded-full border border-[#0f766e]/30 bg-white px-5 py-4 text-base font-semibold text-[#0f766e] transition-all duration-300 hover:-translate-y-1 hover:border-[#0f766e] hover:bg-[#0f766e] hover:text-white hover:shadow-xl"
+                >
+                  {homeContent.hero.secondaryCtaLabel} →
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto -mt-8 max-w-7xl px-4 md:px-6">
+      <section className="relative z-10 mx-auto mt-8 max-w-7xl px-4 md:px-6">
         <div className="grid gap-4 rounded-[28px] bg-white p-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:grid-cols-2 lg:grid-cols-4">
           {homeContent.trustStats.map((stat) => (
             <div
@@ -297,7 +303,7 @@ export default function HomePage() {
             </p>
             <Link
               href="/about-us"
-              className="mt-6 inline-flex rounded-full bg-[#0f766e] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
+              className="mt-6 inline-flex rounded-full bg-[#0f766e] px-5 py-3 text-sm font-semibold !text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
             >
               Order Now
             </Link>

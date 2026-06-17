@@ -9,6 +9,13 @@ const wellnessCategories = [
   { label: "Wellness Bundles", href: "/shop" },
 ];
 
+const ProductsAndServices = [
+  { label: "Natural Drinking Water", href: "/contact-us" },
+  { label: "Hydration Drinks", href: "/contact-us" },
+  { label: "Bulk Orders", href: "/contact-us" },
+  { label: "Home Delivery", href: "/contact-us" },
+];
+
 const companyLinks = [
   { label: "About us", href: "/about" },
   // { label: "Delivery", href: "/track-order" },
@@ -94,7 +101,6 @@ export default function Footer() {
                     alt="2gooD logo icon"
                     className="h-16 w-16 shrink-0 object-contain"
                   />
-                 
                 </Link>
 
                 <p className="mb-7 max-w-[400px] font-Poppins text-[14px] leading-[27px] text-slate-500">
@@ -123,18 +129,13 @@ export default function Footer() {
             </div>
 
             <div className="w-full px-3 sm:w-1/2  lg:w-[16.66%]">
-              <FooterColumn
-                title="Wellness Categories"
-                links={wellnessCategories}
-              />
+              <FooterColumn title="Products" links={ProductsAndServices} />
             </div>
-
-            <div className="w-full px-3 sm:w-1/2 lg:w-[16.66%]">
-              <FooterColumn title="Company" links={companyLinks} />
-            </div>
-
             <div className="w-full px-3 sm:w-1/2 text-slate-700 lg:w-[16.66%]">
               <FooterColumn title="Account" links={accountLinks} />
+            </div>
+            <div className="w-full px-3 sm:w-1/2 lg:w-[16.66%]">
+              <FooterColumn title="Company" links={companyLinks} />
             </div>
 
             {/* Contact */}
@@ -192,7 +193,7 @@ export default function Footer() {
                     </p>
                   </li>
                 </ul>
-  {/* 
+                {/* 
                   <ul className="flex flex-wrap items-center">
                     <li className="pr-[5px]">
                       <Link
