@@ -9,7 +9,7 @@ export const homeContent = {
     ctaHref: "/about-us",
     secondaryCtaLabel: "Contact for bulk orders",
     secondaryCtaHref: "/contact-us",
-    image: "/assets/img/hero/hero-01.png",
+    image: "/assets/img/hero/hero-b1.png",
   },
   trustStats: [
     {
