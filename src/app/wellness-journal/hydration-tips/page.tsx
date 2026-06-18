@@ -159,7 +159,7 @@ export default function HydrationTipsPage() {
               <div className="relative z-10">
                 <h4 className="text-[20px] font-bold mb-3">Looking for More Flavor?</h4>
                 <p className="text-[14px] text-white/70 leading-[24px] mb-6">
-                  Infuse your routine with trace minerals and botanicals using our curated 2gooD Wellness Water blends.
+                  Infuse your routine with trace minerals and botanicals using our curated 2good Plus Wellness Water blends.
                 </p>
                 <Link
                   href="/shop"
