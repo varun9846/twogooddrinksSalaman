@@ -204,24 +204,7 @@ export default function ShopPage() {
                   </ul>
                 </div>
 
-                <div className="sidebar-block bg-white border border-[#e5e7eb] rounded-[20px] p-[24px] shadow-sm">
-                  <h4 className="font-quicksand text-[18px] font-bold text-[#1f2937] mb-[18px]">
-                    Price Range
-                  </h4>
-                  <div className="space-y-[12px]">
-                    {["Under $15", "$15 - $30", "Above $30"].map((range) => (
-                      <label key={range} className="flex items-center gap-[10px] font-Poppins text-[14px] text-[#4b5563] cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={selectedPrices.includes(range)}
-                          onChange={() => handlePriceChange(range)}
-                          className="w-4 h-4 accent-[#4f46e5]"
-                        />
-                        {range}
-                      </label>
-                    ))}
-                  </div>
-                </div>
+                
 
                 <div className="sidebar-block bg-white border border-[#e5e7eb] rounded-[20px] p-[24px] shadow-sm">
                   <h4 className="font-quicksand text-[18px] font-bold text-[#1f2937] mb-[18px]">

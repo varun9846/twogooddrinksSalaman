@@ -39,6 +39,14 @@ const categories = [
   },
 ];
 
+const bulkOrderItems = [
+  "Corporate Orders",
+  "Events & Weddings",
+  "Hotels & Restaurants",
+  "Retailers & Distributors",
+  "Schools & Institutions",
+];
+
 function SectionHeading({
   eyebrow,
   title,
@@ -141,44 +149,42 @@ export default function HomePage() {
 
   return (
     <main className="overflow-hidden pb-6">
-      <section className="water-ripple relative overflow-hidden bg-[#f6f7ff]">
+      <section className="water-ripple relative isolate overflow-hidden bg-[#f6f7ff]">
         <WaterDroplets />
-        <div className="relative min-h-[360px] lg:min-h-[410px]">
+        <div className="relative min-h-[unset] sm:min-h-[420px] lg:min-h-[500px]">
           <img
             src={homeContent.hero.image}
             alt="2goodplus packaged drinking water"
-            className="absolute inset-0 h-full w-full object-cover object-bottom"
+            className="absolute inset-0 h-full w-full object-cover object-[68%_center] opacity-35 sm:object-center sm:opacity-100"
           />
 
-          {/* dark/white overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/82 to-white/55 sm:bg-gradient-to-r sm:from-white/95 sm:via-white/65 sm:to-transparent" />
 
-          <div className="relative z-10 mx-auto flex min-h-[360px] max-w-7xl items-center px-4 py-8 md:px-6 lg:min-h-[410px]">
-            <div className="max-w-2xl py-4">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+          <div className="relative z-10 mx-auto flex min-h-[unset] max-w-7xl items-center px-4 py-10 sm:min-h-[420px] sm:px-6 sm:py-14 lg:min-h-[500px] lg:py-16">
+            <div className="w-full max-w-[620px] text-center sm:text-left">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#0f766e] sm:mb-4 sm:text-sm">
                 {homeContent.hero.eyebrow}
               </p>
 
-              <h1 className="mb-4 text-[40px] font-bold leading-[1.08] text-[#3d4750] sm:text-[50px] lg:text-[64px]">
-                {" "}
-                <span className="text-[#0f766e]">PureWater. Pure Life.</span>
+              <h1 className="mb-4 text-[clamp(32px,11vw,44px)] font-bold leading-[1.08] text-[#3d4750] sm:text-[54px] lg:text-[68px]">
+                <span className="text-[#0f766e]">Pure Water. Pure Life.</span>
               </h1>
 
-              <p className="max-w-xl text-base leading-8 text-slate-700 sm:text-lg">
+              <p className="mx-auto max-w-xl text-sm leading-7 text-slate-700 sm:mx-0 sm:text-base sm:leading-8 lg:text-lg">
                 {homeContent.hero.description}
               </p>
 
-              <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+              <div className="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-4">
                 <Link
                   href={homeContent.hero.ctaHref}
-                  className="water-ripple relative overflow-hidden rounded-full bg-[#0f766e] px-5 py-4 text-base font-semibold !text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52]"
+                  className="water-ripple relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-[#0f766e] px-6 py-3.5 text-sm font-semibold !text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52] sm:w-auto sm:px-7 sm:py-4 sm:text-base"
                 >
                   {homeContent.hero.ctaLabel}
                 </Link>
 
                 <Link
                   href={homeContent.hero.secondaryCtaHref}
-                  className="water-ripple relative overflow-hidden rounded-full border border-[#0f766e]/30 bg-white px-5 py-4 text-base font-semibold !text-black transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:!text-white"
+                  className="water-ripple relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-[#0f766e]/30 bg-white/95 px-6 py-3.5 text-sm font-semibold !text-[#0f172a] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:!text-white sm:w-auto sm:px-7 sm:py-4 sm:text-base"
                 >
                   {homeContent.hero.secondaryCtaLabel} →
                 </Link>
@@ -276,6 +282,82 @@ export default function HomePage() {
       <DeliveryCoverage />
       <WaterWaveDivider />
 
+      <section className="relative overflow-hidden bg-[#f8fafc] px-4 py-16 md:px-6 md:py-20">
+        <WaterDroplets />
+        <div className="relative z-10 mx-auto max-w-7xl">
+          <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="rounded-[32px] bg-white p-6 shadow-[0_20px_55px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+                Bulk Orders
+              </p>
+              <h2 className="mt-3 text-3xl font-bold leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                Need bulk quantities for your business or event?
+              </h2>
+              <p className="mt-5 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8">
+                Ideal for hotels, restaurants, institutions, offices, retailers,
+                and distributors. Bulk order rates and dealership pricing are
+                negotiable based on quantity requirements.
+              </p>
+
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link
+                  href="/contact-us"
+                  className="water-ripple relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-[#0f766e] px-7 py-4 text-sm font-bold !text-white shadow-[0_12px_30px_rgba(15,118,110,0.25)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52] sm:w-auto"
+                >
+                  For Bulk Orders contact us
+                </Link>
+                <a
+                  href="tel:+919967399880"
+                  className="inline-flex w-full items-center justify-center rounded-full border border-[#0f766e]/25 bg-white px-7 py-4 text-sm font-bold text-[#0f766e] transition-all duration-300 hover:-translate-y-1 hover:bg-[#e8f7f4] sm:w-auto"
+                >
+                  Call +91 99673 99880
+                </a>
+              </div>
+            </div>
+
+            <div className="rounded-[32px] bg-[#0f766e] p-6 text-white shadow-[0_20px_55px_rgba(15,118,110,0.22)] sm:p-8 lg:p-10">
+              <div className="mb-6 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/70">
+                    Bulk Order Information
+                  </p>
+                  <h3 className="mt-3 text-2xl font-bold sm:text-3xl">
+                    Customized pricing for
+                  </h3>
+                </div>
+                <span className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/15 text-2xl sm:flex">
+                  💧
+                </span>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {bulkOrderItems.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white ring-1 ring-white/15"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#0f766e]">
+                      ✓
+                    </span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-7 rounded-3xl bg-white/10 p-5 ring-1 ring-white/15">
+                <p className="text-sm leading-7 text-white/85">
+                  Contact us with your quantity requirement, delivery location,
+                  and frequency. Our team will share a custom quotation for your
+                  order.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <WaterWaveDivider />
+
       {/* <section className="mx-auto max-w-7xl px-4 md:px-6">
         <div className="rounded-[32px] bg-white p-8 shadow-sm">
           <SectionHeading
@@ -317,7 +399,7 @@ export default function HomePage() {
               Clean packaged drinking water sealed fresh for everyday trust.
             </p>
             <Link
-              href="/about-us"
+              href="/shop"
               className="water-ripple relative mt-6 inline-flex overflow-hidden rounded-full bg-[#0f766e] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52]"
             >
               Order Now

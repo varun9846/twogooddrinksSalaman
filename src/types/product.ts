@@ -8,6 +8,8 @@ export interface ProductDto {
   image: string;
   Badge?: string;
   Tag: string;
+  isActive: boolean;
+  product_packsize: number;
 }
 
 export interface ProductsListResponse {

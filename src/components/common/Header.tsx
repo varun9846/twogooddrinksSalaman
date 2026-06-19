@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/useCartStore";
 
 const navItems = [
   { label: "Home", href: "/" },
+  { label: "Products", href: "/shop" },
 
   { label: "About Us", href: "/about-us" },
   { label: "Contact Us", href: "/contact-us" },
@@ -139,7 +140,7 @@ export default function Header() {
                 )}
               </ul>
             </div>
-
+{/* 
             <button
               type="button"
               onClick={toggleCart}
@@ -163,7 +164,7 @@ export default function Header() {
               <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#0f766e] text-[11px] font-bold text-white">
                 {cartCount}
               </span>
-            </button>
+            </button> */}
             <a
               href="tel:+919967399880"
               className="hidden lg:flex items-center gap-3 rounded-full bg-[#0f766e] px-4 py-2 text-white shadow-md transition hover:bg-[#0d5f59]"

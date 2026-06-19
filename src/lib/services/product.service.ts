@@ -3,10 +3,12 @@ import { prisma } from "@/lib/prisma";
 import type { ProductDto } from "@/types/product";
 
 export async function getAllProducts(): Promise<ProductDto[]> {
-  const products = await prisma.product.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  
 
+ const products = await prisma.product.findMany({
+  where: { isActive: true },
+  orderBy: { createdAt: "desc"},
+});
   return toProductDtoList(products);
 }
 

@@ -6,6 +6,7 @@ export function toProductDto(product: Product): ProductDto {
   return {
     id: product.id,
     product_name: product.productName,
+    product_packsize: product.productPacksize,
     product_description: product.productDescription,
     product_category: product.productCategory,
     price: formatPrice(product.price),
@@ -13,6 +14,7 @@ export function toProductDto(product: Product): ProductDto {
     image: product.image,
     Badge: product.badge ?? undefined,
     Tag: product.tag ?? "",
+    isActive: true,
   };
 }
 
