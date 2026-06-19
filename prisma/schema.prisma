@@ -41,6 +41,8 @@ model Product {
   createdAt           DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt           DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   orderItems          OrderItem[]
+  isActive           Boolean  @default(true) @map("is_active")
+  productPacksize    Int      @default(12) @map("product_packsize")
 
   @@map("products")
 }

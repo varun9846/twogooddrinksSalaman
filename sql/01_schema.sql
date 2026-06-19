@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS products (
   product_name VARCHAR(255) NOT NULL,
   product_description TEXT NOT NULL,
   product_category VARCHAR(150) NOT NULL,
+  product_packsize INTEGER NOT NULL DEFAULT 1 CHECK (product_packsize > 0),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
   price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
   stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
   image TEXT NOT NULL,

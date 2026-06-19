@@ -28,10 +28,10 @@ const companyLinks = [
 const accountLinks = [
   { label: "Sign In", href: "/login" },
   { label: "View Cart", href: "/cart" },
-  { label: "Return Policy", href: "/faq" },
-  { label: "Become a Vendor", href: "/shop" },
-  { label: "Affiliate Program", href: "/products" },
-  { label: "Payments", href: "/checkout" },
+  // { label: "Return Policy", href: "/faq" },
+  // { label: "Become a Vendor", href: "/shop" },
+  // { label: "Affiliate Program", href: "/products" },
+  // { label: "Payments", href: "/checkout" },
 ];
 
 const socialLinks = [
@@ -104,11 +104,14 @@ export default function Footer() {
                 </Link>
 
                 <p className="mb-7 max-w-[400px] font-Poppins text-[14px] leading-[27px] text-slate-500">
-                  2gooD is the biggest market of grocery products. Get your
-                  daily needs from our store.
+                  2good plus is committed to delivering pure, safe, and refreshing
+                  packaged drinking water. With advanced purification processes
+                  and strict quality standards, we ensure every bottle provides
+                  freshness and trust for homes, offices, events, and
+                  businesses.
                 </p>
 
-                <div className="-m-[7px] flex flex-wrap">
+                {/* <div className="-m-[7px] flex flex-wrap">
                   <Link href="#" className="m-[7px]">
                     <img
                       src="/assets/img/app/android.png"
@@ -124,7 +127,7 @@ export default function Footer() {
                       className="max-w-[140px] rounded-[5px] max-[1399px]:max-w-[120px]"
                     />
                   </Link>
-                </div>
+                </div> */}
               </div>
             </div>
 

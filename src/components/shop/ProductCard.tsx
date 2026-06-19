@@ -62,7 +62,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
 
           <span className="font-Poppins text-[13px] text-[#777]">
-            Stock: {product.Stock}
+            Pack Size: {product.product_packsize}
           </span>
         </div>
 

@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/useCartStore";
 
 const navItems = [
   { label: "Home", href: "/" },
+  { label: "Products", href: "/shop" },
 
   { label: "About Us", href: "/about-us" },
   { label: "Contact Us", href: "/contact-us" },
@@ -45,7 +46,7 @@ export default function Header() {
   const cartCount = cart?.item_count || 0;
 
   return (
-    <header className="bb-header sticky top-0 z-50 border-b border-[#eee] bg-white/95 backdrop-blur-sm">
+    <header className="bb-header fixed left-0 top-0 z-[999] w-full border-b border-[#eee] bg-white/95 shadow-sm backdrop-blur-md">
       <div className="py-5 max-[991px]:py-4">
         <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-8 px-4 max-[767px]:gap-4">
           <Link href="/" className="flex shrink-0 items-center gap-2">
@@ -66,28 +67,13 @@ export default function Header() {
                 >
                   {item.label}
                 </Link>
-
-                {/* {item.children?.length ? (
-                  <ul className="invisible absolute left-0 top-full z-30 min-w-[230px] rounded-[10px] border border-[#eee] bg-white p-3 opacity-0 shadow-lg transition-all duration-300 group-hover:visible group-hover:opacity-100">
-                    {item.children.map((child) => (
-                      <li key={child.href}>
-                        <Link
-                          href={child.href}
-                          className="block rounded-md px-3 py-2 text-sm font-normal text-[#686e7d] transition hover:text-[#0f766e]"
-                        >
-                          {child.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null} */}
               </div>
             ))}
           </nav>
 
           <div className="flex shrink-0 items-center gap-5 max-[575px]:gap-4">
             <div className="group relative">
-              <button
+              {/* <button
                 type="button"
                 className="text-[#3d4750] transition hover:text-[#0f766e]"
                 aria-label="Account"
@@ -106,7 +92,7 @@ export default function Header() {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-              </button>
+              </button> */}
 
               <ul className="invisible absolute right-0 top-full z-30 mt-4 min-w-[190px] rounded-[10px] border border-[#eee] bg-white p-2 opacity-0 shadow-lg transition-all duration-300 group-hover:visible group-hover:opacity-100">
                 {status === "authenticated" ? (
@@ -154,7 +140,7 @@ export default function Header() {
                 )}
               </ul>
             </div>
-
+{/* 
             <button
               type="button"
               onClick={toggleCart}
@@ -178,7 +164,18 @@ export default function Header() {
               <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#0f766e] text-[11px] font-bold text-white">
                 {cartCount}
               </span>
-            </button>
+            </button> */}
+            <a
+              href="tel:+919967399880"
+              className="hidden lg:flex items-center gap-3 rounded-full bg-[#0f766e] px-4 py-2 text-white shadow-md transition hover:bg-[#0d5f59]"
+            >
+              <i className="ri-phone-fill text-lg text-white" />
+              <div className="leading-tight">
+                
+                
+                <p className="text-xs text-white">+91 99673 99880</p>
+              </div>
+            </a>
 
             <button
               type="button"
@@ -216,7 +213,7 @@ export default function Header() {
           >
             <div className="mb-5 flex items-center justify-between border-b border-[#eee] pb-3">
               <span className="font-Poppins text-base font-semibold text-[#3d4750]">
-                2gooD Menu
+                2good Plus Menu
               </span>
               <span className="rounded-full bg-[#0f766e]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0f766e]">
                 Menu
