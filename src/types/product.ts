@@ -6,10 +6,10 @@ export interface ProductDto {
   price: string;
   Stock: number;
   image: string;
-  Badge?: string;
+  Badge?: string | null;
   Tag: string;
-  isActive: boolean;
-  product_packsize: number;
+  isActive?: boolean;
+  product_packsize?: number | null;
 }
 
 export interface ProductsListResponse {

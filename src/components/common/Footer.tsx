@@ -1,60 +1,33 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
-const wellnessCategories = [
-  { label: "Natural Drinking Water", href: "/shop" },
-  { label: "Jeera Wellness Drinks", href: "/shop" },
-  { label: "Herbal Infusions", href: "/shop" },
-  { label: "Flavoured Wellness Drinks", href: "/shop" },
-  { label: "Healthy Drinks", href: "/shop" },
-  { label: "Wellness Bundles", href: "/shop" },
-];
-
-const ProductsAndServices = [
-  { label: "Natural Drinking Water", href: "/contact-us" },
-  { label: "Hydration Drinks", href: "/contact-us" },
+const productLinks = [
+  { label: "Packaged Drinking Water", href: "/shop?category=Packaged%20Drinking%20Water" },
+  { label: "Healthy Drinks", href: "/shop?category=Healthy%20Drinks" },
+  { label: "Herbal Infusions", href: "/shop?category=Herbal%20Infusions" },
   { label: "Bulk Orders", href: "/contact-us" },
-  { label: "Home Delivery", href: "/contact-us" },
 ];
 
 const companyLinks = [
-  { label: "About us", href: "/about" },
-  // { label: "Delivery", href: "/track-order" },
-  // { label: "Legal Notice", href: "/faq" },
-  // { label: "Terms & conditions", href: "/terms" },
-  // { label: "Secure payment", href: "/checkout" },
-  { label: "Contact us", href: "/contact" },
+  { label: "About us", href: "/about-us" },
+  { label: "Contact us", href: "/contact-us" },
+  { label: "Shop", href: "/shop" },
+  { label: "My Cart", href: "/my-cart" },
 ];
 
 const accountLinks = [
   { label: "Sign In", href: "/login" },
-  { label: "View Cart", href: "/cart" },
-  // { label: "Return Policy", href: "/faq" },
-  // { label: "Become a Vendor", href: "/shop" },
-  // { label: "Affiliate Program", href: "/products" },
-  // { label: "Payments", href: "/checkout" },
+  { label: "Create Account", href: "/register" },
+  { label: "Checkout", href: "/checkout" },
 ];
 
 const socialLinks = [
-  {
-    name: "facebook",
-    icon: "/assets/img/social/facebook.svg",
-    href: "#",
-  },
-  {
-    name: "twitter",
-    icon: "/assets/img/social/twitter.svg",
-    href: "#",
-  },
-  {
-    name: "linkedin",
-    icon: "/assets/img/social/linkedin.svg",
-    href: "#",
-  },
-  {
-    name: "instagram",
-    icon: "/assets/img/social/instagram.svg",
-    href: "#",
-  },
+  { label: "Facebook", icon: "ri-facebook-fill", href: "#" },
+  { label: "Instagram", icon: "ri-instagram-line", href: "#" },
+  { label: "LinkedIn", icon: "ri-linkedin-fill", href: "#" },
+  { label: "WhatsApp", icon: "ri-whatsapp-line", href: "https://wa.me/919967399880" },
 ];
 
 function FooterColumn({
@@ -65,17 +38,16 @@ function FooterColumn({
   links: { label: string; href: string }[];
 }) {
   return (
-    <div className="bb-footer-widget">
-      <h4 className="mb-5 border-b border-white/10 pb-4 font-quicksand text-[18px] font-bold text-slate-700">
+    <div className="bb-footer-widget mb-[35px]">
+      <h4 className="mb-[20px] border-b border-[#eee] pb-[15px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
         {title}
       </h4>
-
       <ul>
         {links.map((item) => (
-          <li key={item.label} className="mb-4">
+          <li key={item.label} className="mb-[12px]">
             <Link
               href={item.href}
-              className="font-Poppins text-[14px] leading-5 text-slate-300 transition hover:text-[#0f766e]"
+              className="font-Poppins text-[14px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:pl-[6px] hover:text-[#0f766e]"
             >
               {item.label}
             </Link>
@@ -87,179 +59,122 @@ function FooterColumn({
 }
 
 export default function Footer() {
+  const ref = useRef<HTMLElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setVisible(true);
+        });
+      },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
-    <footer className="bb-footer mt-[50px] bg-[#f8f8fb] text-slate-700 max-[1199px]:mt-[35px]">
-      <div className="border-t border-white/10">
-        <div className="py-[50px] max-[1199px]:py-[35px]">
-          <div className="mx-auto flex max-w-[1320px] flex-wrap px-3">
-            {/* About */}
-            <div className="w-full px-3 lg:w-[25%]">
-              <div className="mb-10 flex flex-col lg:mb-0">
-                <Link href="/" className="mb-7 flex items-center gap-3">
-                  <img
-                    src="/assets/img/logo/logo-icon2.png"
-                    alt="2gooD logo icon"
-                    className="h-16 w-16 shrink-0 object-contain"
-                  />
-                </Link>
-
-                <p className="mb-7 max-w-[400px] font-Poppins text-[14px] leading-[27px] text-slate-500">
-                  2good plus is committed to delivering pure, safe, and refreshing
-                  packaged drinking water. With advanced purification processes
-                  and strict quality standards, we ensure every bottle provides
-                  freshness and trust for homes, offices, events, and
-                  businesses.
-                </p>
-
-                {/* <div className="-m-[7px] flex flex-wrap">
-                  <Link href="#" className="m-[7px]">
-                    <img
-                      src="/assets/img/app/android.png"
-                      alt="Android app"
-                      className="max-w-[140px] rounded-[5px] max-[1399px]:max-w-[120px]"
-                    />
+    <footer
+      ref={ref}
+      className={`bb-footer mt-[50px] border-t border-[#eee] bg-white max-[1199px]:mt-[35px] transform transition-all duration-700 ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      }`}
+    >
+      <div className="py-[50px] max-[1199px]:py-[35px]">
+        <div className="bb-container flex flex-wrap">
+          <div className="w-full px-[12px] lg:w-[25%]">
+            <div className="bb-footer-widget mb-[35px]">
+              <Link href="/" className="mb-[25px] inline-flex items-center gap-[12px]">
+                <img
+                  src="/assets/img/logo/logo-icon2.png"
+                  alt="2good Plus logo"
+                  className="h-[70px] w-auto object-contain"
+                />
+              </Link>
+              <p className="mb-[22px] max-w-[380px] font-Poppins text-[14px] font-light leading-[27px] tracking-[0.03rem] text-[#686e7d]">
+                2good Plus delivers pure, safe, and refreshing packaged drinking water for homes,
+                offices, hotels, restaurants, retailers, events, and institutional bulk orders.
+              </p>
+              <div className="flex flex-wrap gap-[8px]">
+                {socialLinks.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] border border-[#eee] text-[#686e7d] transition-all duration-300 hover:-translate-y-1 hover:border-[#0f766e] hover:bg-[#0f766e] hover:text-white"
+                    aria-label={item.label}
+                  >
+                    <i className={`${item.icon} text-[18px]`} />
                   </Link>
-
-                  <Link href="#" className="m-[7px]">
-                    <img
-                      src="/assets/img/app/apple.png"
-                      alt="Apple app"
-                      className="max-w-[140px] rounded-[5px] max-[1399px]:max-w-[120px]"
-                    />
-                  </Link>
-                </div> */}
-              </div>
-            </div>
-
-            <div className="w-full px-3 sm:w-1/2  lg:w-[16.66%]">
-              <FooterColumn title="Products" links={ProductsAndServices} />
-            </div>
-            <div className="w-full px-3 sm:w-1/2 text-slate-700 lg:w-[16.66%]">
-              <FooterColumn title="Account" links={accountLinks} />
-            </div>
-            <div className="w-full px-3 sm:w-1/2 lg:w-[16.66%]">
-              <FooterColumn title="Company" links={companyLinks} />
-            </div>
-
-            {/* Contact */}
-            <div className="w-full px-3 sm:w-1/2 lg:w-[25%]">
-              <div className="bb-footer-widget">
-                <h4 className="mb-5 border-b border-white/10 pb-4 font-quicksand text-[18px] font-bold text-slate-700">
-                  Contact
-                </h4>
-                <ul>
-                  <li className="mb-4 flex items-start">
-                    <span className="mr-3 mt-1 text-[#0f766e]">📍</span>
-                    <p className="font-Poppins text-[14px] leading-7 text-slate-500">
-                      Plot No. 24, DIC Industrial Estate, Rania, Kanpur Dehat -
-                      209304, Uttar Pradesh, India
-                    </p>
-                  </li>
-
-                  <li className="mb-4 flex items-center">
-                    <span className="mr-3 text-[#0f766e]">☎</span>
-                    <Link
-                      href="tel:+919967399880"
-                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#0f766e]"
-                    >
-                      +91 99673 99880
-                    </Link>
-                  </li>
-
-                  {/* <li className="mb-4 flex items-center">
-                    <span className="mr-3 text-[#0f766e]">💬</span>
-                    <Link
-                      href="https://wa.me/919967399880"
-                      target="_blank"
-                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#0f766e]"
-                    >
-                      Chat on WhatsApp
-                    </Link>
-                  </li> */}
-
-                  <li className="mb-4 flex items-center">
-                    <span className="mr-3 text-[#0f766e]">✉</span>
-                    <Link
-                      href="mailto:Corporate@gmhospitality.in"
-                      className="font-Poppins text-[14px] text-slate-500 transition hover:text-[#0f766e]"
-                    >
-                      Corporate@gmhospitality.in
-                    </Link>
-                  </li>
-
-                  <li className="mb-5 flex items-start">
-                    <span className="mr-3 mt-1 text-[#0f766e]">🕒</span>
-                    <p className="font-Poppins text-[14px] leading-7 text-slate-500">
-                      Monday – Saturday
-                      <br />
-                      8:00 AM – 8:00 PM
-                    </p>
-                  </li>
-                </ul>
-                {/* 
-                  <ul className="flex flex-wrap items-center">
-                    <li className="pr-[5px]">
-                      <Link
-                        href="#"
-                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
-                      >
-                        <i className="ri-facebook-fill text-[16px] text-white"></i>
-                      </Link>
-                    </li>
-
-                    <li className="pr-[5px]">
-                      <Link
-                        href="#"
-                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
-                      >
-                        <i className="ri-twitter-fill text-[16px] text-white"></i>
-                      </Link>
-                    </li>
-
-                    <li className="pr-[5px]">
-                      <Link
-                        href="#"
-                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
-                      >
-                        <i className="ri-linkedin-fill text-[16px] text-white"></i>
-                      </Link>
-                    </li>
-
-                    <li className="pr-[5px]">
-                      <Link
-                        href="#"
-                        className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] bg-[#3d4750] transition-all duration-300 hover:bg-[#0f766e]"
-                      >
-                        <i className="ri-instagram-line text-[16px] text-white"></i>
-                      </Link>
-                    </li>
-                  </ul> */}
+                ))}
               </div>
             </div>
           </div>
+
+          <div className="w-full px-[12px] sm:w-1/2 lg:w-[16.66%]">
+            <FooterColumn title="Products" links={productLinks} />
+          </div>
+          <div className="w-full px-[12px] sm:w-1/2 lg:w-[16.66%]">
+            <FooterColumn title="Company" links={companyLinks} />
+          </div>
+          <div className="w-full px-[12px] sm:w-1/2 lg:w-[16.66%]">
+            <FooterColumn title="Account" links={accountLinks} />
+          </div>
+
+          <div className="w-full px-[12px] sm:w-1/2 lg:w-[25%]">
+            <div className="bb-footer-widget mb-[35px]">
+              <h4 className="mb-[20px] border-b border-[#eee] pb-[15px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                Contact
+              </h4>
+              <ul>
+                <li className="mb-[14px] flex items-start gap-[12px]">
+                  <i className="ri-map-pin-line mt-[4px] text-[18px] text-[#0f766e]" />
+                  <p className="font-Poppins text-[14px] font-light leading-[25px] tracking-[0.03rem] text-[#686e7d]">
+                    Plot No. 24, DIC Industrial Estate, Rania, Kanpur Dehat - 209304,
+                    Uttar Pradesh, India
+                  </p>
+                </li>
+                <li className="mb-[14px] flex items-center gap-[12px]">
+                  <i className="ri-phone-line text-[18px] text-[#0f766e]" />
+                  <Link href="tel:+919967399880" className="font-Poppins text-[14px] text-[#686e7d] transition hover:text-[#0f766e]">
+                    +91 99673 99880
+                  </Link>
+                </li>
+                <li className="mb-[14px] flex items-center gap-[12px]">
+                  <i className="ri-mail-line text-[18px] text-[#0f766e]" />
+                  <Link href="mailto:Corporate@gmhospitality.in" className="font-Poppins text-[14px] text-[#686e7d] transition hover:text-[#0f766e]">
+                    Corporate@gmhospitality.in
+                  </Link>
+                </li>
+                <li className="flex items-start gap-[12px]">
+                  <i className="ri-time-line mt-[4px] text-[18px] text-[#0f766e]" />
+                  <p className="font-Poppins text-[14px] font-light leading-[25px] tracking-[0.03rem] text-[#686e7d]">
+                    Monday – Saturday
+                    <br />
+                    8:00 AM – 8:00 PM
+                  </p>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Bottom */}
-        <div className="border-t border-white/10 py-4">
-          <div className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-4 px-6 max-[991px]:flex-col">
-            <div className="font-Poppins text-[13px] leading-7 tracking-[1px] text-slate-600">
-              Copyright © 2026{" "}
-              <Link
-                href="/"
-                className="font-medium text-[#0f766e] transition hover:text-white"
-              >
-                2gooD
-              </Link>{" "}
-              all rights reserved.
-            </div>
-
-            <div>
-              <img
-                src="/assets/img/payment/payment.png"
-                alt="Payment methods"
-                className="max-h-8 max-w-full"
-              />
-            </div>
+      <div className="border-t border-[#eee] py-[14px]">
+        <div className="bb-container flex flex-wrap items-center justify-between gap-[14px] max-[991px]:flex-col">
+          <p className="font-Poppins text-[13px] leading-[26px] tracking-[0.03rem] text-[#686e7d]">
+            Copyright © 2026{" "}
+            <Link href="/" className="font-semibold text-[#0f766e] transition hover:text-[#3d4750]">
+              2good Plus
+            </Link>{" "}
+            all rights reserved.
+          </p>
+          <div className="flex items-center gap-[10px] font-Poppins text-[13px] text-[#686e7d]">
+            <i className="ri-shield-check-line text-[18px] text-[#0f766e]" />
+            Secure checkout • Fresh delivery • Bulk order support
           </div>
         </div>
       </div>
