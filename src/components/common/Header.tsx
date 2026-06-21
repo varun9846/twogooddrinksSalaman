@@ -1,309 +1,335 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { signOut, useSession } from "next-auth/react";
-import { useUiStore } from "@/store/useUiStore";
-import { useCartStore } from "@/store/useCartStore";
+import {
+  productsService,
+  type ProductMenuCategory,
+} from "@/lib/services/productsService";
 
-const navItems = [
+const navLinks = [
   { label: "Home", href: "/" },
   { label: "Products", href: "/shop" },
-
   { label: "About Us", href: "/about-us" },
   { label: "Contact Us", href: "/contact-us" },
 ];
 
+const categories = [
+  "Healthy Drinks",
+  "Packaged Drinking Water",
+  "Herbal Infusions",
+];
+
+const LocationOptions = [
+  "Kanpur",
+  "Unnao",
+  "Lucknow",
+  "Kanpur Dehat",
+  "Raibareli",
+  "Unchahar",
+];
+
 export default function Header() {
-  const { data: session, status } = useSession();
-  const toggleCart = useUiStore((state) => state.toggleCart);
-  const cart = useCartStore((state) => state.cart);
-  const fetchCart = useCartStore((state) => state.fetchCart);
-  const clearLocalCart = useCartStore((state) => state.clearLocalCart);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [productMenu, setProductMenu] = useState<ProductMenuCategory[]>([]);
+  const [menuLoading, setMenuLoading] = useState(false);
 
   useEffect(() => {
-    if (status === "authenticated") {
-      fetchCart();
+    async function loadProductMenu() {
+      try {
+        setMenuLoading(true);
+        const response = await productsService.getProductMenu();
+
+        if (response.success) {
+          setProductMenu(response.menu);
+        }
+      } catch (error) {
+        console.error("Failed to load product menu", error);
+      } finally {
+        setMenuLoading(false);
+      }
     }
 
-    if (status === "unauthenticated") {
-      clearLocalCart();
-    }
-  }, [status, fetchCart, clearLocalCart]);
-
-  useEffect(() => {
-    if (!mobileOpen) return;
-
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) setMobileOpen(false);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [mobileOpen]);
-
-  const cartCount = cart?.item_count || 0;
+    loadProductMenu();
+  }, []);
 
   return (
-    <header className="bb-header fixed left-0 top-0 z-[999] w-full border-b border-[#eee] bg-white/95 shadow-sm backdrop-blur-md">
-      <div className="py-5 max-[991px]:py-4">
-        <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-8 px-4 max-[767px]:gap-4">
-          <Link href="/" className="flex shrink-0 items-center gap-2">
-            <img
+    <header className="bb-header sticky top-0 z-50 border-b border-[#eee] bg-white font-Poppins">
+      <div className="bottom-header py-[20px] max-[991px]:py-[15px]">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4">
+          <Link href="/">
+            <Image
               src="/assets/img/logo/logo-icon2.png"
-              alt="2gooD Logo"
-              className="h-20 w-20 shrink-0 object-contain transition-transform duration-300 hover:scale-105 max-[575px]:h-16 max-[575px]:w-16"
+              alt="Logo"
+              width={125}
+              height={60}
+              className="h-auto w-[125px] max-[991px]:w-[115px]"
+              priority
             />
           </Link>
 
-          <nav className="hidden items-center gap-10 font-Poppins text-[17px] font-semibold text-[#3d4750] lg:flex">
-            {" "}
-            {navItems.map((item) => (
-              <div key={item.label} className="group relative py-3">
-                <Link
-                  href={item.href}
-                  className="whitespace-nowrap transition hover:text-[#0f766e]"
-                >
-                  {item.label}
-                </Link>
-              </div>
-            ))}
-          </nav>
+          <form className="bb-btn-group-form relative w-[600px] max-[1199px]:w-[420px] max-[991px]:hidden">
+            <select className="absolute left-0 top-0 h-full w-[150px] rounded-l-[10px] border border-[#eee] bg-white px-4 font-Poppins text-[14px] text-[#777] outline-none">
+              {categories.map((category) => (
+                <option key={category}>{category}</option>
+              ))}
+            </select>
 
-          <div className="flex shrink-0 items-center gap-5 max-[575px]:gap-4">
+            <input
+              type="text"
+              placeholder="Search products..."
+              className="bb-search-bar h-[48px] w-full rounded-[10px] border border-[#eee] bg-white py-[10px] pl-[165px] pr-12 font-Poppins text-[14px] tracking-[0.5px] text-[#777] outline-none"
+            />
+
+            <button
+              type="submit"
+              className="absolute right-0 top-0 flex h-full w-[48px] items-center justify-center bg-transparent text-[#555]"
+              aria-label="Search"
+            >
+              <i className="ri-search-line text-[18px]" />
+            </button>
+          </form>
+
+          <div className="bb-header-buttons flex items-center justify-end gap-6 max-[575px]:gap-4">
             <div className="group relative">
-              {/* <button
-                type="button"
-                className="text-[#3d4750] transition hover:text-[#0f766e]"
-                aria-label="Account"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </button> */}
+              <button className="bb-header-btn flex items-center gap-2 whitespace-nowrap">
+                <i className="ri-user-3-line text-[28px] text-[#0f766e]" />
+                <div className="ml-[10px] flex flex-col text-left max-[1199px]:hidden">
+                  <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750]">
+                    Account
+                  </p>
+                  <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750]">
+                    Login
+                  </p>
+                </div>
+              </button>
 
-              <ul className="invisible absolute right-0 top-full z-30 mt-4 min-w-[190px] rounded-[10px] border border-[#eee] bg-white p-2 opacity-0 shadow-lg transition-all duration-300 group-hover:visible group-hover:opacity-100">
-                {status === "authenticated" ? (
-                  <>
-                    <li className="border-b border-[#eee] px-3 py-2 text-sm text-[#3d4750]">
-                      Hi, {session?.user?.name || "Customer"}
-                    </li>
-                    <li>
-                      <Link
-                        href="/my-cart"
-                        className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#0f766e]"
-                      >
-                        My Cart
-                      </Link>
-                    </li>
-                    <li>
-                      <button
-                        type="button"
-                        onClick={() => signOut({ callbackUrl: "/" })}
-                        className="block w-full rounded-md px-3 py-2 text-left text-sm text-[#686e7d] transition hover:text-[#0f766e]"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </>
-                ) : (
-                  <>
-                    <li>
-                      <Link
-                        href="/login"
-                        className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#0f766e]"
-                      >
-                        Sign In
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/register"
-                        className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#0f766e]"
-                      >
-                        Create Account
-                      </Link>
-                    </li>
-                  </>
-                )}
+              <ul className="invisible absolute right-0 top-full z-50 mt-[25px] min-w-[150px] rounded-[10px] border border-[#eee] bg-white px-[5px] py-[10px] opacity-0 shadow-md transition-all duration-300 group-hover:visible group-hover:opacity-100">
+                {[
+                  { label: "Register", href: "/register" },
+                  { label: "Login", href: "/login" },
+                  { label: "Checkout", href: "/checkout" },
+                ].map((item) => (
+                  <li key={item.href} className="px-[15px] py-[4px]">
+                    <Link
+                      href={item.href}
+                      className="block text-[13px] font-normal leading-[22px] tracking-[0.03rem] text-[#686e7d] hover:text-[#0f766e]"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
-{/* 
-            <button
-              type="button"
-              onClick={toggleCart}
-              className="relative text-[#3d4750] transition hover:text-[#0f766e]"
-              aria-label="Cart"
+
+            <Link
+              href="/wishlist"
+              className="bb-header-btn flex items-center whitespace-nowrap"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
-              <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#0f766e] text-[11px] font-bold text-white">
-                {cartCount}
-              </span>
-            </button> */}
-            <a
-              href="tel:+919967399880"
-              className="hidden lg:flex items-center gap-3 rounded-full bg-[#0f766e] px-4 py-2 text-white shadow-md transition hover:bg-[#0d5f59]"
-            >
-              <i className="ri-phone-fill text-lg text-white" />
-              <div className="leading-tight">
-                
-                
-                <p className="text-xs text-white">+91 99673 99880</p>
+              <i className="ri-heart-line text-[28px] text-[#0f766e]" />
+              <div className="ml-[10px] flex flex-col max-[1199px]:hidden">
+                <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750]">
+                  3 items
+                </p>
+                <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750]">
+                  Wishlist
+                </p>
               </div>
-            </a>
+            </Link>
+
+            <Link
+              href="/cart"
+              className="bb-header-btn flex items-center whitespace-nowrap"
+            >
+              <i className="ri-shopping-cart-line text-[28px] text-[#0f766e]" />
+              <div className="ml-[10px] flex flex-col max-[1199px]:hidden">
+                <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750]">
+                  4 items
+                </p>
+                <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750]">
+                  Cart
+                </p>
+              </div>
+            </Link>
 
             <button
-              type="button"
               onClick={() => setMobileOpen(true)}
-              className="hidden text-[#3d4750] transition hover:text-[#0f766e] max-lg:block"
+              className="hidden max-[991px]:block"
               aria-label="Open menu"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
+              <i className="ri-menu-3-fill text-[26px] text-[#0f766e]" />
             </button>
           </div>
         </div>
       </div>
 
+      <nav className="bb-main-menu-desk border-t border-[#eee] bg-white py-[5px] max-[991px]:hidden">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4">
+          <ul className="navbar-nav flex flex-row flex-wrap items-center">
+            <li>
+              <a
+                href="javascript:void(0)"
+                className="bb-header-btn bb-sidebar-toggle bb-category-toggle relative mr-[30px] flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border border-[#eee] bg-white p-[8px]"
+              >
+                <i className="ri-function-line text-[24px] text-[#0f766e]" />
+              </a>
+            </li>
+
+            {navLinks.map((link) => {
+              if (link.label === "Products") {
+                return (
+                  <li
+                    key={link.href}
+                    className="nav-item bb-dropdown group relative mr-[45px] flex items-center"
+                  >
+                    <Link
+                      href={link.href}
+                      className="nav-link bb-dropdown-item font-Poppins relative block p-[0] text-[15px] font-medium leading-[28px] tracking-[0.03rem] text-[#3d4750] transition-all duration-300 hover:text-[#0f766e]"
+                    >
+                      Products
+                    </Link>
+
+                    {/* Main Dropdown */}
+                    <ul className="bb-dropdown-menu invisible absolute left-0 top-[100%] z-[999] mt-[18px] flex min-w-[205px] flex-col rounded-[10px] border border-solid border-[#eee] bg-white p-[10px] text-left opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out group-hover:visible group-hover:mt-[12px] group-hover:opacity-100">
+                      <li className="relative m-0 flex items-center rounded-[8px] px-[15px] py-[5px] transition-all duration-300 hover:bg-[#f8f8fb]">
+                        <Link
+                          href="/shop"
+                          className="font-Poppins block w-full py-[5px] text-[14px] font-normal capitalize leading-[22px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                        >
+                          All Products
+                        </Link>
+                      </li>
+
+                      {menuLoading ? (
+                        <li className="relative m-0 flex items-center px-[15px] py-[5px]">
+                          <span className="font-Poppins py-[5px] text-[14px] font-normal leading-[22px] tracking-[0.03rem] text-[#686e7d]">
+                            Loading...
+                          </span>
+                        </li>
+                      ) : productMenu.length > 0 ? (
+                        productMenu.map((category) => (
+                          <li
+                            key={category.category}
+                            className="bb-mega-dropdown group/sub relative m-0 flex items-center rounded-[8px] px-[15px] py-[5px] transition-all duration-300 hover:bg-[#f8f8fb]"
+                          >
+                            <Link
+                              href={category.href}
+                              className="bb-mega-item font-Poppins flex w-full items-center justify-between gap-4 py-[5px] text-[14px] font-normal capitalize leading-[22px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                            >
+                              <span className="max-w-[145px] whitespace-normal break-words">
+                                {category.category}
+                              </span>
+
+                              <i className="ri-arrow-right-s-line text-[15px] text-[#686e7d] transition-all duration-300 group-hover/sub:text-[#0f766e]" />
+                            </Link>
+
+                            {/* Sub Dropdown */}
+                            <ul className="bb-mega-menu invisible absolute left-[100%] top-0 z-[1000] ml-[10px] flex min-w-[250px] flex-col rounded-[10px] border border-solid border-[#eee] bg-white p-[10px] text-left opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out before:absolute before:left-[-12px] before:top-0 before:h-full before:w-[12px] before:content-[''] group-hover/sub:visible group-hover/sub:opacity-100">
+                              {category.products.length > 0 ? (
+                                category.products.map((product) => (
+                                  <li
+                                    key={product.id}
+                                    className="m-0 flex items-center rounded-[8px] px-[15px] py-[5px] transition-all duration-300 hover:bg-[#f8f8fb]"
+                                  >
+                                    <Link
+                                      href={product.href}
+                                      className="dropdown-item font-Poppins block w-full py-[6px] text-[14px] font-normal capitalize leading-[22px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                                    >
+                                      {product.name}
+                                    </Link>
+                                  </li>
+                                ))
+                              ) : (
+                                <li className="m-0 flex items-center px-[15px] py-[5px]">
+                                  <span className="dropdown-item py-[6px] text-[14px] font-normal text-[#999]">
+                                    No products found
+                                  </span>
+                                </li>
+                              )}
+                            </ul>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="relative m-0 flex items-center px-[15px] py-[5px]">
+                          <span className="font-Poppins py-[5px] text-[14px] font-normal leading-[22px] tracking-[0.03rem] text-[#999]">
+                            No categories found
+                          </span>
+                        </li>
+                      )}
+                    </ul>
+                  </li>
+                );
+              }
+
+              return (
+                <li
+                  key={link.href}
+                  className="nav-item mr-[35px] flex items-center font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]"
+                >
+                  <Link
+                    href={link.href}
+                    className="nav-link block p-[0] font-Poppins text-[15px] font-medium leading-[28px] tracking-[0.03rem] text-[#3d4750] hover:text-[#0f766e]"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="inner-select flex w-[180px] items-center rounded-[10px] border border-[#eee] bg-white">
+            <i className="ri-map-pin-line m-[10px] text-[25px] text-[#0f766e]" />
+            <select className="w-full bg-transparent font-Poppins text-[14px] font-normal leading-[28px] tracking-[0.03rem] text-[#686e7d] outline-none">
+              {LocationOptions.map((location) => (
+                <option key={location} value={location}>
+                  {location}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </nav>
+
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-[60] overflow-y-auto bg-black/70 lg:hidden"
+          className="fixed inset-0 z-[60] bg-black/80"
           onClick={() => setMobileOpen(false)}
-        >
-          <aside
-            className="h-full w-[340px] max-w-[85vw] overflow-y-auto bg-white px-5 py-4 shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="mb-5 flex items-center justify-between border-b border-[#eee] pb-3">
-              <span className="font-Poppins text-base font-semibold text-[#3d4750]">
-                2good Plus Menu
-              </span>
-              <span className="rounded-full bg-[#0f766e]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0f766e]">
-                Menu
-              </span>
-              <button
-                type="button"
-                onClick={() => setMobileOpen(false)}
-                className="text-2xl text-red-500"
-                aria-label="Close menu"
-              >
-                ×
-              </button>
-            </div>
-
-            <ul>
-              {navItems.map((item) => (
-                <li key={item.label} className="mb-3">
-                  <Link
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="block rounded-[10px] border border-[#eee] p-3 text-[15px] font-medium text-[#686e7d]"
-                  >
-                    {item.label}
-                  </Link>
-                  {/* 
-                  {item.children?.length ? (
-                    <ul className="ml-3 mt-2">
-                      {item.children.map((child) => (
-                        <li key={child.href}>
-                          <Link
-                            href={child.href}
-                            onClick={() => setMobileOpen(false)}
-                            className="block py-2 pl-3 text-sm text-[#777] hover:text-[#0f766e]"
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null} */}
-                </li>
-              ))}
-
-              {status === "authenticated" ? (
-                <>
-                  <li className="mb-3">
-                    <Link
-                      href="/my-cart"
-                      onClick={() => setMobileOpen(false)}
-                      className="block rounded-[10px] border border-[#eee] p-3 text-[15px] font-medium text-[#686e7d]"
-                    >
-                      My Cart
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => signOut({ callbackUrl: "/" })}
-                      className="block w-full rounded-[10px] border border-[#eee] p-3 text-left text-[15px] font-medium text-[#686e7d]"
-                    >
-                      Logout
-                    </button>
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li className="mb-3">
-                    <Link
-                      href="/login"
-                      onClick={() => setMobileOpen(false)}
-                      className="block rounded-[10px] border border-[#eee] p-3 text-[15px] font-medium text-[#686e7d]"
-                    >
-                      Sign In
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/register"
-                      onClick={() => setMobileOpen(false)}
-                      className="block rounded-[10px] border border-[#eee] p-3 text-[15px] font-medium text-[#686e7d]"
-                    >
-                      Create Account
-                    </Link>
-                  </li>
-                </>
-              )}
-            </ul>
-          </aside>
-        </div>
+        />
       )}
+
+      <aside
+        className={`bb-mobile-menu fixed left-0 top-0 z-[70] flex h-full w-[340px] max-w-[90%] flex-col overflow-auto bg-white px-[20px] pb-[20px] pt-[15px] transition-transform duration-300 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="bb-menu-title flex w-full flex-wrap justify-between pb-[10px]">
+          <span className="menu_title flex items-center text-[16px] font-semibold leading-[26px] tracking-[0.02rem] text-[#3d4750]">
+            2gooD Menu
+          </span>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="relative border-0 bg-transparent text-[30px] leading-[1] text-red-500"
+            aria-label="Close menu"
+          >
+            ×
+          </button>
+        </div>
+
+        <ul>
+          {navLinks.map((link) => (
+            <li key={link.href} className="relative">
+              <Link
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="mb-[12px] block rounded-[10px] border border-[#eee] p-[12px] text-[15px] font-medium capitalize leading-[28px] tracking-[0.03rem] text-[#686e7d]"
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </aside>
     </header>
   );
 }

@@ -48,8 +48,6 @@ package.json
 prisma/schema.prisma
 README.md
 sql/01_schema.sql
-sql/02_seed_products.sql
-sql/03_seed_test_user.sql
 src/app/(auth)/login/page.tsx
 src/app/(auth)/register/page.tsx
 src/app/about-us/page.tsx
@@ -57,6 +55,7 @@ src/app/api/auth/[...nextauth]/route.ts
 src/app/api/cart/add/route.ts
 src/app/api/cart/items/[itemId]/route.ts
 src/app/api/cart/route.ts
+src/app/api/products/menu/route.ts
 src/app/api/products/route.ts
 src/app/api/register/route.ts
 src/app/cart/page.tsx
@@ -110,6 +109,130 @@ tsconfig.json
 ```
 
 # Files
+
+## File: src/app/api/products/menu/route.ts
+````typescript
+export const runtime = "nodejs";
+import productService from "@/lib/services/product.service";
+import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
+export async function POST() {
+  try {
+    const menu = await productService.getProductMenu();
+    return jsonSuccess({
+      success: true,
+      menu,
+    });
+  } catch (error) {
+    console.error("PRODUCTS_MENU_POST_ERROR", error);
+    return jsonError(getErrorMessage(error, "Failed to fetch product menu"), 500);
+  }
+}
+````
+
+## File: AGENTS.md
+````markdown
+<!-- BEGIN:nextjs-agent-rules -->
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
+````
+
+## File: architecture.md
+````markdown
+src/
+├── app/                           # App Router Core
+│   ├── layout.tsx                 # Root layout (Includes global Providers, Header, Footer)
+│   ├── page.tsx                   # Homepage (index.html)
+│   ├── (auth)/                    # Auth Route Group
+│   │   ├── login/page.tsx         # login.html
+│   │   └── register/page.tsx      # register.html
+│   ├── shop/
+│   │   ├── page.tsx               # Shop Catalog (Grid/List views)
+│   │   └── [productId]/page.tsx   # Dynamic Product Details
+│   ├── cart/page.tsx              # cart.html
+│   ├── checkout/page.tsx          # checkout.html
+│   └── api/                       # Next.js Route Handlers (BFF layer)
+├── components/                    # Modular UI Component Layer
+│   ├── common/                    # Header, Footer, Custom Selectors
+│   ├── product/                   # ProductCard, ProductGrid, Rating
+│   ├── cart/                      # CartSidebar overlay
+│   └── ui/                        # Reusable Primitive Elements (Buttons, Inputs)
+├── store/                         # Global State Management (Zustand or React Context)
+│   ├── useCartStore.ts            # Client-side Cart state & persistent sync
+│   └── useWishlistStore.ts        # Client-side Wishlist state
+└── styles/
+    └── globals.css                # Custom Tailwind layer directives
+````
+
+## File: eslint.config.mjs
+````javascript
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+]);
+
+export default eslintConfig;
+````
+
+## File: README.md
+````markdown
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+````
+
+## File: src/app/api/auth/[...nextauth]/route.ts
+````typescript
+export const runtime = "nodejs";
+import { handlers } from "@/auth";
+export const { GET, POST } = handlers;
+````
 
 ## File: src/components/common/DeliveryCoverage.tsx
 ````typescript
@@ -245,158 +368,6 @@ export default function WaterWaveDivider() {
 }
 ````
 
-## File: AGENTS.md
-````markdown
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
-````
-
-## File: architecture.md
-````markdown
-src/
-├── app/                           # App Router Core
-│   ├── layout.tsx                 # Root layout (Includes global Providers, Header, Footer)
-│   ├── page.tsx                   # Homepage (index.html)
-│   ├── (auth)/                    # Auth Route Group
-│   │   ├── login/page.tsx         # login.html
-│   │   └── register/page.tsx      # register.html
-│   ├── shop/
-│   │   ├── page.tsx               # Shop Catalog (Grid/List views)
-│   │   └── [productId]/page.tsx   # Dynamic Product Details
-│   ├── cart/page.tsx              # cart.html
-│   ├── checkout/page.tsx          # checkout.html
-│   └── api/                       # Next.js Route Handlers (BFF layer)
-├── components/                    # Modular UI Component Layer
-│   ├── common/                    # Header, Footer, Custom Selectors
-│   ├── product/                   # ProductCard, ProductGrid, Rating
-│   ├── cart/                      # CartSidebar overlay
-│   └── ui/                        # Reusable Primitive Elements (Buttons, Inputs)
-├── store/                         # Global State Management (Zustand or React Context)
-│   ├── useCartStore.ts            # Client-side Cart state & persistent sync
-│   └── useWishlistStore.ts        # Client-side Wishlist state
-└── styles/
-    └── globals.css                # Custom Tailwind layer directives
-````
-
-## File: eslint.config.mjs
-````javascript
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
-
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
-]);
-
-export default eslintConfig;
-````
-
-## File: README.md
-````markdown
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-````
-
-## File: sql/02_seed_products.sql
-````sql
-INSERT INTO products (id, product_name, product_description, product_category, price, stock, image, badge, tag)
-VALUES
-  ('pure-spring-water-daily-pack', 'Pure Spring Water Daily Pack', 'Clean and refreshing bottled water for everyday hydration.', 'Natural Drinking Water', 15, 24, '/assets/img/new-product/1.jpg', 'New', 'Hydration'),
-  ('roofaza-jeera-refresh-drink', 'Roofaza Jeera Refresh Drink', 'A refreshing cumin-based drink crafted for flavorful hydration.', 'Jeera Drink', 25, 18, '/assets/img/new-product/2.jpg', 'Popular', 'Wellness Drink'),
-  ('blueberry-jeera-crunch-mix', 'BlueBerry Jeera Crunch Mix', 'Light, flavorful snack bites for mindful everyday munching.', 'Healthy Snacks', 10, 30, '/assets/img/new-product/3.jpg', 'Best Seller', 'Snack'),
-  ('calm-herbal-orange-refill-pack', 'Calm Herbal Orange Refill Pack', 'A soothing infusion blend made for restful, calming moments.', 'Herbal Infusion', 25, 16, '/assets/img/new-product/4.jpg', 'New', 'Herbal'),
-  ('avacardo-cumin-wellness-jar', 'Avacardo Cumin Wellness Jar', 'Pantry essential made to elevate wellness drinks and recipes.', 'Wellness Jar', 32, 14, '/assets/img/new-product/5.jpg', 'Trending', 'Wellness'),
-  ('cardamom-herbal-tea-blend', 'Cardamom Herbal Tea Blend', 'A warm and aromatic blend perfect for daily tea rituals.', 'Herbal Tea', 41, 20, '/assets/img/new-product/6.jpg', 'Premium', 'Tea'),
-  ('spiced-millet-energy-bites', 'Spiced Millet Energy Bites', 'Nutritious crunchy bites made for wholesome snacking.', 'Healthy Snacks', 29, 22, '/assets/img/new-product/7.jpg', 'Hot', 'Energy'),
-  ('date-sweetened-wellness-dip', 'Date Sweetened Wellness Dip', 'Naturally sweet dip for healthy snack platters and light bites.', 'Wellness Dip', 9, 12, '/assets/img/new-product/8.jpg', 'Sale', 'Dip'),
-  ('daily-hydration-combo-pack', 'Daily Hydration Combo Pack', 'A convenient starter bundle with everyday wellness essentials.', 'Combo Pack', 35, 10, '/assets/img/new-product/10.jpg', 'Combo', 'Hydration'),
-  ('lemon-jeera-spark-drink', 'Lemon Jeera Spark Drink', 'Bright citrus flavor paired with a refreshing jeera twist.', 'Jeera Drink', 22, 26, '/assets/img/new-product/11.jpg', 'Fresh', 'Citrus'),
-  ('herb-crisp-snack-box', 'Herb Crisp Snack Box', 'Oven-crisp savory snack box with balanced herbal seasoning.', 'Healthy Snacks', 18, 28, '/assets/img/new-product/12.jpg', 'New', 'Snack'),
-  ('velvet-herbal-trail-mix', 'Velvet Herbal Trail Mix', 'Crunchy snack blend for smart and satisfying snacking breaks.', 'Trail Mix', 25, 15, '/assets/img/new-product/13.jpg', 'Popular', 'Trail Mix')
-ON CONFLICT (id) DO UPDATE SET
-  product_name = EXCLUDED.product_name,
-  product_description = EXCLUDED.product_description,
-  product_category = EXCLUDED.product_category,
-  price = EXCLUDED.price,
-  stock = EXCLUDED.stock,
-  image = EXCLUDED.image,
-  badge = EXCLUDED.badge,
-  tag = EXCLUDED.tag,
-  updated_at = NOW();
-````
-
-## File: sql/03_seed_test_user.sql
-````sql
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-INSERT INTO users (name, email, password, phone_number, address)
-VALUES (
-  'Test Customer',
-  'customer@twogood.test',
-  crypt('Password@123', gen_salt('bf')),
-  '+96898060405',
-  'Muscat, Oman'
-)
-ON CONFLICT (email) DO UPDATE SET
-  name = EXCLUDED.name,
-  password = EXCLUDED.password,
-  phone_number = EXCLUDED.phone_number,
-  address = EXCLUDED.address,
-  updated_at = NOW();
-````
-
-## File: src/app/api/auth/[...nextauth]/route.ts
-````typescript
-export const runtime = "nodejs";
-import { handlers } from "@/auth";
-export const { GET, POST } = handlers;
-````
-
 ## File: src/components/providers/AuthProvider.tsx
 ````typescript
 "use client";
@@ -463,32 +434,6 @@ export function mapOrderItemsToCart(
 }
 export function emptyCart(): Cart {
   return mapOrderItemsToCart(null, [], 0);
-}
-````
-
-## File: src/lib/mappers/product.mapper.ts
-````typescript
-import type { Product } from "@prisma/client";
-import type { ProductDto } from "@/types/product";
-import { formatPrice, toNumber } from "@/lib/utils/numbers";
-export function toProductDto(product: Product): ProductDto {
-  return {
-    id: product.id,
-    product_name: product.productName,
-    product_description: product.productDescription,
-    product_category: product.productCategory,
-    price: formatPrice(product.price),
-    Stock: product.stock,
-    image: product.image,
-    Badge: product.badge ?? undefined,
-    Tag: product.tag ?? "",
-  };
-}
-export function toProductDtoList(products: Product[]): ProductDto[] {
-  return products.map(toProductDto);
-}
-export function getLineTotal(quantity: number, price: Product["price"]): number {
-  return toNumber(price) * quantity;
 }
 ````
 
@@ -695,50 +640,47 @@ export const cartService = {
 export default cartService;
 ````
 
-## File: src/lib/services/product.service.ts
-````typescript
-import { toProductDto, toProductDtoList } from "@/lib/mappers/product.mapper";
-import { prisma } from "@/lib/prisma";
-import type { ProductDto } from "@/types/product";
-export async function getAllProducts(): Promise<ProductDto[]> {
-  const products = await prisma.product.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-  return toProductDtoList(products);
-}
-export async function getProductById(productId: string): Promise<ProductDto | null> {
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-  });
-  return product ? toProductDto(product) : null;
-}
-export const productService = {
-  getAllProducts,
-  getProductById,
-};
-export default productService;
-````
-
 ## File: src/lib/services/productsService.ts
 ````typescript
 import apiClient from "@/lib/apiClient";
 import type { ProductDto } from "@/types/product";
 export type ProductApiResponse = ProductDto;
+export interface ProductMenuItem {
+  id: string;
+  name: string;
+  href: string;
+}
+export interface ProductMenuCategory {
+  category: string;
+  href: string;
+  products: ProductMenuItem[];
+}
 export const productsService = {
-  getAllProducts: async () => {
-    const response = await apiClient.get<{
+  getAllProducts: async (category?: string) => {
+    const response = await apiClient.post<{
       success: boolean;
+      product: ProductApiResponse | null;
       products: ProductApiResponse[];
-    }>("/api/products");
+    }>("/api/products", {
+      category,
+    });
     return response.data;
   },
   getProductById: async (productId: string) => {
-    const response = await apiClient.get<{
+    const response = await apiClient.post<{
       success: boolean;
       product: ProductApiResponse | null;
+      products: ProductApiResponse[];
     }>("/api/products", {
-      params: { productId },
+      productId,
     });
+    return response.data;
+  },
+  getProductMenu: async () => {
+    const response = await apiClient.post<{
+      success: boolean;
+      menu: ProductMenuCategory[];
+    }>("/api/products/menu", {});
     return response.data;
   },
 };
@@ -825,28 +767,6 @@ export async function requireAuthenticatedUserId(): Promise<string> {
     throw new Error("Unauthorized");
   }
   return userId;
-}
-````
-
-## File: src/lib/utils/numbers.ts
-````typescript
-export function toNumber(value: string | number | null | undefined): number {
-  return Number(value ?? 0);
-}
-export function roundCurrency(value: number): number {
-  return Number(value.toFixed(2));
-}
-export function formatPrice(value: string | number): string {
-  return `$${toNumber(value)}`;
-}
-export function clampQuantity(quantity: number, minimum = 1): number {
-  return Math.max(minimum, Number(quantity || minimum));
-}
-export function parseRequestString(value: unknown, fallback = ""): string {
-  return String(value ?? fallback);
-}
-export function parseRequestNumber(value: unknown, fallback = 0): number {
-  return Number(value ?? fallback);
 }
 ````
 
@@ -988,31 +908,6 @@ declare module "next-auth/jwt" {
     phone_number?: string | null;
     address?: string | null;
   }
-}
-````
-
-## File: src/types/product.ts
-````typescript
-export interface ProductDto {
-  id: string;
-  product_name: string;
-  product_description: string;
-  product_category: string;
-  price: string;
-  Stock: number;
-  image: string;
-  Badge?: string;
-  Tag: string;
-}
-export interface ProductsListResponse {
-  success: boolean;
-  products: ProductDto[];
-  product?: ProductDto | null;
-}
-export interface ProductDetailResponse {
-  success: boolean;
-  product: ProductDto | null;
-  products: ProductDto[];
 }
 ````
 
@@ -2152,162 +2047,6 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 ````
 
-## File: prisma/schema.prisma
-````prisma
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
-
-enum OrderStatus {
-  paid
-  pending
-  failed
-}
-
-model User {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String   @db.VarChar(150)
-  email       String   @unique @db.VarChar(255)
-  password    String
-  phoneNumber String?  @map("phone_number") @db.VarChar(50)
-  address     String?
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  orders      Order[]
-
-  @@map("users")
-}
-
-model Product {
-  id                  String      @id
-  productName         String      @map("product_name") @db.VarChar(255)
-  productDescription  String      @map("product_description")
-  productCategory     String      @map("product_category") @db.VarChar(150)
-  price               Decimal     @db.Decimal(10, 2)
-  stock               Int         @default(0)
-  image               String
-  badge               String?     @db.VarChar(80)
-  tag                 String?     @db.VarChar(100)
-  createdAt           DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  orderItems          OrderItem[]
-
-  @@map("products")
-}
-
-model Order {
-  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String      @map("user_id") @db.Uuid
-  total     Decimal     @default(0) @db.Decimal(10, 2)
-  status    OrderStatus @default(pending)
-  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     OrderItem[]
-
-  @@index([userId, status])
-  @@map("orders")
-}
-
-model OrderItem {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId   String   @map("order_id") @db.Uuid
-  productId String   @map("product_id")
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-
-  @@unique([orderId, productId])
-  @@index([orderId])
-  @@index([productId])
-  @@map("order_items")
-}
-````
-
-## File: sql/01_schema.sql
-````sql
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(150) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  password TEXT NOT NULL,
-  phone_number VARCHAR(50),
-  address TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE TABLE IF NOT EXISTS products (
-  id VARCHAR(255) PRIMARY KEY,
-  product_name VARCHAR(255) NOT NULL,
-  product_description TEXT NOT NULL,
-  product_category VARCHAR(150) NOT NULL,
-  price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
-  stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
-  image TEXT NOT NULL,
-  badge VARCHAR(80),
-  tag VARCHAR(100),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE TABLE IF NOT EXISTS orders (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  total NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (total >= 0),
-  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('paid', 'pending', 'failed')),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE TABLE IF NOT EXISTS order_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE(order_id, product_id)
-);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(LOWER(email));
-CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status);
-CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
-CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
-CREATE OR REPLACE FUNCTION set_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS users_set_updated_at ON users;
-CREATE TRIGGER users_set_updated_at
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
-DROP TRIGGER IF EXISTS products_set_updated_at ON products;
-CREATE TRIGGER products_set_updated_at
-BEFORE UPDATE ON products
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
-DROP TRIGGER IF EXISTS orders_set_updated_at ON orders;
-CREATE TRIGGER orders_set_updated_at
-BEFORE UPDATE ON orders
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
-DROP TRIGGER IF EXISTS order_items_set_updated_at ON order_items;
-CREATE TRIGGER order_items_set_updated_at
-BEFORE UPDATE ON order_items
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
-````
-
 ## File: src/app/api/cart/add/route.ts
 ````typescript
 export const runtime = "nodejs";
@@ -2401,12 +2140,25 @@ export async function GET() {
 
 ## File: src/app/api/products/route.ts
 ````typescript
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
+export const runtime = "nodejs";
 import productService from "@/lib/services/product.service";
-export async function GET(request: Request) {
+import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
+interface ProductsRequestBody {
+  category?: string;
+  productId?: string;
+}
+async function safeReadBody(request: Request): Promise<ProductsRequestBody> {
   try {
-    const { searchParams } = new URL(request.url);
-    const productId = searchParams.get("productId");
+    return (await request.json()) as ProductsRequestBody;
+  } catch {
+    return {};
+  }
+}
+export async function POST(request: Request) {
+  try {
+    const body = await safeReadBody(request);
+    const productId = body.productId?.trim();
+    const category = body.category?.trim();
     if (productId) {
       const product = await productService.getProductById(productId);
       return jsonSuccess({
@@ -2415,15 +2167,15 @@ export async function GET(request: Request) {
         products: product ? [product] : [],
       });
     }
-    const products = await productService.getAllProducts();
+    const products = await productService.getAllProducts(category || undefined);
     return jsonSuccess({
       success: true,
       product: null,
       products,
     });
   } catch (error) {
-    console.error("PRODUCTS_GET_ERROR", error);
-    return jsonError("Failed to fetch products", 500);
+    console.error("PRODUCTS_POST_ERROR", error);
+    return jsonError(getErrorMessage(error, "Failed to fetch products"), 500);
   }
 }
 ````
@@ -2679,80 +2431,328 @@ export default function MyCartClient() {
 }
 ````
 
-## File: src/components/shop/ProductActions.tsx
+## File: src/lib/mappers/product.mapper.ts
 ````typescript
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useCartStore } from "@/store/useCartStore";
-import { useUiStore } from "@/store/useUiStore";
-interface ProductActionsProps {
-  productId: string;
-  compact?: boolean;
+import type { Product } from "@prisma/client";
+import type { ProductDto } from "@/types/product";
+import { formatPrice, toNumber } from "@/lib/utils/numbers";
+export function toProductDto(product: Product): ProductDto {
+  return {
+    id: product.id,
+    product_name: product.productName,
+    product_packsize: product.productPacksize,
+    product_description: product.productDescription,
+    product_category: product.productCategory,
+    price: formatPrice(product.price),
+    Stock: product.stock,
+    image: product.image,
+    Badge: product.badge ?? undefined,
+    Tag: product.tag ?? "",
+    isActive: true,
+  };
 }
-export default function ProductActions({ productId, compact = false }: ProductActionsProps) {
-  const router = useRouter();
-  const { status } = useSession();
-  const addToCart = useCartStore((state) => state.addToCart);
-  const isLoading = useCartStore((state) => state.isLoading);
-  const toggleCart = useUiStore((state) => state.toggleCart);
-  const [message, setMessage] = useState<string | null>(null);
-  const redirectToLogin = (callbackUrl: string) => {
-    alert("Please login first to continue.");
-    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  };
-  const handleAddToCart = async () => {
-    setMessage(null);
-    if (status !== "authenticated") {
-      redirectToLogin("/shop");
-      return;
-    }
-    try {
-      await addToCart(productId, 1);
-      setMessage("Added to cart");
-      toggleCart();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to add product.");
-    }
-  };
-  const handleBuyNow = async () => {
-    setMessage(null);
-    if (status !== "authenticated") {
-      redirectToLogin(`/my-cart?buyNow=${productId}`);
-      return;
-    }
-    try {
-      await addToCart(productId, 1);
-      router.push("/my-cart");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to continue.");
-    }
-  };
-  return (
-    <div className={compact ? "mt-[16px]" : "mt-[24px]"}>
-      <div className={compact ? "flex flex-col gap-[10px]" : "flex flex-wrap gap-[12px]"}>
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          disabled={isLoading || status === "loading"}
-          className="flex-1 rounded-[12px] bg-[#f3f4f6] px-[18px] py-[12px] font-Poppins text-[14px] font-medium text-[#1f2937] transition-all duration-200 hover:bg-[#e5e7eb] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isLoading ? "Adding..." : "Add to Cart"}
-        </button>
-        <button
-          type="button"
-          onClick={handleBuyNow}
-          disabled={isLoading || status === "loading"}
-          className="flex-1 rounded-[12px] bg-[#4f46e5] px-[18px] py-[12px] font-Poppins text-[14px] font-semibold text-white transition-all duration-200 hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          Buy Now
-        </button>
-      </div>
-      {message ? <p className="mt-2 text-center text-[12px] text-[#0f766e]">{message}</p> : null}
-    </div>
-  );
+export function toProductDtoList(products: Product[]): ProductDto[] {
+  return products.map(toProductDto);
 }
+export function getLineTotal(quantity: number, price: Product["price"]): number {
+  return toNumber(price) * quantity;
+}
+````
+
+## File: src/lib/services/product.service.ts
+````typescript
+import { Prisma } from "@prisma/client";
+import { toProductDto, toProductDtoList } from "@/lib/mappers/product.mapper";
+import { prisma } from "@/lib/prisma";
+import type { ProductDto } from "@/types/product";
+export const PRODUCT_MENU_CATEGORIES = [
+  "Healthy Drinks",
+  "Packaged Drinking Water",
+  "Herbal Infusions",
+] as const;
+export type ProductMenuCategoryName =
+  (typeof PRODUCT_MENU_CATEGORIES)[number];
+export interface ProductMenuItem {
+  id: string;
+  name: string;
+  href: string;
+}
+export interface ProductMenuCategory {
+  category: ProductMenuCategoryName;
+  href: string;
+  products: ProductMenuItem[];
+}
+export async function getAllProducts(category?: string): Promise<ProductDto[]> {
+  const where: Prisma.ProductWhereInput = {};
+  if (category) {
+    where.productCategory = {
+      equals: category,
+      mode: "insensitive",
+    };
+  }
+  const products = await prisma.product.findMany({
+    where :{isActive: true},
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  return toProductDtoList(products);
+}
+export async function getProductById(
+  productId: string,
+): Promise<ProductDto | null> {
+  const product = await prisma.product.findUnique({
+    where: {
+      isActive: true,
+      id: productId,
+    },
+  });
+  return product ? toProductDto(product) : null;
+}
+export async function getProductMenu(): Promise<ProductMenuCategory[]> {
+  const products = await prisma.product.findMany({
+    where: {
+      isActive: true,
+      productCategory: {
+        in: [...PRODUCT_MENU_CATEGORIES],
+      },
+    },
+    select: {id: true,productName: true,productCategory: true,},
+    orderBy: [{productCategory: "desc",},{productName: "desc",},],
+  });
+  return PRODUCT_MENU_CATEGORIES.map((category) => ({
+    category,
+    href: `/shop?category=${encodeURIComponent(category)}`,
+    products: products
+      .filter((product) => product.productCategory === category)
+      .map((product) => ({
+        id: product.id,
+        name: product.productName,
+        href: `/shop/${product.id}`,
+      })),
+  }));
+}
+export const productService = {
+  getAllProducts,
+  getProductById,
+  getProductMenu,
+};
+export default productService;
+````
+
+## File: src/lib/utils/numbers.ts
+````typescript
+export function toNumber(value: unknown): number {
+  if (value == null) return 0;
+  if (typeof value === "object") {
+    const v = value as any;
+    if (typeof v.toNumber === "function") return Number(v.toNumber());
+    if (typeof v.toString === "function") return Number(v.toString());
+  }
+  return Number(value as string | number);
+}
+export function roundCurrency(value: number): number {
+  return Number(value.toFixed(2));
+}
+export function formatPrice(value: unknown): string {
+  return `Rs ${toNumber(value)}`;
+}
+export function clampQuantity(quantity: number, minimum = 1): number {
+  return Math.max(minimum, Number(quantity || minimum));
+}
+export function parseRequestString(value: unknown, fallback = ""): string {
+  return String(value ?? fallback);
+}
+export function parseRequestNumber(value: unknown, fallback = 0): number {
+  return Number(value ?? fallback);
+}
+````
+
+## File: src/types/product.ts
+````typescript
+export interface ProductDto {
+  id: string;
+  product_name: string;
+  product_description: string;
+  product_category: string;
+  price: string;
+  Stock: number;
+  image: string;
+  Badge?: string;
+  Tag: string;
+  isActive: boolean;
+  product_packsize: number;
+}
+export interface ProductsListResponse {
+  success: boolean;
+  products: ProductDto[];
+  product?: ProductDto | null;
+}
+export interface ProductDetailResponse {
+  success: boolean;
+  product: ProductDto | null;
+  products: ProductDto[];
+}
+````
+
+## File: prisma/schema.prisma
+````prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum OrderStatus {
+  paid
+  pending
+  failed
+}
+
+model User {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(150)
+  email       String   @unique @db.VarChar(255)
+  password    String
+  phoneNumber String?  @map("phone_number") @db.VarChar(50)
+  address     String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  orders      Order[]
+
+  @@map("users")
+}
+
+model Product {
+  id                  String      @id
+  productName         String      @map("product_name") @db.VarChar(255)
+  productDescription  String      @map("product_description")
+  productCategory     String      @map("product_category") @db.VarChar(150)
+  price               Decimal     @db.Decimal(10, 2)
+  stock               Int         @default(0)
+  image               String
+  badge               String?     @db.VarChar(80)
+  tag                 String?     @db.VarChar(100)
+  createdAt           DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  orderItems          OrderItem[]
+  isActive           Boolean  @default(true) @map("is_active")
+  productPacksize    Int      @default(12) @map("product_packsize")
+
+  @@map("products")
+}
+
+model Order {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  total     Decimal     @default(0) @db.Decimal(10, 2)
+  status    OrderStatus @default(pending)
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     OrderItem[]
+
+  @@index([userId, status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId   String   @map("order_id") @db.Uuid
+  productId String   @map("product_id")
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, productId])
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+````
+
+## File: sql/01_schema.sql
+````sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(150) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  phone_number VARCHAR(50),
+  address TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS products (
+  id VARCHAR(255) PRIMARY KEY,
+  product_name VARCHAR(255) NOT NULL,
+  product_description TEXT NOT NULL,
+  product_category VARCHAR(150) NOT NULL,
+  product_packsize INTEGER NOT NULL DEFAULT 1 CHECK (product_packsize > 0),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+  stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
+  image TEXT NOT NULL,
+  badge VARCHAR(80),
+  tag VARCHAR(100),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  total NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (total >= 0),
+  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('paid', 'pending', 'failed')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS order_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(order_id, product_id)
+);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(LOWER(email));
+CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS users_set_updated_at ON users;
+CREATE TRIGGER users_set_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS products_set_updated_at ON products;
+CREATE TRIGGER products_set_updated_at
+BEFORE UPDATE ON products
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS orders_set_updated_at ON orders;
+CREATE TRIGGER orders_set_updated_at
+BEFORE UPDATE ON orders
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS order_items_set_updated_at ON order_items;
+CREATE TRIGGER order_items_set_updated_at
+BEFORE UPDATE ON order_items
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
 ````
 
 ## File: src/app/(auth)/login/page.tsx
@@ -2894,224 +2894,6 @@ export default function CheckoutPage() {
 }
 ````
 
-## File: src/app/wellness-journal/healthy-lifestyle/page.tsx
-````typescript
-"use client";
-import Link from "next/link";
-const lifestylePillars = [
-  {
-    title: "Restorative Sleep Architecture",
-    category: "Recovery",
-    color: "bg-indigo-50/80 border-indigo-100 text-indigo-700",
-    iconColor: "text-indigo-500",
-    desc: "Optimize your circadian rhythm through temperature regulation, light exposure management, and consistent wind-down protocols.",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-      </svg>
-    )
-  },
-  {
-    title: "Mindful Kinetic Movement",
-    category: "Vitality",
-    color: "bg-rose-50/80 border-rose-100 text-rose-700",
-    iconColor: "text-rose-500",
-    desc: "Shift from punitive exercise to joyful movement. Focus on mobility, functional strength, and daily non-exercise activity thermogenesis (NEAT).",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
-    )
-  },
-  {
-    title: "Nutrient-Dense Fueling",
-    category: "Nourishment",
-    color: "bg-emerald-50/80 border-emerald-100 text-emerald-700",
-    iconColor: "text-emerald-500",
-    desc: "Prioritize whole, unprocessed foods rich in micronutrients, fiber, and healthy fats to sustain stable energy and robust gut microbiome diversity.",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    )
-  },
-  {
-    title: "Cognitive & Stress Resilience",
-    category: "Mindset",
-    color: "bg-amber-50/80 border-amber-100 text-amber-700",
-    iconColor: "text-amber-500",
-    desc: "Implement daily nervous system regulation practices like breathwork, meditation, and digital detoxing to maintain mental clarity.",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-      </svg>
-    )
-  }
-];
-const featuredArticles = [
-  {
-    title: "The 20-Minute Morning Protocol for Sustained Energy",
-    excerpt: "Why delaying caffeine intake by 90 minutes and prioritizing sunlight exposure can completely transform your afternoon productivity.",
-    readTime: "5 min read",
-    tag: "Habit Stacking"
-  },
-  {
-    title: "Decoding Food Labels: A Practical Guide to Clean Eating",
-    excerpt: "Learn to identify hidden sugars, inflammatory seed oils, and artificial additives masquerading as 'healthy' alternatives in the grocery aisle.",
-    readTime: "7 min read",
-    tag: "Nutrition"
-  },
-  {
-    title: "The Science of Cold Exposure and Metabolic Adaptation",
-    excerpt: "How brief, controlled cold therapy stimulates brown fat activation, reduces systemic inflammation, and enhances dopamine baseline levels.",
-    readTime: "6 min read",
-    tag: "Biohacking"
-  }
-];
-export default function HealthyLifestylePage() {
-  return (
-    <main className="min-h-screen bg-[#f8f9fa] py-12 font-Poppins text-[#2b2b2d]">
-      <div className="mx-auto max-w-7xl px-4 md:px-6">
-        {}
-        <nav className="mb-8 flex items-center text-[13px] font-medium text-[#686e7d]">
-          <Link href="/" className="hover:text-[#0f766e] transition-colors duration-200">Home</Link>
-          <span className="mx-2 text-[#cbd5e1]">/</span>
-          <Link href="/wellness-journal" className="hover:text-[#0f766e] transition-colors duration-200">Wellness Journal</Link>
-          <span className="mx-2 text-[#cbd5e1]">/</span>
-          <span className="text-[#0f766e]">Healthy Lifestyle</span>
-        </nav>
-        {}
-        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0f766e] via-[#5a6fc9] to-[#4a5cb8] p-8 md:p-16 text-white shadow-[0_20px_40px_-10px_rgba(108,127,216,0.3)] mb-14">
-          <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
-          <div className="absolute -left-10 bottom-0 h-60 w-60 rounded-full bg-[#2b2b2d]/10 blur-3xl" aria-hidden="true" />
-          <div className="relative z-10 max-w-3xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 backdrop-blur-md border border-white/10">
-              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              Holistic Wellness
-            </span>
-            <h1 className="mt-5 text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl leading-[1.1]">
-              Cultivating a Sustainable <br className="hidden md:block" />
-              <span className="text-white/90">Healthy Lifestyle</span>
-            </h1>
-            <p className="mt-5 text-[16px] leading-[28px] text-white/85 max-w-2xl">
-              True health is not a destination, but a dynamic equilibrium. Explore evidence-based strategies to harmonize your physical, mental, and metabolic well-being for the long term.
-            </p>
-          </div>
-        </section>
-        {}
-        <div className="mb-16">
-          <div className="mb-8 flex items-center gap-3">
-            <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
-            <h2 className="text-[22px] font-bold text-[#2b2b2d]">The Four Pillars of Vitality</h2>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {lifestylePillars.map((pillar) => (
-              <article
-                key={pillar.title}
-                className="group relative flex flex-col justify-between rounded-[24px] border border-[#eef0f4] bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-10px_rgba(43,43,45,0.08)] hover:border-[#0f766e]/30"
-              >
-                <div>
-                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold tracking-wide rounded-lg border mb-5 ${pillar.color}`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${pillar.iconColor.replace('text', 'bg')}`} />
-                    {pillar.category}
-                  </div>
-                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8f9fa] ${pillar.iconColor} transition-colors duration-300 group-hover:bg-[#0f766e] group-hover:text-white`}>
-                    {pillar.icon}
-                  </div>
-                  <h3 className="text-[18px] font-bold leading-[24px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#0f766e]">
-                    {pillar.title}
-                  </h3>
-                  <p className="text-[14px] leading-[24px] text-[#686e7d]">
-                    {pillar.desc}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-        {}
-        <div className="mb-16">
-          <div className="mb-8 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
-              <h2 className="text-[22px] font-bold text-[#2b2b2d]">Latest Editorial Insights</h2>
-            </div>
-            <Link href="/wellness-journal" className="hidden md:inline-flex items-center gap-1 text-[14px] font-semibold text-[#0f766e] hover:text-[#5a6fc9] transition-colors">
-              View all articles
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-            </Link>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {featuredArticles.map((article, idx) => (
-              <Link
-                href={`/wellness-journal/article-${idx + 1}`}
-                key={article.title}
-                className="group flex flex-col rounded-[24px] border border-[#eef0f4] bg-white overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-10px_rgba(43,43,45,0.08)]"
-              >
-                {}
-                <div className="h-40 w-full bg-gradient-to-br from-[#f3f1ff] to-[#eef0f4] relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity duration-500">
-                    <svg className="w-24 h-24 text-[#0f766e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
-                  </div>
-                  <div className="absolute top-4 left-4">
-                    <span className="inline-block rounded-full bg-white/80 backdrop-blur-sm px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#0f766e] border border-[#0f766e]/20">
-                      {article.tag}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex flex-col flex-grow p-6">
-                  <h3 className="text-[18px] font-bold leading-[26px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#0f766e]">
-                    {article.title}
-                  </h3>
-                  <p className="text-[14px] leading-[24px] text-[#686e7d] mb-4 flex-grow">
-                    {article.excerpt}
-                  </p>
-                  <div className="flex items-center gap-2 text-[12px] font-medium text-[#94a3b8] pt-4 border-t border-[#f1f3f5]">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    {article.readTime}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-6 text-center md:hidden">
-            <Link href="/wellness-journal" className="inline-flex items-center gap-1 text-[14px] font-semibold text-[#0f766e] hover:text-[#5a6fc9] transition-colors">
-              View all articles
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-            </Link>
-          </div>
-        </div>
-        {}
-        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#f3f1ff] via-white to-[#f8f9fa] border border-[#0f766e]/10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#0f766e]/5 blur-3xl" />
-          <div className="relative z-10 max-w-xl">
-            <h3 className="text-[22px] font-bold text-[#2b2b2d] flex items-center gap-3">
-              <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Join the 2good PlusWellness Community
-            </h3>
-            <p className="text-[15px] leading-[26px] text-[#686e7d] mt-3">
-              Receive weekly, science-backed insights on nutrition, movement, and mindset directly to your inbox. No spam, just actionable strategies for a better you.
-            </p>
-          </div>
-          <div className="relative z-10 flex w-full md:w-auto gap-3">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="h-12 w-full md:w-72 rounded-xl border border-[#e2e8f0] bg-white px-4 text-[14px] text-[#2b2b2d] outline-none transition-all duration-200 placeholder:text-[#94a3b8] focus:border-[#0f766e] focus:ring-4 focus:ring-[#0f766e]/10"
-            />
-            <button className="h-12 whitespace-nowrap inline-flex items-center justify-center rounded-xl bg-[#0f766e] px-6 text-[14px] font-semibold text-white shadow-lg shadow-[#0f766e]/20 transition-all duration-300 hover:bg-[#2b2b2d] hover:shadow-xl hover:-translate-y-0.5">
-              Subscribe
-            </button>
-          </div>
-        </section>
-      </div>
-    </main>
-  );
-}
-````
-
 ## File: src/app/wellness-journal/herbal-benefits/page.tsx
 ````typescript
 "use client";
@@ -3236,135 +3018,6 @@ export default function HerbalBenefitsPage() {
 }
 ````
 
-## File: src/app/wellness-journal/hydration-tips/page.tsx
-````typescript
-"use client";
-import React, { useState } from "react";
-import Link from "next/link";
-export default function HydrationTipsPage() {
-  const [calculatorWeight, setCalculatorWeight] = useState("");
-  const [calculatedOz, setCalculatedOz] = useState<number | null>(null);
-  const handleCalculate = (e: React.FormEvent) => {
-    e.preventDefault();
-    const weightNum = parseFloat(calculatorWeight);
-    if (!isNaN(weightNum) && weightNum > 0) {
-      setCalculatedOz(Math.round(weightNum * 0.5));
-    }
-  };
-  return (
-    <main className="min-h-screen bg-[#f8f9fa] py-12 font-Poppins text-[#2b2b2d]">
-      <div className="mx-auto max-w-7xl px-4 md:px-6">
-        {}
-        <nav className="mb-8 flex items-center text-[13px] font-medium text-[#686e7d]">
-          <Link href="/" className="hover:text-[#0f766e] transition-colors duration-200">Home</Link>
-          <span className="mx-2 text-[#cbd5e1]">/</span>
-          <Link href="/wellness-journal" className="hover:text-[#0f766e] transition-colors duration-200">Wellness Journal</Link>
-          <span className="mx-2 text-[#cbd5e1]">/</span>
-          <span className="text-[#0f766e]">Hydration Tips</span>
-        </nav>
-        {}
-        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0f766e] via-[#5a6fc9] to-[#4a5cb8] p-8 md:p-16 text-white shadow-[0_20px_40px_-10px_rgba(108,127,216,0.3)] mb-12">
-          <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
-          <div className="absolute -left-10 bottom-0 h-60 w-60 rounded-full bg-[#2b2b2d]/10 blur-3xl" aria-hidden="true" />
-          <div className="relative z-10 max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 backdrop-blur-md border border-white/10">
-              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-              Optimal Living
-            </span>
-            <h1 className="mt-5 text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl leading-[1.1]">
-              The Art of Hydration
-            </h1>
-            <p className="mt-5 text-[16px] leading-[28px] text-white/85 max-w-xl">
-              Water isn't just a basic need—it is the foundational fuel for cellular performance, mental clarity, and metabolic function. Discover your ideal daily rhythm.
-            </p>
-          </div>
-        </section>
-        <div className="grid gap-10 lg:grid-cols-3">
-          {}
-          <div className="lg:col-span-2 space-y-8">
-            {}
-            <div className="rounded-[24px] border border-[#eef0f4] bg-white p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-              <h2 className="text-[22px] font-bold text-[#2b2b2d] mb-8 flex items-center gap-3">
-                <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
-                Strategic Daily Hydration Rules
-              </h2>
-              <div className="space-y-8">
-                {[
-                  {
-                    num: "01",
-                    title: "The Golden Morning Glass",
-                    desc: "Drink 16oz of ambient water immediately upon waking. Sleep naturally dehydrates your system; jumpstart your digestion and wake up your internal organs before adding coffee or food.",
-                    icon: <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                  },
-                  {
-                    num: "02",
-                    title: "Interval Sipping Over Gulping",
-                    desc: "Your body absorbs fluid best when consumed steadily in small increments. Chugging large volumes overrides renal capacity, sending water straight out of your system without structural absorption.",
-                    icon: <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  },
-                  {
-                    num: "03",
-                    title: "Pre-empt Hunger Triggers",
-                    desc: "Mild dehydration frequently mimics food cravings in the brain. Drink a glass of water 20 minutes before regular meal slots to ground genuine nutritional signals.",
-                    icon: <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                  }
-                ].map((item) => (
-                  <div key={item.num} className="group flex gap-5 items-start">
-                    <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0f766e]/5 text-[#0f766e] transition-colors duration-300 group-hover:bg-[#0f766e] group-hover:text-white">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-[18px] font-bold text-[#2b2b2d] mb-1">{item.title}</h3>
-                      <p className="text-[15px] leading-[26px] text-[#686e7d]">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {}
-            <div className="rounded-[24px] border-l-4 border-[#f59e0b] bg-[#fffbeb]/50 p-6 md:p-8 shadow-sm backdrop-blur-sm">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 mt-1">
-                  <svg className="w-6 h-6 text-[#f59e0b]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                </div>
-                <div>
-                  <h3 className="text-[18px] font-bold text-[#2b2b2d] mb-2">Recognizing Silent Dehydration Flags</h3>
-                  <p className="text-[15px] leading-[26px] text-[#686e7d]">
-                    If you are already experiencing a dry mouth or mild fatigue, your tissues are running on low reserves. Watch out for brain fog, random headaches, and reduced muscle elasticity during simple physical movements.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          {}
-          <div className="space-y-8">
-            {}
-            {
-}
-            {}
-            <div className="relative overflow-hidden rounded-[24px] bg-[#2b2b2d] p-8 text-center text-white shadow-xl">
-              <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-[#0f766e]/20 blur-3xl" />
-              <div className="relative z-10">
-                <h4 className="text-[20px] font-bold mb-3">Looking for More Flavor?</h4>
-                <p className="text-[14px] text-white/70 leading-[24px] mb-6">
-                  Infuse your routine with trace minerals and botanicals using our curated 2good Plus Wellness Water blends.
-                </p>
-                <Link
-                  href="/shop"
-                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0f766e] px-6 text-[14px] font-semibold text-white transition-all duration-300 hover:bg-white hover:text-[#2b2b2d] hover:shadow-lg"
-                >
-                  Explore Infusions
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
-}
-````
-
 ## File: src/components/common/CartSidebar.tsx
 ````typescript
 "use client";
@@ -3483,6 +3136,89 @@ export default function CartSidebar() {
         </div>
       </div>
     </>
+  );
+}
+````
+
+## File: src/components/shop/ProductActions.tsx
+````typescript
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useCartStore } from "@/store/useCartStore";
+import { useUiStore } from "@/store/useUiStore";
+interface ProductActionsProps {
+  productId: string;
+  compact?: boolean;
+}
+export default function ProductActions({
+  productId,
+  compact = false,
+}: ProductActionsProps) {
+  const router = useRouter();
+  const { status } = useSession();
+  const addToCart = useCartStore((state) => state.addToCart);
+  const isLoading = useCartStore((state) => state.isLoading);
+  const toggleCart = useUiStore((state) => state.toggleCart);
+  const [message, setMessage] = useState<string | null>(null);
+  const redirectToLogin = (callbackUrl: string) => {
+    alert("Please login first to continue.");
+    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  };
+  const handleAddToCart = async () => {
+    setMessage(null);
+    if (status !== "authenticated") {
+      redirectToLogin("/shop");
+      return;
+    }
+    try {
+      await addToCart(productId, 1);
+      setMessage("Added to cart");
+      toggleCart();
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Unable to add product.",
+      );
+    }
+  };
+  const handleBuyNow = async () => {
+    setMessage(null);
+    if (status !== "authenticated") {
+      redirectToLogin(`/my-cart?buyNow=${productId}`);
+      return;
+    }
+    try {
+      await addToCart(productId, 1);
+      router.push("/my-cart");
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Unable to continue.",
+      );
+    }
+  };
+  return (
+    <div className={compact ? "mt-[16px]" : "mt-[24px]"}>
+      <div
+        className={
+          compact ? "flex flex-col gap-[10px]" : "flex flex-wrap gap-[12px]"
+        }
+      >
+        {
+}
+        <button
+          type="button"
+          onClick={() => router.push(`/contact-us`)}
+          disabled={isLoading || status === "loading"}
+          className="flex-1 rounded-[12px] bg-teal-600  px-[18px] py-[12px] font-Poppins text-[14px] font-semibold text-white transition-all duration-200 hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Buy Now
+        </button>
+      </div>
+      {message ? (
+        <p className="mt-2 text-center text-[12px] text-[#0f766e]">{message}</p>
+      ) : null}
+    </div>
   );
 }
 ````
@@ -3870,6 +3606,528 @@ export default function RegisterPage() {
 }
 ````
 
+## File: src/app/wellness-journal/healthy-lifestyle/page.tsx
+````typescript
+"use client";
+import Link from "next/link";
+const lifestylePillars = [
+  {
+    title: "Restorative Sleep Architecture",
+    category: "Recovery",
+    color: "bg-indigo-50/80 border-indigo-100 text-indigo-700",
+    iconColor: "text-indigo-500",
+    desc: "Optimize your circadian rhythm through temperature regulation, light exposure management, and consistent wind-down protocols.",
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+      </svg>
+    )
+  },
+  {
+    title: "Mindful Kinetic Movement",
+    category: "Vitality",
+    color: "bg-rose-50/80 border-rose-100 text-rose-700",
+    iconColor: "text-rose-500",
+    desc: "Shift from punitive exercise to joyful movement. Focus on mobility, functional strength, and daily non-exercise activity thermogenesis (NEAT).",
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+    )
+  },
+  {
+    title: "Nutrient-Dense Fueling",
+    category: "Nourishment",
+    color: "bg-emerald-50/80 border-emerald-100 text-emerald-700",
+    iconColor: "text-emerald-500",
+    desc: "Prioritize whole, unprocessed foods rich in micronutrients, fiber, and healthy fats to sustain stable energy and robust gut microbiome diversity.",
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    )
+  },
+  {
+    title: "Cognitive & Stress Resilience",
+    category: "Mindset",
+    color: "bg-amber-50/80 border-amber-100 text-amber-700",
+    iconColor: "text-amber-500",
+    desc: "Implement daily nervous system regulation practices like breathwork, meditation, and digital detoxing to maintain mental clarity.",
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+    )
+  }
+];
+const featuredArticles = [
+  {
+    title: "The 20-Minute Morning Protocol for Sustained Energy",
+    excerpt: "Why delaying caffeine intake by 90 minutes and prioritizing sunlight exposure can completely transform your afternoon productivity.",
+    readTime: "5 min read",
+    tag: "Habit Stacking"
+  },
+  {
+    title: "Decoding Food Labels: A Practical Guide to Clean Eating",
+    excerpt: "Learn to identify hidden sugars, inflammatory seed oils, and artificial additives masquerading as 'healthy' alternatives in the grocery aisle.",
+    readTime: "7 min read",
+    tag: "Nutrition"
+  },
+  {
+    title: "The Science of Cold Exposure and Metabolic Adaptation",
+    excerpt: "How brief, controlled cold therapy stimulates brown fat activation, reduces systemic inflammation, and enhances dopamine baseline levels.",
+    readTime: "6 min read",
+    tag: "Biohacking"
+  }
+];
+export default function HealthyLifestylePage() {
+  return (
+    <main className="min-h-screen bg-[#f8f9fa] py-12 font-Poppins text-[#2b2b2d]">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        {}
+        <nav className="mb-8 flex items-center text-[13px] font-medium text-[#686e7d]">
+          <Link href="/" className="hover:text-[#0f766e] transition-colors duration-200">Home</Link>
+          <span className="mx-2 text-[#cbd5e1]">/</span>
+          <Link href="/wellness-journal" className="hover:text-[#0f766e] transition-colors duration-200">Wellness Journal</Link>
+          <span className="mx-2 text-[#cbd5e1]">/</span>
+          <span className="text-[#0f766e]">Healthy Lifestyle</span>
+        </nav>
+        {}
+        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0f766e] via-[#5a6fc9] to-[#4a5cb8] p-8 md:p-16 text-white shadow-[0_20px_40px_-10px_rgba(108,127,216,0.3)] mb-14">
+          <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
+          <div className="absolute -left-10 bottom-0 h-60 w-60 rounded-full bg-[#2b2b2d]/10 blur-3xl" aria-hidden="true" />
+          <div className="relative z-10 max-w-3xl">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 backdrop-blur-md border border-white/10">
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+              Holistic Wellness
+            </span>
+            <h1 className="mt-5 text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl leading-[1.1]">
+              Cultivating a Sustainable <br className="hidden md:block" />
+              <span className="text-white/90">Healthy Lifestyle</span>
+            </h1>
+            <p className="mt-5 text-[16px] leading-[28px] text-white/85 max-w-2xl">
+              True health is not a destination, but a dynamic equilibrium. Explore evidence-based strategies to harmonize your physical, mental, and metabolic well-being for the long term.
+            </p>
+          </div>
+        </section>
+        {}
+        <div className="mb-16">
+          <div className="mb-8 flex items-center gap-3">
+            <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
+            <h2 className="text-[22px] font-bold text-[#2b2b2d]">The Four Pillars of Vitality</h2>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {lifestylePillars.map((pillar) => (
+              <article
+                key={pillar.title}
+                className="group relative flex flex-col justify-between rounded-[24px] border border-[#eef0f4] bg-white p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-10px_rgba(43,43,45,0.08)] hover:border-[#0f766e]/30"
+              >
+                <div>
+                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold tracking-wide rounded-lg border mb-5 ${pillar.color}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${pillar.iconColor.replace('text', 'bg')}`} />
+                    {pillar.category}
+                  </div>
+                  <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f8f9fa] ${pillar.iconColor} transition-colors duration-300 group-hover:bg-[#0f766e] group-hover:text-white`}>
+                    {pillar.icon}
+                  </div>
+                  <h3 className="text-[18px] font-bold leading-[24px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#0f766e]">
+                    {pillar.title}
+                  </h3>
+                  <p className="text-[14px] leading-[24px] text-[#686e7d]">
+                    {pillar.desc}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+        {}
+        <div className="mb-16">
+          <div className="mb-8 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
+              <h2 className="text-[22px] font-bold text-[#2b2b2d]">Latest Editorial Insights</h2>
+            </div>
+            <Link href="/wellness-journal" className="hidden md:inline-flex items-center gap-1 text-[14px] font-semibold text-[#0f766e] hover:text-[#5a6fc9] transition-colors">
+              View all articles
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+            </Link>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {featuredArticles.map((article, idx) => (
+              <Link
+                href={`/wellness-journal/article-${idx + 1}`}
+                key={article.title}
+                className="group flex flex-col rounded-[24px] border border-[#eef0f4] bg-white overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-10px_rgba(43,43,45,0.08)]"
+              >
+                {}
+                <div className="h-40 w-full bg-gradient-to-br from-[#f3f1ff] to-[#eef0f4] relative overflow-hidden">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-10 group-hover:opacity-20 transition-opacity duration-500">
+                    <svg className="w-24 h-24 text-[#0f766e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+                  </div>
+                  <div className="absolute top-4 left-4">
+                    <span className="inline-block rounded-full bg-white/80 backdrop-blur-sm px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#0f766e] border border-[#0f766e]/20">
+                      {article.tag}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col flex-grow p-6">
+                  <h3 className="text-[18px] font-bold leading-[26px] text-[#2b2b2d] mb-3 transition-colors duration-300 group-hover:text-[#0f766e]">
+                    {article.title}
+                  </h3>
+                  <p className="text-[14px] leading-[24px] text-[#686e7d] mb-4 flex-grow">
+                    {article.excerpt}
+                  </p>
+                  <div className="flex items-center gap-2 text-[12px] font-medium text-[#94a3b8] pt-4 border-t border-[#f1f3f5]">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    {article.readTime}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6 text-center md:hidden">
+            <Link href="/wellness-journal" className="inline-flex items-center gap-1 text-[14px] font-semibold text-[#0f766e] hover:text-[#5a6fc9] transition-colors">
+              View all articles
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+            </Link>
+          </div>
+        </div>
+        {}
+        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#f3f1ff] via-white to-[#f8f9fa] border border-[#0f766e]/10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#0f766e]/5 blur-3xl" />
+          <div className="relative z-10 max-w-xl">
+            <h3 className="text-[22px] font-bold text-[#2b2b2d] flex items-center gap-3">
+              <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Join the 2good PlusWellness Community
+            </h3>
+            <p className="text-[15px] leading-[26px] text-[#686e7d] mt-3">
+              Receive weekly, science-backed insights on nutrition, movement, and mindset directly to your inbox. No spam, just actionable strategies for a better you.
+            </p>
+          </div>
+          <div className="relative z-10 flex w-full md:w-auto gap-3">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="h-12 w-full md:w-72 rounded-xl border border-[#e2e8f0] bg-white px-4 text-[14px] text-[#2b2b2d] outline-none transition-all duration-200 placeholder:text-[#94a3b8] focus:border-[#0f766e] focus:ring-4 focus:ring-[#0f766e]/10"
+            />
+            <button className="h-12 whitespace-nowrap inline-flex items-center justify-center rounded-xl bg-[#0f766e] px-6 text-[14px] font-semibold text-white shadow-lg shadow-[#0f766e]/20 transition-all duration-300 hover:bg-[#2b2b2d] hover:shadow-xl hover:-translate-y-0.5">
+              Subscribe
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+````
+
+## File: src/app/wellness-journal/hydration-tips/page.tsx
+````typescript
+"use client";
+import React, { useState } from "react";
+import Link from "next/link";
+export default function HydrationTipsPage() {
+  const [calculatorWeight, setCalculatorWeight] = useState("");
+  const [calculatedOz, setCalculatedOz] = useState<number | null>(null);
+  const handleCalculate = (e: React.FormEvent) => {
+    e.preventDefault();
+    const weightNum = parseFloat(calculatorWeight);
+    if (!isNaN(weightNum) && weightNum > 0) {
+      setCalculatedOz(Math.round(weightNum * 0.5));
+    }
+  };
+  return (
+    <main className="min-h-screen bg-[#f8f9fa] py-12 font-Poppins text-[#2b2b2d]">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        {}
+        <nav className="mb-8 flex items-center text-[13px] font-medium text-[#686e7d]">
+          <Link href="/" className="hover:text-[#0f766e] transition-colors duration-200">Home</Link>
+          <span className="mx-2 text-[#cbd5e1]">/</span>
+          <Link href="/wellness-journal" className="hover:text-[#0f766e] transition-colors duration-200">Wellness Journal</Link>
+          <span className="mx-2 text-[#cbd5e1]">/</span>
+          <span className="text-[#0f766e]">Hydration Tips</span>
+        </nav>
+        {}
+        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0f766e] via-[#5a6fc9] to-[#4a5cb8] p-8 md:p-16 text-white shadow-[0_20px_40px_-10px_rgba(108,127,216,0.3)] mb-12">
+          <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
+          <div className="absolute -left-10 bottom-0 h-60 w-60 rounded-full bg-[#2b2b2d]/10 blur-3xl" aria-hidden="true" />
+          <div className="relative z-10 max-w-2xl">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 backdrop-blur-md border border-white/10">
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+              Optimal Living
+            </span>
+            <h1 className="mt-5 text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl leading-[1.1]">
+              The Art of Hydration
+            </h1>
+            <p className="mt-5 text-[16px] leading-[28px] text-white/85 max-w-xl">
+              Water isn't just a basic need—it is the foundational fuel for cellular performance, mental clarity, and metabolic function. Discover your ideal daily rhythm.
+            </p>
+          </div>
+        </section>
+        <div className="grid gap-10 lg:grid-cols-3">
+          {}
+          <div className="lg:col-span-2 space-y-8">
+            {}
+            <div className="rounded-[24px] border border-[#eef0f4] bg-white p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              <h2 className="text-[22px] font-bold text-[#2b2b2d] mb-8 flex items-center gap-3">
+                <span className="h-8 w-1 rounded-full bg-[#0f766e]" />
+                Strategic Daily Hydration Rules
+              </h2>
+              <div className="space-y-8">
+                {[
+                  {
+                    num: "01",
+                    title: "The Golden Morning Glass",
+                    desc: "Drink 16oz of ambient water immediately upon waking. Sleep naturally dehydrates your system; jumpstart your digestion and wake up your internal organs before adding coffee or food.",
+                    icon: <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                  },
+                  {
+                    num: "02",
+                    title: "Interval Sipping Over Gulping",
+                    desc: "Your body absorbs fluid best when consumed steadily in small increments. Chugging large volumes overrides renal capacity, sending water straight out of your system without structural absorption.",
+                    icon: <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  },
+                  {
+                    num: "03",
+                    title: "Pre-empt Hunger Triggers",
+                    desc: "Mild dehydration frequently mimics food cravings in the brain. Drink a glass of water 20 minutes before regular meal slots to ground genuine nutritional signals.",
+                    icon: <svg className="w-6 h-6 text-[#0f766e]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                  }
+                ].map((item) => (
+                  <div key={item.num} className="group flex gap-5 items-start">
+                    <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0f766e]/5 text-[#0f766e] transition-colors duration-300 group-hover:bg-[#0f766e] group-hover:text-white">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <h3 className="text-[18px] font-bold text-[#2b2b2d] mb-1">{item.title}</h3>
+                      <p className="text-[15px] leading-[26px] text-[#686e7d]">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {}
+            <div className="rounded-[24px] border-l-4 border-[#f59e0b] bg-[#fffbeb]/50 p-6 md:p-8 shadow-sm backdrop-blur-sm">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 mt-1">
+                  <svg className="w-6 h-6 text-[#f59e0b]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                </div>
+                <div>
+                  <h3 className="text-[18px] font-bold text-[#2b2b2d] mb-2">Recognizing Silent Dehydration Flags</h3>
+                  <p className="text-[15px] leading-[26px] text-[#686e7d]">
+                    If you are already experiencing a dry mouth or mild fatigue, your tissues are running on low reserves. Watch out for brain fog, random headaches, and reduced muscle elasticity during simple physical movements.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {}
+          <div className="space-y-8">
+            {}
+            {
+}
+            {}
+            <div className="relative overflow-hidden rounded-[24px] bg-[#2b2b2d] p-8 text-center text-white shadow-xl">
+              <div className="absolute top-0 right-0 h-32 w-32 rounded-full bg-[#0f766e]/20 blur-3xl" />
+              <div className="relative z-10">
+                <h4 className="text-[20px] font-bold mb-3">Looking for More Flavor?</h4>
+                <p className="text-[14px] text-white/70 leading-[24px] mb-6">
+                  Infuse your routine with trace minerals and botanicals using our curated 2good Plus Wellness Water blends.
+                </p>
+                <Link
+                  href="/shop"
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0f766e] px-6 text-[14px] font-semibold text-white transition-all duration-300 hover:bg-white hover:text-[#2b2b2d] hover:shadow-lg"
+                >
+                  Explore Infusions
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+````
+
+## File: src/lib/products.ts
+````typescript
+export type { ProductDto as Product } from "@/types/product";
+export {
+  products,
+  getProductById,
+  getRelatedProducts,
+  productCategories,
+  productTags,
+} from "./products.data";
+````
+
+## File: package.json
+````json
+{
+  "name": "twogooddrinks",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "jumpstart": "next build && next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "animate.css": "^4.1.1",
+    "aos": "^2.3.4",
+    "axios": "^1.17.0",
+    "bcryptjs": "^3.0.2",
+    "lucide-react": "^1.17.0",
+    "next": "16.2.7",
+    "next-auth": "^5.0.0-beta.29",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "remixicon": "^4.9.1",
+    "slick-carousel": "^1.8.1",
+    "swiper": "^12.2.0",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.7",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+````
+
+## File: src/app/contact-us/page.tsx
+````typescript
+import { contactContent } from "@/lib/site-content";
+export default function ContactPage() {
+  const whatsappHref = `https://wa.me/${contactContent.whatsapp.replace(/[^0-9]/g, "")}`;
+  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(
+    contactContent.mapQuery,
+  )}&output=embed`;
+  return (
+    <main className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <section className="grid gap-10 rounded-[32px] bg-white p-8 shadow-sm md:grid-cols-[1.1fr_0.9fr] md:p-12 lg:p-16">
+        <div>
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+            {contactContent.eyebrow}
+          </p>
+          <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+            {contactContent.title}
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+            {contactContent.description}
+          </p>
+          <form className="mt-10 space-y-5 rounded-[28px] bg-[#f8fafc] p-6 md:p-8">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="name">
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                placeholder="Your name"
+                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="Your email"
+                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="message">
+                Message
+              </label>
+              <textarea
+                id="message"
+                rows={5}
+                placeholder="How can we help you?"
+                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
+              />
+            </div>
+            <button
+              type="submit"
+              className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold !text-white transition hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
+            >
+              Send Message
+            </button>
+          </form>
+        </div>
+        <aside className="h-fit rounded-[28px] bg-[#f8fafc] p-6 md:p-8">
+          <h2 className="text-2xl font-semibold text-slate-900">
+            {contactContent.panelTitle}
+          </h2>
+          <div className="mt-6 space-y-5 text-sm leading-7 text-slate-600">
+            <div>
+              <p className="font-semibold text-slate-900">Phone</p>
+              <a href={`tel:${contactContent.phone}`} className="hover:text-[#0f766e]">
+                {contactContent.phone}
+              </a>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-900">WhatsApp</p>
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-[#0f766e]"
+              >
+                Chat with us on WhatsApp →
+              </a>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-900">Email</p>
+              <a href={`mailto:${contactContent.email}`} className="hover:text-[#0f766e]">
+                {contactContent.email}
+              </a>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-900">Address</p>
+              <p>{contactContent.address}</p>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-900">Business hours</p>
+              <p>{contactContent.businessHours}</p>
+            </div>
+          </div>
+          <div className="mt-8 overflow-hidden rounded-[24px] border border-slate-200 bg-white">
+            <iframe
+              title="2goodplus location map"
+              src={mapSrc}
+              className="h-[280px] w-full border-0"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        </aside>
+      </section>
+    </main>
+  );
+}
+````
+
 ## File: src/components/common/AboutSection.tsx
 ````typescript
 "use client";
@@ -3903,7 +4161,7 @@ export default function AboutSection({ variant = "page" }: AboutSectionProps) {
             ) : null}
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/about-us"
+                href="/shop"
                 className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold !text-white transition hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
               >
                 Order Water
@@ -4003,7 +4261,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
           <span className="font-Poppins text-[13px] text-[#777]">
-            Stock: {product.Stock}
+            Pack Size: {product.product_packsize}
           </span>
         </div>
         <div className="mt-[14px]">
@@ -4018,18 +4276,6 @@ export default function ProductCard({ product }: ProductCardProps) {
 }
 ````
 
-## File: src/lib/products.ts
-````typescript
-export type { ProductDto as Product } from "@/types/product";
-export {
-  products,
-  getProductById,
-  getRelatedProducts,
-  productCategories,
-  productTags,
-} from "./products.data";
-````
-
 ## File: src/lib/site-content.ts
 ````typescript
 export const homeContent = {
@@ -4040,7 +4286,7 @@ export const homeContent = {
     description:
       "Every drop of 2goodplus packaged drinking water is purified through a 7-stage filtration process, tested to BIS standards, and sealed fresh — so you can trust every sip your family takes, every single day.",
     ctaLabel: "Order now →",
-    ctaHref: "/about-us",
+    ctaHref: "/shop",
     secondaryCtaLabel: "Contact for bulk orders",
     secondaryCtaHref: "/contact-us",
     image: "/assets/img/hero/hero-b1.png",
@@ -4270,236 +4516,47 @@ img {
 }
 ````
 
-## File: package.json
-````json
-{
-  "name": "twogooddrinks",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "jumpstart": "next build && next start",
-    "lint": "eslint",
-    "postinstall": "prisma generate",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio"
-  },
-  "dependencies": {
-    "@prisma/client": "^5.22.0",
-    "axios": "^1.17.0",
-    "bcryptjs": "^3.0.2",
-    "lucide-react": "^1.17.0",
-    "next": "16.2.7",
-    "next-auth": "^5.0.0-beta.29",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "remixicon": "^4.9.1",
-    "zustand": "^5.0.14"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.7",
-    "prisma": "^5.22.0",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
-}
-````
-
-## File: src/app/contact-us/page.tsx
-````typescript
-import { contactContent } from "@/lib/site-content";
-export default function ContactPage() {
-  const whatsappHref = `https://wa.me/${contactContent.whatsapp.replace(/[^0-9]/g, "")}`;
-  const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(
-    contactContent.mapQuery,
-  )}&output=embed`;
-  return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-      <section className="grid gap-10 rounded-[32px] bg-white p-8 shadow-sm md:grid-cols-[1.1fr_0.9fr] md:p-12 lg:p-16">
-        <div>
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
-            {contactContent.eyebrow}
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
-            {contactContent.title}
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            {contactContent.description}
-          </p>
-          <form className="mt-10 space-y-5 rounded-[28px] bg-[#f8fafc] p-6 md:p-8">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="name">
-                Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                placeholder="Your name"
-                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
-              />
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="Your email"
-                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
-              />
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="message">
-                Message
-              </label>
-              <textarea
-                id="message"
-                rows={5}
-                placeholder="How can we help you?"
-                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-[#0f766e]"
-              />
-            </div>
-            <button
-              type="submit"
-              className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold !text-white transition hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
-            >
-              Send Message
-            </button>
-          </form>
-        </div>
-        <aside className="h-fit rounded-[28px] bg-[#f8fafc] p-6 md:p-8">
-          <h2 className="text-2xl font-semibold text-slate-900">
-            {contactContent.panelTitle}
-          </h2>
-          <div className="mt-6 space-y-5 text-sm leading-7 text-slate-600">
-            <div>
-              <p className="font-semibold text-slate-900">Phone</p>
-              <a href={`tel:${contactContent.phone}`} className="hover:text-[#0f766e]">
-                {contactContent.phone}
-              </a>
-            </div>
-            <div>
-              <p className="font-semibold text-slate-900">WhatsApp</p>
-              <a
-                href={whatsappHref}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[#0f766e]"
-              >
-                Chat with us on WhatsApp →
-              </a>
-            </div>
-            <div>
-              <p className="font-semibold text-slate-900">Email</p>
-              <a href={`mailto:${contactContent.email}`} className="hover:text-[#0f766e]">
-                {contactContent.email}
-              </a>
-            </div>
-            <div>
-              <p className="font-semibold text-slate-900">Address</p>
-              <p>{contactContent.address}</p>
-            </div>
-            <div>
-              <p className="font-semibold text-slate-900">Business hours</p>
-              <p>{contactContent.businessHours}</p>
-            </div>
-          </div>
-          <div className="mt-8 overflow-hidden rounded-[24px] border border-slate-200 bg-white">
-            <iframe
-              title="2goodplus location map"
-              src={mapSrc}
-              className="h-[280px] w-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
-        </aside>
-      </section>
-    </main>
-  );
-}
-````
-
-## File: src/app/layout.tsx
-````typescript
-import type { Metadata } from "next";
-import "@/styles/globals.css";
-import AuthProvider from "@/components/providers/AuthProvider";
-import CartSidebar from "@/components/common/CartSidebar";
-import Footer from "@/components/common/Footer";
-import Header from "@/components/common/Header";
-import "remixicon/fonts/remixicon.css";
-import FloatingWhatsApp from "@/components/common/FloatingWhatsApp";
-export const metadata: Metadata = {
-  title: "2good Plus - Wellness Drinks Store",
-  description:
-    "Hydration products, wellness drinks, herbal infusions, and healthy essentials.",
-};
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="bg-slate-50 pt-[105px] text-slate-900 antialiased max-[575px]:pt-[88px]">
-        {" "}
-        <AuthProvider>
-          <CartSidebar />
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-            <FloatingWhatsApp />
-        </AuthProvider>
-      </body>
-    </html>
-  );
-}
-````
-
 ## File: src/app/shop/[productId]/page.tsx
 ````typescript
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ProductCard from "@/components/shop/ProductCard";
 import ProductActions from "@/components/shop/ProductActions";
-import { getRelatedProducts, products } from "@/lib/products";
-import { getProductById as getProductByIdFromDb } from "@/lib/services/product.service";
+import ProductCard from "@/components/shop/ProductCard";
+import {
+  getAllProducts,
+  getProductById,
+} from "@/lib/services/product.service";
 import type { ProductDto } from "@/types/product";
+export const dynamic = "force-dynamic";
 interface ProductDetailsPageProps {
   params: Promise<{
     productId: string;
   }>;
 }
-export function generateStaticParams() {
-  return products.map((product: ProductDto) => ({
-    productId: product.id,
-  }));
-}
-export default async function ProductDetailsPage({ params }: ProductDetailsPageProps) {
+export default async function ProductDetailsPage({
+  params,
+}: ProductDetailsPageProps) {
   const { productId } = await params;
-  const product = await getProductByIdFromDb(productId);
+  const product = await getProductById(productId);
   if (!product) {
     notFound();
   }
-  const relatedProducts = getRelatedProducts(product);
+  const categoryProducts = await getAllProducts(product.product_category);
+  const relatedProducts = categoryProducts
+    .filter((item) => item.id !== product.id)
+    .slice(0, 4);
   return (
     <main>
       <section className="section-product py-[50px] max-[767px]:py-[35px]">
         <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
           <div className="mb-[25px] font-Poppins text-[14px] text-[#686e7d]">
-            <Link href="/" className="hover:text-[#0f766e]">Home</Link>
+            <Link href="/" className="hover:text-[#0f766e]">
+              Home
+            </Link>
             <span className="mx-2">/</span>
-            <Link href="/shop" className="hover:text-[#0f766e]">Shop</Link>
+            <Link href="/shop" className="hover:text-[#0f766e]">
+              Shop
+            </Link>
             <span className="mx-2">/</span>
             <span className="text-[#3d4750]">{product.product_name}</span>
           </div>
@@ -4520,7 +4577,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
               <p className="font-Poppins text-[14px] font-medium text-[#0f766e]">
                 {product.product_category}
               </p>
-              <h1 className="mt-[8px] font-quicksand text-[34px] max-[767px]:text-[28px] font-bold leading-tight text-[#3d4750]">
+              <h1 className="mt-[8px] font-quicksand text-[34px] font-bold leading-tight text-[#3d4750] max-[767px]:text-[28px]">
                 {product.product_name}
               </h1>
               <p className="mt-[16px] font-Poppins text-[15px] leading-[28px] text-[#686e7d]">
@@ -4539,28 +4596,31 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
               </div>
               <ProductActions productId={product.id} />
               <div className="mt-[28px] grid gap-[12px] sm:grid-cols-3">
-                {[
-                  "Secure checkout",
-                  "Fast delivery",
-                  "Fresh stock",
-                ].map((item) => (
-                  <div key={item} className="rounded-[14px] border border-[#eee] bg-[#f8f8fb] p-[14px] text-center font-Poppins text-[13px] text-[#4b5563]">
-                    {item}
-                  </div>
-                ))}
+                {["Secure checkout", "Fast delivery", "Fresh stock"].map(
+                  (item) => (
+                    <div
+                      key={item}
+                      className="rounded-[14px] border border-[#eee] bg-[#f8f8fb] p-[14px] text-center font-Poppins text-[13px] text-[#4b5563]"
+                    >
+                      {item}
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           </div>
         </div>
       </section>
-      {relatedProducts?.length > 0 ? (
+      {relatedProducts.length > 0 ? (
         <section className="pb-[60px]">
           <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
             <div className="mb-[28px] text-center">
-              <h2 className="font-quicksand text-[30px] font-bold text-[#3d4750]">Related Products</h2>
+              <h2 className="font-quicksand text-[30px] font-bold text-[#3d4750]">
+                Related Products
+              </h2>
             </div>
             <div className="grid grid-cols-1 gap-[24px] min-[576px]:grid-cols-2 min-[992px]:grid-cols-4">
-              {relatedProducts?.map((relatedProduct: ProductDto) => (
+              {relatedProducts.map((relatedProduct: ProductDto) => (
                 <ProductCard key={relatedProduct.id} product={relatedProduct} />
               ))}
             </div>
@@ -4568,6 +4628,50 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
         </section>
       ) : null}
     </main>
+  );
+}
+````
+
+## File: src/app/layout.tsx
+````typescript
+import type { Metadata } from "next";
+import "@/styles/globals.css";
+import AuthProvider from "@/components/providers/AuthProvider";
+import CartSidebar from "@/components/common/CartSidebar";
+import Footer from "@/components/common/Footer";
+import Header from "@/components/common/Header";
+import "remixicon/fonts/remixicon.css";
+import "aos/dist/aos.css";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import "animate.css/animate.min.css";
+import FloatingWhatsApp from "@/components/common/FloatingWhatsApp";
+export const metadata: Metadata = {
+  title: "2good Plus - Wellness Drinks Store",
+  description:
+    "Hydration products, wellness drinks, herbal infusions, and healthy essentials.",
+};
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-slate-50 text-slate-900 antialiased max-[575px]:pt-[68px]">
+        {" "}
+        <AuthProvider>
+          <CartSidebar />
+          <Header />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+          <FloatingWhatsApp />
+        </AuthProvider>
+      </body>
+    </html>
   );
 }
 ````
@@ -4762,29 +4866,79 @@ export default function Footer() {
 ## File: src/app/shop/page.tsx
 ````typescript
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import ProductCard from "@/components/shop/ProductCard";
-import type { Product } from "@/lib/products";
 import { productsService } from "@/lib/services/productsService";
+import type { ProductDto } from "@/types/product";
+const SHOP_CATEGORIES = [
+  "Healthy Drinks",
+  "Packaged Drinking Water",
+  "Herbal Infusions",
+];
 function getPriceNumber(price: string) {
   return Number(price.replace(/[^0-9.]/g, "")) || 0;
 }
-export default function ShopPage() {
-  //// Make 1 state for page and use it for all. if need only only then make new state.
+function ShopPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get("category");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    categoryFromUrl,
+  );
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("latest");
-  const [productsState, setProductsState] = useState<Product[]>([]);
+  const [productsState, setProductsState] = useState<ProductDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    setSelectedCategory(categoryFromUrl);
+  }, [categoryFromUrl]);
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProducts() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await productsService.getAllProducts(
+          categoryFromUrl || undefined,
+        );
+        if (cancelled) return;
+        if (data?.success && Array.isArray(data.products)) {
+          setProductsState(data.products);
+        } else {
+          setProductsState([]);
+          setError("Failed to load products");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Failed to load products", error);
+          setProductsState([]);
+          setError("Failed to load products");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadProducts();
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryFromUrl]);
   const handleCategoryClick = (category: string) => {
-    setSelectedCategory((prev) => (prev === category ? null : category));
+    if (selectedCategory === category) {
+      router.push("/shop");
+      return;
+    }
+    router.push(`/shop?category=${encodeURIComponent(category)}`);
   };
   const handlePriceChange = (range: string) => {
     setSelectedPrices((prev) =>
-      prev.includes(range) ? prev.filter((item) => item !== range) : [...prev, range],
+      prev.includes(range)
+        ? prev.filter((item) => item !== range)
+        : [...prev, range],
     );
   };
   const handleTagClick = (tag: string) => {
@@ -4794,24 +4948,26 @@ export default function ShopPage() {
   };
   const clearAllFilters = () => {
     setSearchQuery("");
-    setSelectedCategory(null);
     setSelectedPrices([]);
     setSelectedTags([]);
     setSortBy("latest");
+    router.push("/shop");
   };
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...productsState];
     if (searchQuery.trim()) {
       const query = searchQuery.trim().toLowerCase();
       result = result.filter((product) =>
-        [product.product_name, product.product_description, product.product_category, product.Tag]
+        [
+          product.product_name,
+          product.product_description,
+          product.product_category,
+          product.Tag,
+        ]
           .join(" ")
           .toLowerCase()
           .includes(query),
       );
-    }
-    if (selectedCategory) {
-      result = result.filter((product) => product.product_category === selectedCategory);
     }
     if (selectedTags.length > 0) {
       result = result.filter((product) => selectedTags.includes(product.Tag));
@@ -4837,64 +4993,36 @@ export default function ShopPage() {
       result.sort((a, b) => a.product_name.localeCompare(b.product_name));
     }
     return result;
-  }, [productsState, searchQuery, selectedCategory, selectedPrices, selectedTags, sortBy]);
+  }, [productsState, searchQuery, selectedPrices, selectedTags, sortBy]);
   const hasActiveFilters =
-    Boolean(searchQuery) || selectedCategory || selectedPrices.length > 0 || selectedTags.length > 0;
-  const productCategories = useMemo(() => {
-    return Array.from(new Set(productsState.map((p) => p.product_category)));
-  }, [productsState]);
+    Boolean(searchQuery) ||
+    Boolean(selectedCategory) ||
+    selectedPrices.length > 0 ||
+    selectedTags.length > 0;
   const productTags = useMemo(() => {
-    return Array.from(new Set(productsState.map((p) => p.Tag)));
+    return Array.from(new Set(productsState.map((p) => p.Tag).filter(Boolean)));
   }, [productsState]);
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      try {
-        const data = await productsService.getAllProducts();
-        if (!cancelled) {
-          if (data?.success && Array.isArray(data.products)) {
-            setProductsState(data.products);
-            setError(null);
-          } else {
-            setProductsState([]);
-            setError('Failed to load products');
-          }
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setError('Failed to load products');
-          setProductsState([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
   return (
     <main>
       <section className="section-shop overflow-x-hidden py-[50px] max-[767px]:py-[35px]">
         <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
           <div className="mb-[35px] text-center">
-            <p className="font-Poppins text-[14px] text-[#0f766e] font-medium mb-[8px]">
+            <p className="mb-[8px] font-Poppins text-[14px] font-medium text-[#0f766e]">
               Hydrate • Heal • Feel Good
             </p>
-            <h1 className="font-quicksand text-[34px] max-[767px]:text-[28px] font-bold text-[#3d4750] mb-[10px]">
-              Shop Wellness Products
+            <h1 className="mb-[10px] font-quicksand text-[34px] font-bold text-[#3d4750] max-[767px]:text-[28px]">
+              {selectedCategory || "Shop Wellness Products"}
             </h1>
-            <p className="font-Poppins text-[15px] text-[#686e7d] max-w-[620px] mx-auto leading-[26px]">
-              Explore natural hydration products, jeera drinks, herbal infusions, and healthy daily essentials.
+            <p className="mx-auto max-w-[620px] font-Poppins text-[15px] leading-[26px] text-[#686e7d]">
+              Explore natural hydration products, healthy drinks, packaged
+              drinking water, and herbal infusions.
             </p>
           </div>
           <div className="flex flex-wrap mx-[-12px]">
-            <aside className="min-[992px]:w-[25%] w-full px-[12px] order-2 max-[991px]:order-1 max-[991px]:mb-[35px]">
+            <aside className="order-2 w-full px-[12px] max-[991px]:order-1 max-[991px]:mb-[35px] min-[992px]:w-[25%]">
               <div className="bb-shop-sidebar sticky top-[88px] space-y-[24px] lg:top-[100px]">
-                <div className="sidebar-block bg-white border border-[#e5e7eb] rounded-[20px] p-[24px] shadow-sm">
-                  <h4 className="font-quicksand text-[18px] font-bold text-[#1f2937] mb-[18px]">
+                <div className="sidebar-block rounded-[20px] border border-[#e5e7eb] bg-white p-[24px] shadow-sm">
+                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold text-[#1f2937]">
                     Search
                   </h4>
                   <input
@@ -4904,60 +5032,58 @@ export default function ShopPage() {
                     className="w-full rounded-[12px] border border-[#e5e7eb] px-[14px] py-[12px] font-Poppins text-[14px] outline-none focus:border-[#0f766e]"
                   />
                 </div>
-                <div className="sidebar-block bg-white border border-[#e5e7eb] rounded-[20px] p-[24px] shadow-sm">
-                  <h4 className="font-quicksand text-[18px] font-bold text-[#1f2937] mb-[18px]">
+                <div className="sidebar-block rounded-[20px] border border-[#e5e7eb] bg-white p-[24px] shadow-sm">
+                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold text-[#1f2937]">
                     Categories
                   </h4>
                   <ul className="space-y-[4px]">
-                    {productCategories.map((category) => {
+                    {SHOP_CATEGORIES.map((category) => {
                       const isSelected = selectedCategory === category;
                       return (
                         <li
                           key={category}
                           onClick={() => handleCategoryClick(category)}
-                          className={`flex items-center justify-between py-[10px] px-[8px] rounded-[8px] cursor-pointer transition-all ${
-                            isSelected ? "bg-indigo-50/80" : "hover:bg-[#f9fafb]"
+                          className={`flex cursor-pointer items-center justify-between rounded-[8px] px-[8px] py-[10px] transition-all ${
+                            isSelected ? "bg-[#f0fdfa]" : "hover:bg-[#f9fafb]"
                           }`}
                         >
                           <span
                             className={`font-Poppins text-[14px] transition-colors ${
-                              isSelected ? "text-[#4f46e5] font-medium" : "text-[#4b5563]"
+                              isSelected
+                                ? "font-medium text-[#0f766e]"
+                                : "text-[#4b5563]"
                             }`}
                           >
                             {category}
-                          </span>
-                          <span
-                            className={`font-Poppins text-[12px] font-medium px-[8px] py-[2px] rounded-full transition-colors ${
-                              isSelected ? "bg-[#4f46e5] text-white" : "bg-[#f3f4f6] text-[#6b7280]"
-                            }`}
-                          >
-                            {productsState.filter((product) => product.product_category === category).length}
                           </span>
                         </li>
                       );
                     })}
                   </ul>
                 </div>
-                <div className="sidebar-block bg-white border border-[#e5e7eb] rounded-[20px] p-[24px] shadow-sm">
-                  <h4 className="font-quicksand text-[18px] font-bold text-[#1f2937] mb-[18px]">
+                <div className="sidebar-block rounded-[20px] border border-[#e5e7eb] bg-white p-[24px] shadow-sm">
+                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold text-[#1f2937]">
                     Price Range
                   </h4>
                   <div className="space-y-[12px]">
                     {["Under $15", "$15 - $30", "Above $30"].map((range) => (
-                      <label key={range} className="flex items-center gap-[10px] font-Poppins text-[14px] text-[#4b5563] cursor-pointer">
+                      <label
+                        key={range}
+                        className="flex cursor-pointer items-center gap-[10px] font-Poppins text-[14px] text-[#4b5563]"
+                      >
                         <input
                           type="checkbox"
                           checked={selectedPrices.includes(range)}
                           onChange={() => handlePriceChange(range)}
-                          className="w-4 h-4 accent-[#4f46e5]"
+                          className="h-4 w-4 accent-[#0f766e]"
                         />
                         {range}
                       </label>
                     ))}
                   </div>
                 </div>
-                <div className="sidebar-block bg-white border border-[#e5e7eb] rounded-[20px] p-[24px] shadow-sm">
-                  <h4 className="font-quicksand text-[18px] font-bold text-[#1f2937] mb-[18px]">
+                <div className="sidebar-block rounded-[20px] border border-[#e5e7eb] bg-white p-[24px] shadow-sm">
+                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold text-[#1f2937]">
                     Tags
                   </h4>
                   <div className="flex flex-wrap gap-[8px]">
@@ -4970,7 +5096,7 @@ export default function ShopPage() {
                           onClick={() => handleTagClick(tag)}
                           className={`rounded-full px-[12px] py-[6px] font-Poppins text-[12px] transition ${
                             isSelected
-                              ? "bg-[#4f46e5] text-white"
+                              ? "bg-[#0f766e] text-white"
                               : "bg-[#f3f4f6] text-[#4b5563] hover:bg-[#e5e7eb]"
                           }`}
                         >
@@ -4991,10 +5117,14 @@ export default function ShopPage() {
                 ) : null}
               </div>
             </aside>
-            <div className="min-[992px]:w-[75%] w-full px-[12px] order-1 max-[991px]:order-2">
+            <div className="order-1 w-full px-[12px] max-[991px]:order-2 min-[992px]:w-[75%]">
               <div className="mb-[24px] flex flex-wrap items-center justify-between gap-[16px] rounded-[20px] border border-[#e5e7eb] bg-white p-[18px] shadow-sm">
                 <p className="font-Poppins text-[14px] text-[#686e7d]">
-                  Showing <span className="font-semibold text-[#3d4750]">{filteredAndSortedProducts?.length}</span> products
+                  Showing{" "}
+                  <span className="font-semibold text-[#3d4750]">
+                    {filteredAndSortedProducts.length}
+                  </span>{" "}
+                  products
                 </p>
                 <select
                   value={sortBy}
@@ -5007,15 +5137,27 @@ export default function ShopPage() {
                   <option value="price-high">Price: High to Low</option>
                 </select>
               </div>
-              {filteredAndSortedProducts?.length > 0 ? (
+              {loading ? (
+                <div className="rounded-[20px] border border-[#e5e7eb] bg-white py-[60px] text-center">
+                  <p className="font-Poppins text-[16px] text-[#6b7280]">
+                    Loading products...
+                  </p>
+                </div>
+              ) : error ? (
+                <div className="rounded-[20px] border border-red-100 bg-red-50 py-[60px] text-center">
+                  <p className="font-Poppins text-[16px] text-red-600">{error}</p>
+                </div>
+              ) : filteredAndSortedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 gap-[24px] min-[576px]:grid-cols-2 min-[1200px]:grid-cols-3">
-                  {filteredAndSortedProducts?.map((product) => (
+                  {filteredAndSortedProducts.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
               ) : (
                 <div className="rounded-[20px] border border-[#e5e7eb] bg-white py-[60px] text-center">
-                  <p className="font-Poppins text-[16px] text-[#6b7280]">No products match your search criteria.</p>
+                  <p className="font-Poppins text-[16px] text-[#6b7280]">
+                    No products match your search criteria.
+                  </p>
                 </div>
               )}
             </div>
@@ -5025,262 +5167,331 @@ export default function ShopPage() {
     </main>
   );
 }
+export default function ShopPage() {
+  return (
+    <Suspense
+      fallback={
+        <main>
+          <section className="py-[60px] text-center">
+            <p className="font-Poppins text-[16px] text-[#6b7280]">
+              Loading shop...
+            </p>
+          </section>
+        </main>
+      }
+    >
+      <ShopPageContent />
+    </Suspense>
+  );
+}
 ````
 
 ## File: src/components/common/Header.tsx
 ````typescript
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { signOut, useSession } from "next-auth/react";
-import { useUiStore } from "@/store/useUiStore";
-import { useCartStore } from "@/store/useCartStore";
-const navItems = [
+import {
+  productsService,
+  type ProductMenuCategory,
+} from "@/lib/services/productsService";
+const navLinks = [
   { label: "Home", href: "/" },
+  { label: "Products", href: "/shop" },
   { label: "About Us", href: "/about-us" },
   { label: "Contact Us", href: "/contact-us" },
 ];
+const categories = [
+  "Healthy Drinks",
+  "Packaged Drinking Water",
+  "Herbal Infusions",
+];
+const LocationOptions = [
+  "Kanpur",
+  "Unnao",
+  "Lucknow",
+  "Kanpur Dehat",
+  "Raibareli",
+  "Unchahar",
+];
 export default function Header() {
-  const { data: session, status } = useSession();
-  const toggleCart = useUiStore((state) => state.toggleCart);
-  const cart = useCartStore((state) => state.cart);
-  const fetchCart = useCartStore((state) => state.fetchCart);
-  const clearLocalCart = useCartStore((state) => state.clearLocalCart);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [productMenu, setProductMenu] = useState<ProductMenuCategory[]>([]);
+  const [menuLoading, setMenuLoading] = useState(false);
   useEffect(() => {
-    if (status === "authenticated") {
-      fetchCart();
+    async function loadProductMenu() {
+      try {
+        setMenuLoading(true);
+        const response = await productsService.getProductMenu();
+        if (response.success) {
+          setProductMenu(response.menu);
+        }
+      } catch (error) {
+        console.error("Failed to load product menu", error);
+      } finally {
+        setMenuLoading(false);
+      }
     }
-    if (status === "unauthenticated") {
-      clearLocalCart();
-    }
-  }, [status, fetchCart, clearLocalCart]);
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) setMobileOpen(false);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [mobileOpen]);
-  const cartCount = cart?.item_count || 0;
+    loadProductMenu();
+  }, []);
   return (
-    <header className="bb-header fixed left-0 top-0 z-[999] w-full border-b border-[#eee] bg-white/95 shadow-sm backdrop-blur-md">
-      <div className="py-5 max-[991px]:py-4">
-        <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-8 px-4 max-[767px]:gap-4">
-          <Link href="/" className="flex shrink-0 items-center gap-2">
-            <img
+    <header className="bb-header sticky top-0 z-50 border-b border-[#eee] bg-white font-Poppins">
+      <div className="bottom-header py-[20px] max-[991px]:py-[15px]">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4">
+          <Link href="/">
+            <Image
               src="/assets/img/logo/logo-icon2.png"
-              alt="2gooD Logo"
-              className="h-20 w-20 shrink-0 object-contain transition-transform duration-300 hover:scale-105 max-[575px]:h-16 max-[575px]:w-16"
+              alt="Logo"
+              width={125}
+              height={60}
+              className="h-auto w-[125px] max-[991px]:w-[115px]"
+              priority
             />
           </Link>
-          <nav className="hidden items-center gap-10 font-Poppins text-[17px] font-semibold text-[#3d4750] lg:flex">
-            {" "}
-            {navItems.map((item) => (
-              <div key={item.label} className="group relative py-3">
-                <Link
-                  href={item.href}
-                  className="whitespace-nowrap transition hover:text-[#0f766e]"
-                >
-                  {item.label}
-                </Link>
-              </div>
-            ))}
-          </nav>
-          <div className="flex shrink-0 items-center gap-5 max-[575px]:gap-4">
+          <form className="bb-btn-group-form relative w-[600px] max-[1199px]:w-[420px] max-[991px]:hidden">
+            <select className="absolute left-0 top-0 h-full w-[150px] rounded-l-[10px] border border-[#eee] bg-white px-4 font-Poppins text-[14px] text-[#777] outline-none">
+              {categories.map((category) => (
+                <option key={category}>{category}</option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="Search products..."
+              className="bb-search-bar h-[48px] w-full rounded-[10px] border border-[#eee] bg-white py-[10px] pl-[165px] pr-12 font-Poppins text-[14px] tracking-[0.5px] text-[#777] outline-none"
+            />
+            <button
+              type="submit"
+              className="absolute right-0 top-0 flex h-full w-[48px] items-center justify-center bg-transparent text-[#555]"
+              aria-label="Search"
+            >
+              <i className="ri-search-line text-[18px]" />
+            </button>
+          </form>
+          <div className="bb-header-buttons flex items-center justify-end gap-6 max-[575px]:gap-4">
             <div className="group relative">
-              {
-}
-              <ul className="invisible absolute right-0 top-full z-30 mt-4 min-w-[190px] rounded-[10px] border border-[#eee] bg-white p-2 opacity-0 shadow-lg transition-all duration-300 group-hover:visible group-hover:opacity-100">
-                {status === "authenticated" ? (
-                  <>
-                    <li className="border-b border-[#eee] px-3 py-2 text-sm text-[#3d4750]">
-                      Hi, {session?.user?.name || "Customer"}
-                    </li>
-                    <li>
-                      <Link
-                        href="/my-cart"
-                        className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#0f766e]"
-                      >
-                        My Cart
-                      </Link>
-                    </li>
-                    <li>
-                      <button
-                        type="button"
-                        onClick={() => signOut({ callbackUrl: "/" })}
-                        className="block w-full rounded-md px-3 py-2 text-left text-sm text-[#686e7d] transition hover:text-[#0f766e]"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </>
-                ) : (
-                  <>
-                    <li>
-                      <Link
-                        href="/login"
-                        className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#0f766e]"
-                      >
-                        Sign In
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/register"
-                        className="block rounded-md px-3 py-2 text-sm text-[#686e7d] transition hover:text-[#0f766e]"
-                      >
-                        Create Account
-                      </Link>
-                    </li>
-                  </>
-                )}
+              <button className="bb-header-btn flex items-center gap-2 whitespace-nowrap">
+                <i className="ri-user-3-line text-[28px] text-[#0f766e]" />
+                <div className="ml-[10px] flex flex-col text-left max-[1199px]:hidden">
+                  <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750]">
+                    Account
+                  </p>
+                  <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750]">
+                    Login
+                  </p>
+                </div>
+              </button>
+              <ul className="invisible absolute right-0 top-full z-50 mt-[25px] min-w-[150px] rounded-[10px] border border-[#eee] bg-white px-[5px] py-[10px] opacity-0 shadow-md transition-all duration-300 group-hover:visible group-hover:opacity-100">
+                {[
+                  { label: "Register", href: "/register" },
+                  { label: "Login", href: "/login" },
+                  { label: "Checkout", href: "/checkout" },
+                ].map((item) => (
+                  <li key={item.href} className="px-[15px] py-[4px]">
+                    <Link
+                      href={item.href}
+                      className="block text-[13px] font-normal leading-[22px] tracking-[0.03rem] text-[#686e7d] hover:text-[#0f766e]"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
-            <button
-              type="button"
-              onClick={toggleCart}
-              className="relative text-[#3d4750] transition hover:text-[#0f766e]"
-              aria-label="Cart"
+            <Link
+              href="/wishlist"
+              className="bb-header-btn flex items-center whitespace-nowrap"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
-              <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#0f766e] text-[11px] font-bold text-white">
-                {cartCount}
-              </span>
-            </button>
-            <a
-              href="tel:+919967399880"
-              className="hidden lg:flex items-center gap-3 rounded-full bg-[#0f766e] px-4 py-2 text-white shadow-md transition hover:bg-[#0d5f59]"
-            >
-              <i className="ri-phone-fill text-lg text-white" />
-              <div className="leading-tight">
-                <p className="text-xs text-white">+91 99673 99880</p>
+              <i className="ri-heart-line text-[28px] text-[#0f766e]" />
+              <div className="ml-[10px] flex flex-col max-[1199px]:hidden">
+                <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750]">
+                  3 items
+                </p>
+                <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750]">
+                  Wishlist
+                </p>
               </div>
-            </a>
+            </Link>
+            <Link
+              href="/cart"
+              className="bb-header-btn flex items-center whitespace-nowrap"
+            >
+              <i className="ri-shopping-cart-line text-[28px] text-[#0f766e]" />
+              <div className="ml-[10px] flex flex-col max-[1199px]:hidden">
+                <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750]">
+                  4 items
+                </p>
+                <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750]">
+                  Cart
+                </p>
+              </div>
+            </Link>
             <button
-              type="button"
               onClick={() => setMobileOpen(true)}
-              className="hidden text-[#3d4750] transition hover:text-[#0f766e] max-lg:block"
+              className="hidden max-[991px]:block"
               aria-label="Open menu"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
+              <i className="ri-menu-3-fill text-[26px] text-[#0f766e]" />
             </button>
           </div>
         </div>
       </div>
+      <nav className="bb-main-menu-desk border-t border-[#eee] bg-white py-[5px] max-[991px]:hidden">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4">
+          <ul className="navbar-nav flex flex-row flex-wrap items-center">
+            <li>
+              <a
+                href="javascript:void(0)"
+                className="bb-header-btn bb-sidebar-toggle bb-category-toggle relative mr-[30px] flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border border-[#eee] bg-white p-[8px]"
+              >
+                <i className="ri-function-line text-[24px] text-[#0f766e]" />
+              </a>
+            </li>
+            {navLinks.map((link) => {
+              if (link.label === "Products") {
+                return (
+                  <li
+                    key={link.href}
+                    className="nav-item bb-dropdown group relative mr-[45px] flex items-center"
+                  >
+                    <Link
+                      href={link.href}
+                      className="nav-link bb-dropdown-item font-Poppins relative block p-[0] text-[15px] font-medium leading-[28px] tracking-[0.03rem] text-[#3d4750] transition-all duration-300 hover:text-[#0f766e]"
+                    >
+                      Products
+                    </Link>
+                    {}
+                    <ul className="bb-dropdown-menu invisible absolute left-0 top-[100%] z-[999] mt-[18px] flex min-w-[205px] flex-col rounded-[10px] border border-solid border-[#eee] bg-white p-[10px] text-left opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out group-hover:visible group-hover:mt-[12px] group-hover:opacity-100">
+                      <li className="relative m-0 flex items-center rounded-[8px] px-[15px] py-[5px] transition-all duration-300 hover:bg-[#f8f8fb]">
+                        <Link
+                          href="/shop"
+                          className="font-Poppins block w-full py-[5px] text-[14px] font-normal capitalize leading-[22px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                        >
+                          All Products
+                        </Link>
+                      </li>
+                      {menuLoading ? (
+                        <li className="relative m-0 flex items-center px-[15px] py-[5px]">
+                          <span className="font-Poppins py-[5px] text-[14px] font-normal leading-[22px] tracking-[0.03rem] text-[#686e7d]">
+                            Loading...
+                          </span>
+                        </li>
+                      ) : productMenu.length > 0 ? (
+                        productMenu.map((category) => (
+                          <li
+                            key={category.category}
+                            className="bb-mega-dropdown group/sub relative m-0 flex items-center rounded-[8px] px-[15px] py-[5px] transition-all duration-300 hover:bg-[#f8f8fb]"
+                          >
+                            <Link
+                              href={category.href}
+                              className="bb-mega-item font-Poppins flex w-full items-center justify-between gap-4 py-[5px] text-[14px] font-normal capitalize leading-[22px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                            >
+                              <span className="max-w-[145px] whitespace-normal break-words">
+                                {category.category}
+                              </span>
+                              <i className="ri-arrow-right-s-line text-[15px] text-[#686e7d] transition-all duration-300 group-hover/sub:text-[#0f766e]" />
+                            </Link>
+                            {}
+                            <ul className="bb-mega-menu invisible absolute left-[100%] top-0 z-[1000] ml-[10px] flex min-w-[250px] flex-col rounded-[10px] border border-solid border-[#eee] bg-white p-[10px] text-left opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out before:absolute before:left-[-12px] before:top-0 before:h-full before:w-[12px] before:content-[''] group-hover/sub:visible group-hover/sub:opacity-100">
+                              {category.products.length > 0 ? (
+                                category.products.map((product) => (
+                                  <li
+                                    key={product.id}
+                                    className="m-0 flex items-center rounded-[8px] px-[15px] py-[5px] transition-all duration-300 hover:bg-[#f8f8fb]"
+                                  >
+                                    <Link
+                                      href={product.href}
+                                      className="dropdown-item font-Poppins block w-full py-[6px] text-[14px] font-normal capitalize leading-[22px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                                    >
+                                      {product.name}
+                                    </Link>
+                                  </li>
+                                ))
+                              ) : (
+                                <li className="m-0 flex items-center px-[15px] py-[5px]">
+                                  <span className="dropdown-item py-[6px] text-[14px] font-normal text-[#999]">
+                                    No products found
+                                  </span>
+                                </li>
+                              )}
+                            </ul>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="relative m-0 flex items-center px-[15px] py-[5px]">
+                          <span className="font-Poppins py-[5px] text-[14px] font-normal leading-[22px] tracking-[0.03rem] text-[#999]">
+                            No categories found
+                          </span>
+                        </li>
+                      )}
+                    </ul>
+                  </li>
+                );
+              }
+              return (
+                <li
+                  key={link.href}
+                  className="nav-item mr-[35px] flex items-center font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]"
+                >
+                  <Link
+                    href={link.href}
+                    className="nav-link block p-[0] font-Poppins text-[15px] font-medium leading-[28px] tracking-[0.03rem] text-[#3d4750] hover:text-[#0f766e]"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="inner-select flex w-[180px] items-center rounded-[10px] border border-[#eee] bg-white">
+            <i className="ri-map-pin-line m-[10px] text-[25px] text-[#0f766e]" />
+            <select className="w-full bg-transparent font-Poppins text-[14px] font-normal leading-[28px] tracking-[0.03rem] text-[#686e7d] outline-none">
+              {LocationOptions.map((location) => (
+                <option key={location} value={location}>
+                  {location}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </nav>
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-[60] overflow-y-auto bg-black/70 lg:hidden"
+          className="fixed inset-0 z-[60] bg-black/80"
           onClick={() => setMobileOpen(false)}
-        >
-          <aside
-            className="h-full w-[340px] max-w-[85vw] overflow-y-auto bg-white px-5 py-4 shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="mb-5 flex items-center justify-between border-b border-[#eee] pb-3">
-              <span className="font-Poppins text-base font-semibold text-[#3d4750]">
-                2good Plus Menu
-              </span>
-              <span className="rounded-full bg-[#0f766e]/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0f766e]">
-                Menu
-              </span>
-              <button
-                type="button"
-                onClick={() => setMobileOpen(false)}
-                className="text-2xl text-red-500"
-                aria-label="Close menu"
-              >
-                ×
-              </button>
-            </div>
-            <ul>
-              {navItems.map((item) => (
-                <li key={item.label} className="mb-3">
-                  <Link
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="block rounded-[10px] border border-[#eee] p-3 text-[15px] font-medium text-[#686e7d]"
-                  >
-                    {item.label}
-                  </Link>
-                  {
-}
-                </li>
-              ))}
-              {status === "authenticated" ? (
-                <>
-                  <li className="mb-3">
-                    <Link
-                      href="/my-cart"
-                      onClick={() => setMobileOpen(false)}
-                      className="block rounded-[10px] border border-[#eee] p-3 text-[15px] font-medium text-[#686e7d]"
-                    >
-                      My Cart
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      type="button"
-                      onClick={() => signOut({ callbackUrl: "/" })}
-                      className="block w-full rounded-[10px] border border-[#eee] p-3 text-left text-[15px] font-medium text-[#686e7d]"
-                    >
-                      Logout
-                    </button>
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li className="mb-3">
-                    <Link
-                      href="/login"
-                      onClick={() => setMobileOpen(false)}
-                      className="block rounded-[10px] border border-[#eee] p-3 text-[15px] font-medium text-[#686e7d]"
-                    >
-                      Sign In
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/register"
-                      onClick={() => setMobileOpen(false)}
-                      className="block rounded-[10px] border border-[#eee] p-3 text-[15px] font-medium text-[#686e7d]"
-                    >
-                      Create Account
-                    </Link>
-                  </li>
-                </>
-              )}
-            </ul>
-          </aside>
-        </div>
+        />
       )}
+      <aside
+        className={`bb-mobile-menu fixed left-0 top-0 z-[70] flex h-full w-[340px] max-w-[90%] flex-col overflow-auto bg-white px-[20px] pb-[20px] pt-[15px] transition-transform duration-300 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="bb-menu-title flex w-full flex-wrap justify-between pb-[10px]">
+          <span className="menu_title flex items-center text-[16px] font-semibold leading-[26px] tracking-[0.02rem] text-[#3d4750]">
+            2gooD Menu
+          </span>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="relative border-0 bg-transparent text-[30px] leading-[1] text-red-500"
+            aria-label="Close menu"
+          >
+            ×
+          </button>
+        </div>
+        <ul>
+          {navLinks.map((link) => (
+            <li key={link.href} className="relative">
+              <Link
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="mb-[12px] block rounded-[10px] border border-[#eee] p-[12px] text-[15px] font-medium capitalize leading-[28px] tracking-[0.03rem] text-[#686e7d]"
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </aside>
     </header>
   );
 }
@@ -5325,6 +5536,13 @@ const categories = [
     icon: "/assets/img/category/4.svg",
     color: "bg-[#fff9e6]",
   },
+];
+const bulkOrderItems = [
+  "Corporate Orders",
+  "Events & Weddings",
+  "Hotels & Restaurants",
+  "Retailers & Distributors",
+  "Schools & Institutions",
 ];
 function SectionHeading({
   eyebrow,
@@ -5419,38 +5637,37 @@ export default function HomePage() {
   const featuredProducts = useMemo(() => products.slice(0, 4), [products]);
   const newArrivals = useMemo(() => products.slice(8, 12), [products]);
   return (
-    <main className="overflow-hidden pb-16">
-      <section className="water-ripple relative overflow-hidden bg-[#f6f7ff]">
+    <main className="overflow-hidden pb-6">
+      <section className="water-ripple relative isolate overflow-hidden bg-[#f6f7ff]">
         <WaterDroplets />
-        <div className="relative min-h-[430px] lg:min-h-[460px]">
+        <div className="relative min-h-[unset] sm:min-h-[420px] lg:min-h-[500px]">
           <img
             src={homeContent.hero.image}
             alt="2goodplus packaged drinking water"
-            className="absolute inset-0 h-full w-full object-cover object-bottom"
+            className="absolute inset-0 h-full w-full object-cover object-[68%_center] opacity-35 sm:object-center sm:opacity-100"
           />
-          {}
-          <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/50 to-transparent" />
-          <div className="relative z-10 mx-auto flex min-h-[430px] max-w-7xl items-center px-4 py-16 md:px-6 lg:min-h-[460px]">
-            <div className="max-w-2xl py-8">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/82 to-white/55 sm:bg-gradient-to-r sm:from-white/95 sm:via-white/65 sm:to-transparent" />
+          <div className="relative z-10 mx-auto flex min-h-[unset] max-w-7xl items-center px-4 py-10 sm:min-h-[420px] sm:px-6 sm:py-14 lg:min-h-[500px] lg:py-16">
+            <div className="w-full max-w-[620px] text-center sm:text-left">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#0f766e] sm:mb-4 sm:text-sm">
                 {homeContent.hero.eyebrow}
               </p>
-              <h1 className="mb-6 text-4xl font-bold leading-[1.1] text-[#3d4750] sm:text-[44px] md:text-[52px] lg:text-[68px]">
-                <span className="text-[#0f766e]">PureWater. Pure Life.</span>
+              <h1 className="mb-4 text-[clamp(32px,11vw,44px)] font-bold leading-[1.08] text-[#3d4750] sm:text-[54px] lg:text-[68px]">
+                <span className="text-[#0f766e]">Pure Water. Pure Life.</span>
               </h1>
-              <p className="max-w-xl text-base leading-8 text-slate-700 sm:text-lg">
+              <p className="mx-auto max-w-xl text-sm leading-7 text-slate-700 sm:mx-0 sm:text-base sm:leading-8 lg:text-lg">
                 {homeContent.hero.description}
               </p>
-              <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+              <div className="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-4">
                 <Link
                   href={homeContent.hero.ctaHref}
-                  className="water-ripple relative overflow-hidden rounded-full bg-[#0f766e] px-5 py-4 text-base font-semibold !text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52]"
+                  className="water-ripple relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-[#0f766e] px-6 py-3.5 text-sm font-semibold !text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52] sm:w-auto sm:px-7 sm:py-4 sm:text-base"
                 >
                   {homeContent.hero.ctaLabel}
                 </Link>
                 <Link
                   href={homeContent.hero.secondaryCtaHref}
-                  className="water-ripple relative overflow-hidden rounded-full border border-[#0f766e]/30 bg-white px-5 py-4 text-base font-semibold !text-black transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:!text-white"
+                  className="water-ripple relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-[#0f766e]/30 bg-white/95 px-6 py-3.5 text-sm font-semibold !text-[#0f172a] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:!text-white sm:w-auto sm:px-7 sm:py-4 sm:text-base"
                 >
                   {homeContent.hero.secondaryCtaLabel} →
                 </Link>
@@ -5540,6 +5757,76 @@ export default function HomePage() {
       <WaterWaveDivider />
       <DeliveryCoverage />
       <WaterWaveDivider />
+      <section className="relative overflow-hidden bg-[#f8fafc] px-4 py-16 md:px-6 md:py-20">
+        <WaterDroplets />
+        <div className="relative z-10 mx-auto max-w-7xl">
+          <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="rounded-[32px] bg-white p-6 shadow-[0_20px_55px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+                Bulk Orders
+              </p>
+              <h2 className="mt-3 text-3xl font-bold leading-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                Need bulk quantities for your business or event?
+              </h2>
+              <p className="mt-5 text-sm leading-7 text-slate-600 sm:text-base sm:leading-8">
+                Ideal for hotels, restaurants, institutions, offices, retailers,
+                and distributors. Bulk order rates and dealership pricing are
+                negotiable based on quantity requirements.
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link
+                  href="/contact-us"
+                  className="water-ripple relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-[#0f766e] px-7 py-4 text-sm font-bold !text-white shadow-[0_12px_30px_rgba(15,118,110,0.25)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52] sm:w-auto"
+                >
+                  For Bulk Orders contact us
+                </Link>
+                <a
+                  href="tel:+919967399880"
+                  className="inline-flex w-full items-center justify-center rounded-full border border-[#0f766e]/25 bg-white px-7 py-4 text-sm font-bold text-[#0f766e] transition-all duration-300 hover:-translate-y-1 hover:bg-[#e8f7f4] sm:w-auto"
+                >
+                  Call +91 99673 99880
+                </a>
+              </div>
+            </div>
+            <div className="rounded-[32px] bg-[#0f766e] p-6 text-white shadow-[0_20px_55px_rgba(15,118,110,0.22)] sm:p-8 lg:p-10">
+              <div className="mb-6 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/70">
+                    Bulk Order Information
+                  </p>
+                  <h3 className="mt-3 text-2xl font-bold sm:text-3xl">
+                    Customized pricing for
+                  </h3>
+                </div>
+                <span className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/15 text-2xl sm:flex">
+                  💧
+                </span>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {bulkOrderItems.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white ring-1 ring-white/15"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#0f766e]">
+                      ✓
+                    </span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-7 rounded-3xl bg-white/10 p-5 ring-1 ring-white/15">
+                <p className="text-sm leading-7 text-white/85">
+                  Contact us with your quantity requirement, delivery location,
+                  and frequency. Our team will share a custom quotation for your
+                  order.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <WaterWaveDivider />
       {
 }
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-16 md:grid-cols-2 md:px-6">
@@ -5557,7 +5844,7 @@ export default function HomePage() {
               Clean packaged drinking water sealed fresh for everyday trust.
             </p>
             <Link
-              href="/about-us"
+              href="/shop"
               className="water-ripple relative mt-6 inline-flex overflow-hidden rounded-full bg-[#0f766e] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5a52]"
             >
               Order Now

@@ -1,16 +1,30 @@
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-import productService from "@/lib/services/product.service";
+export const runtime = "nodejs";
 
-export async function GET(request: Request) {
+import productService from "@/lib/services/product.service";
+import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
+
+interface ProductsRequestBody {
+  category?: string;
+  productId?: string;
+}
+
+async function safeReadBody(request: Request): Promise<ProductsRequestBody> {
   try {
-    const { searchParams } = new URL(request.url); // POST even for get queries only API's  which requires to keep statefull be in search params
-    const productId = searchParams.get("productId"); // Validate with a parser zod
+    return (await request.json()) as ProductsRequestBody;
+  } catch {
+    return {};
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await safeReadBody(request);
+    const productId = body.productId?.trim();
+    const category = body.category?.trim();
 
     if (productId) {
       const product = await productService.getProductById(productId);
 
-
-      ///  Request fromate has to be same in any situation.
       return jsonSuccess({
         success: true,
         product,
@@ -18,7 +32,7 @@ export async function GET(request: Request) {
       });
     }
 
-    const products = await productService.getAllProducts();
+    const products = await productService.getAllProducts(category || undefined);
 
     return jsonSuccess({
       success: true,
@@ -26,10 +40,7 @@ export async function GET(request: Request) {
       products,
     });
   } catch (error) {
-
-    ///Manage all the erros in place to be able to make global level changes.
-    console.error("PRODUCTS_GET_ERROR", error);
-
-    return jsonError("Failed to fetch products", 500);
+    console.error("PRODUCTS_POST_ERROR", error);
+    return jsonError(getErrorMessage(error, "Failed to fetch products"), 500);
   }
 }

@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ProductCard from "@/components/shop/ProductCard";
 import ProductActions from "@/components/shop/ProductActions";
-import { getRelatedProducts, products } from "@/lib/products";
-import { getProductById as getProductByIdFromDb } from "@/lib/services/product.service";
+import ProductCard from "@/components/shop/ProductCard";
+import {
+  getAllProducts,
+  getProductById,
+} from "@/lib/services/product.service";
 import type { ProductDto } from "@/types/product";
+
+export const dynamic = "force-dynamic";
 
 interface ProductDetailsPageProps {
   params: Promise<{
@@ -12,30 +16,33 @@ interface ProductDetailsPageProps {
   }>;
 }
 
-export function generateStaticParams() {
-  return products.map((product: ProductDto) => ({
-    productId: product.id,
-  }));
-}
-
-export default async function ProductDetailsPage({ params }: ProductDetailsPageProps) {
+export default async function ProductDetailsPage({
+  params,
+}: ProductDetailsPageProps) {
   const { productId } = await params;
-  const product = await getProductByIdFromDb(productId);
+  const product = await getProductById(productId);
 
   if (!product) {
     notFound();
   }
 
-  const relatedProducts = getRelatedProducts(product);
+  const categoryProducts = await getAllProducts(product.product_category);
+  const relatedProducts = categoryProducts
+    .filter((item) => item.id !== product.id)
+    .slice(0, 4);
 
   return (
     <main>
       <section className="section-product py-[50px] max-[767px]:py-[35px]">
         <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
           <div className="mb-[25px] font-Poppins text-[14px] text-[#686e7d]">
-            <Link href="/" className="hover:text-[#0f766e]">Home</Link>
+            <Link href="/" className="hover:text-[#0f766e]">
+              Home
+            </Link>
             <span className="mx-2">/</span>
-            <Link href="/shop" className="hover:text-[#0f766e]">Shop</Link>
+            <Link href="/shop" className="hover:text-[#0f766e]">
+              Shop
+            </Link>
             <span className="mx-2">/</span>
             <span className="text-[#3d4750]">{product.product_name}</span>
           </div>
@@ -60,7 +67,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
                 {product.product_category}
               </p>
 
-              <h1 className="mt-[8px] font-quicksand text-[34px] max-[767px]:text-[28px] font-bold leading-tight text-[#3d4750]">
+              <h1 className="mt-[8px] font-quicksand text-[34px] font-bold leading-tight text-[#3d4750] max-[767px]:text-[28px]">
                 {product.product_name}
               </h1>
 
@@ -83,29 +90,32 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
               <ProductActions productId={product.id} />
 
               <div className="mt-[28px] grid gap-[12px] sm:grid-cols-3">
-                {[
-                  "Secure checkout",
-                  "Fast delivery",
-                  "Fresh stock",
-                ].map((item) => (
-                  <div key={item} className="rounded-[14px] border border-[#eee] bg-[#f8f8fb] p-[14px] text-center font-Poppins text-[13px] text-[#4b5563]">
-                    {item}
-                  </div>
-                ))}
+                {["Secure checkout", "Fast delivery", "Fresh stock"].map(
+                  (item) => (
+                    <div
+                      key={item}
+                      className="rounded-[14px] border border-[#eee] bg-[#f8f8fb] p-[14px] text-center font-Poppins text-[13px] text-[#4b5563]"
+                    >
+                      {item}
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {relatedProducts?.length > 0 ? (
+      {relatedProducts.length > 0 ? (
         <section className="pb-[60px]">
           <div className="mx-auto px-[12px] min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
             <div className="mb-[28px] text-center">
-              <h2 className="font-quicksand text-[30px] font-bold text-[#3d4750]">Related Products</h2>
+              <h2 className="font-quicksand text-[30px] font-bold text-[#3d4750]">
+                Related Products
+              </h2>
             </div>
             <div className="grid grid-cols-1 gap-[24px] min-[576px]:grid-cols-2 min-[992px]:grid-cols-4">
-              {relatedProducts?.map((relatedProduct: ProductDto) => (
+              {relatedProducts.map((relatedProduct: ProductDto) => (
                 <ProductCard key={relatedProduct.id} product={relatedProduct} />
               ))}
             </div>

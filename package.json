@@ -15,6 +15,8 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "animate.css": "^4.1.1",
+    "aos": "^2.3.4",
     "axios": "^1.17.0",
     "bcryptjs": "^3.0.2",
     "lucide-react": "^1.17.0",
@@ -23,6 +25,8 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "remixicon": "^4.9.1",
+    "slick-carousel": "^1.8.1",
+    "swiper": "^12.2.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
