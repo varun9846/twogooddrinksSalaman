@@ -5,6 +5,10 @@ import CartSidebar from "@/components/common/CartSidebar";
 import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
 import "remixicon/fonts/remixicon.css";
+import "@/fontassets/css/vendor/aos.css";
+import "@/fontassets/css/vendor/swiper-bundle.min.css";
+import "@/fontassets/css/vendor/slick.min.css";
+import "@/fontassets/css/vendor/animate.min.css";
 import FloatingWhatsApp from "@/components/common/FloatingWhatsApp";
 
 export const metadata: Metadata = {
