@@ -3,6 +3,12 @@ import type { ProductDto } from "@/types/product";
 
 export type ProductApiResponse = ProductDto;
 
+export interface ProductsApiResponse {
+  success: boolean;
+  product: ProductApiResponse | null;
+  products: ProductApiResponse[];
+}
+
 export interface ProductMenuItem {
   id: string;
   name: string;
@@ -17,11 +23,7 @@ export interface ProductMenuCategory {
 
 export const productsService = {
   getAllProducts: async (category?: string) => {
-    const response = await apiClient.post<{
-      success: boolean;
-      product: ProductApiResponse | null;
-      products: ProductApiResponse[];
-    }>("/api/products", {
+    const response = await apiClient.post<ProductsApiResponse>("/api/products", {
       category,
     });
 
@@ -29,11 +31,7 @@ export const productsService = {
   },
 
   getProductById: async (productId: string) => {
-    const response = await apiClient.post<{
-      success: boolean;
-      product: ProductApiResponse | null;
-      products: ProductApiResponse[];
-    }>("/api/products", {
+    const response = await apiClient.post<ProductsApiResponse>("/api/products", {
       productId,
     });
 

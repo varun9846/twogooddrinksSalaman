@@ -7,19 +7,19 @@ import ProductCard from "@/components/shop/ProductCard";
 import { productsService } from "@/lib/services/productsService";
 import type { ProductDto } from "@/types/product";
 
-const SHOP_CATEGORIES = [
-  "Packaged Drinking Water",
-  "Healthy Drinks",
-  "Herbal Infusions",
-  "Natural Drinking Water",
-  "Jeera Drink",
-  "Healthy Snacks",
-];
+const MIN_PRICE = 0;
+const MAX_PRICE = 300;
 
-const PACK_SIZES = ["500 ml", "1 L", "5 L", "20 L", "Bulk Pack"];
+type SortOption = "latest" | "name-asc" | "name-desc" | "price-low" | "price-high";
 
 function getPriceNumber(price: string) {
   return Number(price.replace(/[^0-9.]/g, "")) || 0;
+}
+
+function getUniqueValues(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort(
+    (a, b) => a.localeCompare(b),
+  );
 }
 
 export default function ShopPageClient() {
@@ -27,11 +27,12 @@ export default function ShopPageClient() {
   const searchParams = useSearchParams();
   const categoryFromUrl = searchParams.get("category");
   const queryFromUrl = searchParams.get("q") || "";
+
   const [searchQuery, setSearchQuery] = useState(queryFromUrl);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryFromUrl);
-  const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState("latest");
+  const [sortBy, setSortBy] = useState<SortOption>("latest");
+  const [priceRange, setPriceRange] = useState({ min: MIN_PRICE, max: MAX_PRICE });
   const [productsState, setProductsState] = useState<ProductDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +50,8 @@ export default function ShopPageClient() {
       setError(null);
 
       try {
-        const data = await productsService.getAllProducts(categoryFromUrl || undefined);
+        const data = await productsService.getAllProducts();
+
         if (cancelled) return;
 
         if (data?.success && Array.isArray(data.products)) {
@@ -70,23 +72,31 @@ export default function ShopPageClient() {
     }
 
     loadProducts();
+
     return () => {
       cancelled = true;
     };
-  }, [categoryFromUrl]);
+  }, []);
+
+  const productCategories = useMemo(() => {
+    return getUniqueValues(productsState.map((product) => product.product_category));
+  }, [productsState]);
+
+  const productTags = useMemo(() => {
+    return getUniqueValues(productsState.map((product) => product.Tag));
+  }, [productsState]);
 
   const handleCategoryClick = (category: string) => {
-    if (selectedCategory === category) {
-      router.push("/shop");
-      return;
-    }
-    router.push(`/shop?category=${encodeURIComponent(category)}`);
-  };
+    const nextParams = new URLSearchParams(searchParams.toString());
 
-  const handlePriceChange = (range: string) => {
-    setSelectedPrices((prev) =>
-      prev.includes(range) ? prev.filter((item) => item !== range) : [...prev, range],
-    );
+    if (selectedCategory === category) {
+      nextParams.delete("category");
+    } else {
+      nextParams.set("category", category);
+    }
+
+    const queryString = nextParams.toString();
+    router.push(queryString ? `/shop?${queryString}` : "/shop");
   };
 
   const handleTagClick = (tag: string) => {
@@ -95,27 +105,45 @@ export default function ShopPageClient() {
     );
   };
 
-  const clearAllFilters = () => {
-    setSearchQuery("");
-    setSelectedPrices([]);
-    setSelectedTags([]);
-    setSortBy("latest");
-    router.push("/shop");
+  const handleMinPriceChange = (value: number) => {
+    setPriceRange((prev) => ({
+      min: Math.min(value, prev.max),
+      max: prev.max,
+    }));
   };
 
-  const productTags = useMemo(() => {
-    return Array.from(new Set(productsState.map((product) => product.Tag).filter(Boolean)));
-  }, [productsState]);
+  const handleMaxPriceChange = (value: number) => {
+    setPriceRange((prev) => ({
+      min: prev.min,
+      max: Math.max(value, prev.min),
+    }));
+  };
+
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedTags([]);
+    setSortBy("latest");
+    setPriceRange({ min: MIN_PRICE, max: MAX_PRICE });
+    router.push("/shop");
+  };
 
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...productsState];
 
+    if (selectedCategory) {
+      result = result.filter(
+        (product) => product.product_category.toLowerCase() === selectedCategory.toLowerCase(),
+      );
+    }
+
     if (searchQuery.trim()) {
       const query = searchQuery.trim().toLowerCase();
+
       result = result.filter((product) =>
         [
           product.product_name,
           product.product_description,
+          product.product_subdescription,
           product.product_category,
           product.Tag,
         ]
@@ -125,72 +153,46 @@ export default function ShopPageClient() {
       );
     }
 
+    result = result.filter((product) => {
+      const price = getPriceNumber(product.price);
+      return price >= priceRange.min && price <= priceRange.max;
+    });
+
     if (selectedTags.length > 0) {
       result = result.filter((product) => selectedTags.includes(product.Tag));
-    }
-
-    if (selectedPrices.length > 0) {
-      result = result.filter((product) => {
-        const price = getPriceNumber(product.price);
-        return selectedPrices.some((range) => {
-          if (range === "Under 15") return price < 15;
-          if (range === "15 - 30") return price >= 15 && price <= 30;
-          if (range === "Above 30") return price > 30;
-          return true;
-        });
-      });
     }
 
     if (sortBy === "price-low") {
       result.sort((a, b) => getPriceNumber(a.price) - getPriceNumber(b.price));
     }
+
     if (sortBy === "price-high") {
       result.sort((a, b) => getPriceNumber(b.price) - getPriceNumber(a.price));
     }
-    if (sortBy === "name") {
+
+    if (sortBy === "name-asc") {
       result.sort((a, b) => a.product_name.localeCompare(b.product_name));
     }
 
+    if (sortBy === "name-desc") {
+      result.sort((a, b) => b.product_name.localeCompare(a.product_name));
+    }
+
     return result;
-  }, [productsState, searchQuery, selectedPrices, selectedTags, sortBy]);
+  }, [productsState, searchQuery, selectedCategory, selectedTags, priceRange, sortBy]);
 
   const hasActiveFilters =
     Boolean(searchQuery) ||
     Boolean(selectedCategory) ||
-    selectedPrices.length > 0 ||
-    selectedTags.length > 0;
+    selectedTags.length > 0 ||
+    priceRange.min !== MIN_PRICE ||
+    priceRange.max !== MAX_PRICE;
 
   return (
     <main>
       <Breadcrumb title={selectedCategory || "Shop"} current={selectedCategory || "Shop"} />
 
-      <section className="section-category py-[35px]">
-        <div className="bb-container">
-          <div className="grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-4">
-            {SHOP_CATEGORIES.slice(0, 4).map((category, index) => (
-              <button
-                type="button"
-                key={category}
-                onClick={() => handleCategoryClick(category)}
-                className={`rounded-[18px] border p-[20px] text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
-                  selectedCategory === category
-                    ? "border-[#0f766e] bg-[#f0fdfa]"
-                    : "border-[#eee] bg-white"
-                }`}
-                data-aos="fade-up"
-                data-aos-delay={index * 80}
-              >
-                <i className="ri-drop-line mb-[12px] block text-[28px] text-[#0f766e]" />
-                <span className="font-quicksand text-[18px] font-bold text-[#3d4750]">
-                  {category}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-shop overflow-x-hidden pb-[60px] max-[767px]:pb-[40px]">
+      <section className="section-shop overflow-x-hidden py-[50px] max-[767px]:py-[35px]">
         <div className="bb-container">
           <div className="mb-[35px] text-center" data-aos="fade-up">
             <p className="mb-[8px] font-Poppins text-[14px] font-medium uppercase tracking-[0.18rem] text-[#0f766e]">
@@ -205,93 +207,149 @@ export default function ShopPageClient() {
           </div>
 
           <div className="flex flex-wrap mx-[-12px]">
-            <aside className="order-2 w-full px-[12px] max-[991px]:order-1 max-[991px]:mb-[35px] min-[992px]:w-[25%]">
-              <div className="bb-shop-sidebar sticky top-[150px] space-y-[24px]">
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Search
-                  </h4>
-                  <input
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search products..."
-                    className="bb-input"
-                  />
-                </div>
-
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="80">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Categories
-                  </h4>
-                  <ul className="space-y-[12px]">
-                    {SHOP_CATEGORIES.map((category) => (
-                      <li key={category}>
-                        <button
-                          type="button"
-                          onClick={() => handleCategoryClick(category)}
-                          className={`flex w-full items-center justify-between rounded-[10px] px-[10px] py-[8px] text-left font-Poppins text-[14px] transition ${
-                            selectedCategory === category
-                              ? "bg-[#f0fdfa] text-[#0f766e]"
-                              : "text-[#777] hover:bg-[#f8f8fb] hover:text-[#0f766e]"
-                          }`}
-                        >
-                          <span>{category}</span>
-                          <i className="ri-arrow-right-s-line" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="120">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Price Range
-                  </h4>
-                  <div className="space-y-[13px]">
-                    {["Under 15", "15 - 30", "Above 30"].map((range) => (
-                      <label key={range} className="bb-sidebar-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={selectedPrices.includes(range)}
-                          onChange={() => handlePriceChange(range)}
-                        />
-                        {range}
-                      </label>
-                    ))}
+            <aside className="w-full px-[12px] max-[991px]:mb-[35px] min-[992px]:w-[25%]">
+              <div className="bb-shop-sidebar sticky top-[150px] overflow-hidden rounded-[20px] border border-[#eee] bg-white shadow-sm">
+                <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right">
+                  <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                    <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                      Search
+                    </h4>
+                    <i className="ri-search-line text-[20px] text-[#0f766e]" />
+                  </div>
+                  <div className="relative">
+                    <input
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search products..."
+                      className="bb-input pr-[42px]"
+                    />
+                    <i className="ri-search-2-line absolute right-[14px] top-1/2 -translate-y-1/2 text-[18px] text-[#9ca3af]" />
                   </div>
                 </div>
 
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="160">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Pack Size
-                  </h4>
-                  <div className="space-y-[13px]">
-                    {PACK_SIZES.map((size) => (
-                      <label key={size} className="bb-sidebar-checkbox">
-                        <input type="checkbox" />
-                        {size}
-                      </label>
-                    ))}
+                <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right" data-aos-delay="80">
+                  <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                    <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                      Categories
+                    </h4>
+                    <i className="ri-list-check-2 text-[20px] text-[#0f766e]" />
+                  </div>
+
+                  {productCategories.length > 0 ? (
+                    <ul className="space-y-[12px]">
+                      {productCategories.map((category) => {
+                        const isSelected = selectedCategory === category;
+                        const count = productsState.filter(
+                          (product) => product.product_category === category,
+                        ).length;
+
+                        return (
+                          <li key={category}>
+                            <button
+                              type="button"
+                              onClick={() => handleCategoryClick(category)}
+                              className={`group flex w-full items-center justify-between rounded-[10px] px-[10px] py-[8px] text-left font-Poppins text-[14px] transition ${
+                                isSelected
+                                  ? "bg-[#f0fdfa] text-[#0f766e]"
+                                  : "text-[#777] hover:bg-[#f8f8fb] hover:text-[#0f766e]"
+                              }`}
+                            >
+                              <span className="flex items-center gap-[10px]">
+                                <span
+                                  className={`h-[18px] w-[18px] rounded-[5px] border transition ${
+                                    isSelected
+                                      ? "border-[#0f766e] bg-[#0f766e]"
+                                      : "border-[#eee] bg-white group-hover:border-[#0f766e]"
+                                  }`}
+                                >
+                                  {isSelected ? (
+                                    <i className="ri-check-line block text-center text-[14px] leading-[18px] text-white" />
+                                  ) : null}
+                                </span>
+                                {category}
+                              </span>
+                              <span className="rounded-full bg-[#f8f8fb] px-[8px] py-[2px] text-[12px] text-[#686e7d]">
+                                {count}
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p className="font-Poppins text-[14px] text-[#686e7d]">No categories found.</p>
+                  )}
+                </div>
+
+                <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right" data-aos-delay="120">
+                  <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                    <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                      Price Range
+                    </h4>
+                    <i className="ri-money-rupee-circle-line text-[20px] text-[#0f766e]" />
+                  </div>
+
+                  <div className="mb-[16px] rounded-[10px] border border-[#eee] bg-white p-[10px] text-center font-Poppins text-[15px] font-medium text-[#3d4750]">
+                    ₹{priceRange.min} — ₹{priceRange.max}
+                  </div>
+
+                  <div className="space-y-[14px]">
+                    <div>
+                      <div className="mb-[7px] flex justify-between font-Poppins text-[12px] text-[#686e7d]">
+                        <span>Min</span>
+                        <span>₹{priceRange.min}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={MIN_PRICE}
+                        max={MAX_PRICE}
+                        step={10}
+                        value={priceRange.min}
+                        onChange={(event) => handleMinPriceChange(Number(event.target.value))}
+                        className="w-full accent-[#0f766e]"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="mb-[7px] flex justify-between font-Poppins text-[12px] text-[#686e7d]">
+                        <span>Max</span>
+                        <span>₹{priceRange.max}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={MIN_PRICE}
+                        max={MAX_PRICE}
+                        step={10}
+                        value={priceRange.max}
+                        onChange={(event) => handleMaxPriceChange(Number(event.target.value))}
+                        className="w-full accent-[#0f766e]"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {productTags.length > 0 ? (
-                  <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="200">
-                    <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                      Tags
-                    </h4>
+                  <div className="bb-sidebar-block p-[20px]" data-aos="fade-right" data-aos-delay="200">
+                    <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                      <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                        Tags
+                      </h4>
+                      <i className="ri-price-tag-3-line text-[20px] text-[#0f766e]" />
+                    </div>
+
                     <div className="flex flex-wrap gap-[8px]">
                       {productTags.map((tag) => {
                         const selected = selectedTags.includes(tag);
+
                         return (
                           <button
                             key={tag}
                             type="button"
                             onClick={() => handleTagClick(tag)}
-                            className={`rounded-full px-[12px] py-[6px] font-Poppins text-[12px] transition ${
+                            className={`rounded-[10px] border px-[14px] py-[6px] font-Poppins text-[13px] capitalize leading-[24px] transition ${
                               selected
-                                ? "bg-[#0f766e] text-white"
-                                : "bg-[#f8f8fb] text-[#686e7d] hover:bg-[#0f766e] hover:text-white"
+                                ? "border-[#0f766e] bg-[#0f766e] text-white"
+                                : "border-[#eee] bg-white text-[#686e7d] hover:border-[#0f766e] hover:bg-[#0f766e] hover:text-white"
                             }`}
                           >
                             {tag}
@@ -301,34 +359,56 @@ export default function ShopPageClient() {
                     </div>
                   </div>
                 ) : null}
-
-                {hasActiveFilters ? (
-                  <button
-                    type="button"
-                    onClick={clearAllFilters}
-                    className="w-full rounded-[10px] bg-[#3d4750] px-[18px] py-[12px] font-Poppins text-[14px] font-medium text-white transition hover:bg-[#0f766e]"
-                  >
-                    Clear Filters
-                  </button>
-                ) : null}
               </div>
+
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="mt-[18px] w-full rounded-[10px] bg-[#3d4750] px-[18px] py-[12px] font-Poppins text-[14px] font-medium text-white transition hover:bg-[#0f766e]"
+                >
+                  Clear Filters
+                </button>
+              ) : null}
             </aside>
 
-            <div className="order-1 w-full px-[12px] max-[991px]:order-2 min-[992px]:w-[75%]">
-              <div className="mb-[24px] flex flex-wrap items-center justify-between gap-[16px] rounded-[20px] border border-[#eee] bg-white p-[18px] shadow-sm" data-aos="fade-up">
-                <p className="font-Poppins text-[14px] text-[#686e7d]">
-                  Showing <span className="font-semibold text-[#3d4750]">{filteredAndSortedProducts.length}</span> products
-                </p>
-                <select
-                  value={sortBy}
-                  onChange={(event) => setSortBy(event.target.value)}
-                  className="rounded-[10px] border border-[#eee] bg-white px-[14px] py-[10px] font-Poppins text-[14px] text-[#686e7d] outline-none focus:border-[#0f766e]"
-                >
-                  <option value="latest">Sort by latest</option>
-                  <option value="name">Sort by name</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                </select>
+            <div className="w-full px-[12px] min-[992px]:w-[75%]">
+              <div className="mb-[24px] flex flex-wrap items-center justify-between gap-[16px] rounded-[20px] border border-[#eee] bg-white p-[15px] shadow-sm" data-aos="fade-up">
+                <div className="flex items-center gap-[8px]">
+                  <button
+                    type="button"
+                    aria-label="Grid view"
+                    className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] border border-[#eee] bg-[#3d4750] text-white transition hover:bg-[#0f766e]"
+                  >
+                    <i className="ri-layout-grid-line text-[18px]" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="List view"
+                    className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] border border-[#eee] bg-white text-[#686e7d] transition hover:bg-[#0f766e] hover:text-white"
+                  >
+                    <i className="ri-list-check text-[18px]" />
+                  </button>
+                  <p className="ml-[6px] font-Poppins text-[14px] text-[#686e7d] max-[575px]:w-full max-[575px]:ml-0 max-[575px]:mt-[8px]">
+                    Showing <span className="font-semibold text-[#3d4750]">{filteredAndSortedProducts.length}</span> products
+                  </p>
+                </div>
+
+                <label className="flex items-center gap-[10px] rounded-[10px] border border-[#eee] bg-[#f8f8fb] px-[12px] py-[8px] font-Poppins text-[14px] text-[#686e7d]">
+                  <i className="ri-sort-desc text-[18px] text-[#0f766e]" />
+                  <span>Sort by</span>
+                  <select
+                    value={sortBy}
+                    onChange={(event) => setSortBy(event.target.value as SortOption)}
+                    className="bg-transparent font-Poppins text-[14px] text-[#3d4750] outline-none"
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="name-asc">Name, A to Z</option>
+                    <option value="name-desc">Name, Z to A</option>
+                    <option value="price-low">Price, low to high</option>
+                    <option value="price-high">Price, high to low</option>
+                  </select>
+                </label>
               </div>
 
               {loading ? (
@@ -349,6 +429,7 @@ export default function ShopPageClient() {
                 </div>
               ) : (
                 <div className="rounded-[20px] border border-[#eee] bg-white py-[60px] text-center">
+                  <i className="ri-inbox-2-line mb-[12px] block text-[40px] text-[#0f766e]" />
                   <p className="font-Poppins text-[16px] text-[#686e7d]">
                     No products match your search criteria.
                   </p>

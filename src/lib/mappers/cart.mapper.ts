@@ -20,6 +20,8 @@ export function mapOrderItemsToCart(
       id: item.product.id,
       product_name: item.product.productName,
       product_description: item.product.productDescription,
+      product_subdescription: item.product.productSubDescription,
+      product_details: item.product.productDetails,
       product_category: item.product.productCategory,
       price: toNumber(item.product.price),
       stock: item.product.stock,

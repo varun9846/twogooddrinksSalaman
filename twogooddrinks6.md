@@ -78,6 +78,7 @@ src/components/common/DeliveryCoverage.tsx
 src/components/common/FloatingWhatsApp.tsx
 src/components/common/Footer.tsx
 src/components/common/Header.tsx
+src/components/common/PageLoader.tsx
 src/components/common/SectionHeading.tsx
 src/components/common/WaterDroplets.tsx
 src/components/common/WaterWaveDivider.tsx
@@ -116,6 +117,130 @@ tsconfig.json
 
 # Files
 
+## File: AGENTS.md
+````markdown
+<!-- BEGIN:nextjs-agent-rules -->
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
+````
+
+## File: architecture.md
+````markdown
+src/
+├── app/                           # App Router Core
+│   ├── layout.tsx                 # Root layout (Includes global Providers, Header, Footer)
+│   ├── page.tsx                   # Homepage (index.html)
+│   ├── (auth)/                    # Auth Route Group
+│   │   ├── login/page.tsx         # login.html
+│   │   └── register/page.tsx      # register.html
+│   ├── shop/
+│   │   ├── page.tsx               # Shop Catalog (Grid/List views)
+│   │   └── [productId]/page.tsx   # Dynamic Product Details
+│   ├── cart/page.tsx              # cart.html
+│   ├── checkout/page.tsx          # checkout.html
+│   └── api/                       # Next.js Route Handlers (BFF layer)
+├── components/                    # Modular UI Component Layer
+│   ├── common/                    # Header, Footer, Custom Selectors
+│   ├── product/                   # ProductCard, ProductGrid, Rating
+│   ├── cart/                      # CartSidebar overlay
+│   └── ui/                        # Reusable Primitive Elements (Buttons, Inputs)
+├── store/                         # Global State Management (Zustand or React Context)
+│   ├── useCartStore.ts            # Client-side Cart state & persistent sync
+│   └── useWishlistStore.ts        # Client-side Wishlist state
+└── styles/
+    └── globals.css                # Custom Tailwind layer directives
+````
+
+## File: eslint.config.mjs
+````javascript
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+]);
+
+export default eslintConfig;
+````
+
+## File: README.md
+````markdown
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+````
+
+## File: src/app/api/auth/[...nextauth]/route.ts
+````typescript
+export const runtime = "nodejs";
+import { handlers } from "@/auth";
+export const { GET, POST } = handlers;
+````
+
+## File: src/app/api/products/menu/route.ts
+````typescript
+export const runtime = "nodejs";
+import productService from "@/lib/services/product.service";
+import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
+export async function POST() {
+  try {
+    const menu = await productService.getProductMenu();
+    return jsonSuccess({
+      success: true,
+      menu,
+    });
+  } catch (error) {
+    console.error("PRODUCTS_MENU_POST_ERROR", error);
+    return jsonError(getErrorMessage(error, "Failed to fetch product menu"), 500);
+  }
+}
+````
+
 ## File: src/components/common/Breadcrumb.tsx
 ````typescript
 import Link from "next/link";
@@ -150,6 +275,142 @@ export default function Breadcrumb({
         </div>
       </div>
     </section>
+  );
+}
+````
+
+## File: src/components/common/DeliveryCoverage.tsx
+````typescript
+const deliveryAreas = [
+  "Kanpur",
+  "Kanpur Dehat",
+  "Unnao",
+  "Raibareli",
+  "Lucknow",
+  "Unchahar",
+];
+const mapSrc =
+  "https://www.google.com/maps?q=Kanpur,Lucknow,Unnao,Raibareli,Unchahar&output=embed";
+export default function DeliveryCoverage() {
+  return (
+    <section className="bg-white px-4 py-16 md:py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="mx-auto mb-10 max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+            Delivery Coverage
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold text-slate-900 md:text-4xl">
+            Fresh water delivered across your city
+          </h2>
+          <p className="mt-4 text-sm leading-7 text-slate-600">
+            2goodplus currently delivers packaged drinking water across Kanpur,
+            Kanpur Dehat, Unnao, Raibareli, Lucknow, and Unchahar.
+          </p>
+        </div>
+        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
+          <div className="rounded-[28px] border border-slate-200 bg-[#f8fafc] p-6 md:p-8">
+            <h3 className="text-2xl font-semibold text-slate-900">
+              Available Service Areas
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              Place your order online or contact us for home, office, shop, and
+              bulk water delivery support in these locations.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {deliveryAreas.map((area) => (
+                <div
+                  key={area}
+                  className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e8f7f4] text-[#0f766e]">
+                    <i className="ri-map-pin-line text-lg" />
+                  </span>
+                  {area}
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 rounded-3xl bg-[#0f766e] p-5 text-white">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">
+                Need bulk delivery?
+              </p>
+              <h4 className="mt-2 text-xl font-semibold">
+                Contact us for regular jar and bottle supply.
+              </h4>
+              <a
+                href="/contact-us"
+                className="mt-5 inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-semibold !text-[#0f766e] transition hover:-translate-y-1"
+              >
+                Contact Now
+              </a>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+            <iframe
+              title="2goodplus delivery coverage map"
+              src={mapSrc}
+              className="h-[420px] w-full border-0 md:h-full"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+````
+
+## File: src/components/common/FloatingWhatsApp.tsx
+````typescript
+import Link from "next/link";
+const whatsappNumber = "919967399880";
+export default function FloatingWhatsApp() {
+  const message = encodeURIComponent(
+    "Hi, I am interested in 2good Plus wellness products.",
+  );
+  return (
+    <Link
+      href={`https://wa.me/${whatsappNumber}?text=${message}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Chat with us on WhatsApp"
+      className="fixed bottom-6 right-6 z-[998] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_10px_30px_rgba(37,211,102,0.35)] transition hover:-translate-y-1 hover:scale-105 hover:bg-[#1ebe5d] max-[575px]:bottom-5 max-[575px]:right-5"
+    >
+      <i className="ri-whatsapp-line text-[30px]" />
+    </Link>
+  );
+}
+````
+
+## File: src/components/common/PageLoader.tsx
+````typescript
+"use client";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+export default function PageLoader() {
+  const pathname = usePathname();
+  const [loading, setLoading] = useState(false);
+  const timerRef = useRef<number | null>(null);
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    setLoading(true);
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => setLoading(false), 700);
+    return () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
+  }, [pathname]);
+  if (!loading) return null;
+  return (
+    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-black/10">
+      <div className="mt-[18px] rounded-[10px] bg-white/90 p-[12px] shadow-lg">
+        <span className="bb-loader-ring" />
+      </div>
+    </div>
   );
 }
 ````
@@ -192,405 +453,33 @@ export default function SectionHeading({
 }
 ````
 
-## File: src/components/home/HomePageClient.tsx
+## File: src/components/common/WaterDroplets.tsx
 ````typescript
-"use client";
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
-import DeliveryCoverage from "@/components/common/DeliveryCoverage";
-import SectionHeading from "@/components/common/SectionHeading";
-import WaterDroplets from "@/components/common/WaterDroplets";
-import WaterWaveDivider from "@/components/common/WaterWaveDivider";
-import ProductCard from "@/components/shop/ProductCard";
-import { productsService } from "@/lib/services/productsService";
-import { homeContent } from "@/lib/site-content";
-import type { ProductDto } from "@/types/product";
-const heroSlides = [
-  {
-    eyebrow: "Pure Water. Pure Life.",
-    title: "Fresh packaged water for every day",
-    highlight: "packaged water",
-    text: homeContent.hero.description,
-    image: "/assets/img/hero/hero-b1.png",
-    href: "/shop",
-  },
-  {
-    eyebrow: "Bulk Order Support",
-    title: "Reliable water supply for teams and events",
-    highlight: "water supply",
-    text: "Customized rates for hotels, restaurants, offices, institutions, retailers, distributors, weddings, and corporate requirements.",
-    image: "/assets/img/hero/hero-2.png",
-    href: "/contact-us",
-  },
-  {
-    eyebrow: "Hydrate Better",
-    title: "Clean taste with trusted purification",
-    highlight: "trusted purification",
-    text: "Designed for daily hydration with careful processing, safe handling, and fresh delivery across your service areas.",
-    image: "/assets/img/hero/hero-3.png",
-    href: "/shop",
-  },
-];
-const categories = [
-  {
-    title: "Packaged Drinking Water",
-    subtitle: "Fresh sealed water bottles",
-    icon: "/assets/img/category/1.svg",
-    href: "/shop?category=Packaged%20Drinking%20Water",
-  },
-  {
-    title: "Healthy Drinks",
-    subtitle: "Refreshing daily wellness drinks",
-    icon: "/assets/img/category/2.svg",
-    href: "/shop?category=Healthy%20Drinks",
-  },
-  {
-    title: "Herbal Infusions",
-    subtitle: "Light herbal hydration options",
-    icon: "/assets/img/category/3.svg",
-    href: "/shop?category=Herbal%20Infusions",
-  },
-  {
-    title: "Bulk Orders",
-    subtitle: "Hotels, offices, and events",
-    icon: "/assets/img/category/4.svg",
-    href: "/contact-us",
-  },
-  {
-    title: "Home Delivery",
-    subtitle: "Doorstep hydration support",
-    icon: "/assets/img/category/5.svg",
-    href: "/contact-us",
-  },
-];
-const services = [
-  {
-    icon: "ri-water-flash-line",
-    title: "Purified Water",
-    text: "Clean packaged drinking water processed for consistent taste, freshness, and daily trust.",
-  },
-  {
-    icon: "ri-truck-line",
-    title: "Fast Delivery",
-    text: "Doorstep delivery support for homes, offices, hotels, restaurants, and institutional orders.",
-  },
-  {
-    icon: "ri-store-2-line",
-    title: "Bulk Pricing",
-    text: "Negotiable quantity-based rates for retailers, distributors, events, and corporate purchases.",
-  },
-  {
-    icon: "ri-shield-check-line",
-    title: "Quality Focused",
-    text: "Reliable handling, sealed packaging, and consistent quality control for every supply requirement.",
-  },
-];
-const testimonials = [
-  {
-    name: "Hotel Partner",
-    role: "Hospitality order",
-    text: "The delivery support is dependable and the team is quick with bulk requirements.",
-  },
-  {
-    name: "Office Buyer",
-    role: "Corporate supply",
-    text: "Simple ordering, clean packaging, and regular supply helped us manage daily hydration better.",
-  },
-  {
-    name: "Event Customer",
-    role: "Wedding order",
-    text: "They handled large quantities smoothly and gave clear pricing based on our requirement.",
-  },
-];
-const bulkOrderItems = [
-  "Corporate Orders",
-  "Events & Weddings",
-  "Hotels & Restaurants",
-  "Retailers & Distributors",
-  "Schools & Institutions",
-];
-export default function HomePageClient() {
-  const [products, setProducts] = useState<ProductDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    let cancelled = false;
-    async function loadProducts() {
-      try {
-        const data = await productsService.getAllProducts();
-        if (!cancelled && data?.success && Array.isArray(data.products)) {
-          setProducts(data.products);
-        }
-      } catch (error) {
-        console.error("Failed to load home products", error);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    loadProducts();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  const featuredProducts = useMemo(() => products.slice(0, 8), [products]);
-  const newProducts = useMemo(() => products.slice(4, 12), [products]);
+export default function WaterDroplets() {
   return (
-    <main className="overflow-hidden">
-      <section className="section-hero relative overflow-hidden bg-[#f8f8fb] py-[50px] max-[1199px]:py-[35px]">
-        <WaterDroplets />
-        <div className="bb-social-follow absolute bottom-[30px] left-[20px] max-[1250px]:hidden">
-          <ul className="inner-links flex flex-col gap-[12px]">
-            {['Fb', 'Li', 'Ig', 'Wa'].map((item) => (
-              <li key={item} className="rotate-[270deg] p-[6px]">
-                <span className="font-Poppins text-[16px] font-medium uppercase leading-[28px] tracking-[0.03rem] text-[#777]">
-                  {item}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="bb-container">
-          <Swiper
-            modules={[Autoplay, Navigation, Pagination]}
-            loop
-            autoplay={{ delay: 4200, disableOnInteraction: false }}
-            navigation
-            pagination={{ clickable: true }}
-            className="bb-swiper hero-slider"
-          >
-            {heroSlides.map((slide) => (
-              <SwiperSlide key={slide.title}>
-                <div className="flex w-full flex-wrap items-center pb-[35px]">
-                  <div className="order-2 mb-[24px] w-full px-[12px] min-[992px]:order-1 min-[992px]:w-[50%]">
-                    <div className="hero-contact flex h-full flex-col items-start justify-center max-[991px]:items-center max-[991px]:text-center">
-                      <p className="mb-[20px] font-Poppins text-[18px] font-light leading-[28px] tracking-[0.03rem] text-[#777] max-[1199px]:mb-[10px] max-[1199px]:text-[16px]">
-                        {slide.eyebrow}
-                      </p>
-                      <h1 className="mb-[20px] font-quicksand text-[50px] font-bold leading-[1.2] tracking-[0.03rem] text-[#3d4750] max-[1199px]:mb-[10px] max-[1199px]:text-[38px] max-[991px]:text-[45px] max-[767px]:text-[40px] max-[575px]:text-[34px]">
-                        {slide.title.split(slide.highlight)[0]}
-                        <span className="relative text-[#0f766e]">{slide.highlight}</span>
-                        {slide.title.split(slide.highlight)[1]}
-                      </h1>
-                      <p className="mb-[24px] max-w-[560px] font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-                        {slide.text}
-                      </p>
-                      <Link href={slide.href} className="bb-btn-1 water-ripple">
-                        Shop Now
-                      </Link>
-                    </div>
-                  </div>
-                  <div className="order-1 mb-[24px] w-full px-[12px] min-[992px]:order-2 min-[992px]:w-[50%]">
-                    <div className="hero-image relative flex justify-center pr-[50px] max-[991px]:px-[50px] max-[575px]:px-[25px] max-[420px]:p-0">
-                      <img
-                        src={slide.image}
-                        alt={slide.title}
-                        className="relative z-[2] max-h-[430px] w-full object-contain pb-[50px] max-[575px]:pb-[30px]"
-                      />
-                      <div className="animate-shape absolute right-[-30px] top-[-35px] z-[1] h-[92%] w-[92%] rounded-[45%_55%_65%_35%] bg-[#0f766e]/10 max-[991px]:right-[30px]" />
-                    </div>
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-      </section>
-      <section className="section-category mb-[50px] max-[1199px]:mb-[35px]">
-        <div className="bb-container">
-          <Swiper
-            modules={[Autoplay]}
-            autoplay={{ delay: 2400, disableOnInteraction: false }}
-            loop
-            spaceBetween={24}
-            breakpoints={{
-              0: { slidesPerView: 1 },
-              576: { slidesPerView: 2 },
-              992: { slidesPerView: 4 },
-              1200: { slidesPerView: 5 },
-            }}
-          >
-            {categories.map((category, index) => (
-              <SwiperSlide key={category.title}>
-                <Link
-                  href={category.href}
-                  className="bb-card group flex h-full flex-col items-center p-[25px] text-center"
-                  data-aos="fade-up"
-                  data-aos-delay={index * 80}
-                >
-                  <div className="mb-[18px] flex h-[70px] w-[70px] items-center justify-center rounded-[20px] bg-[#0f766e]/10 transition duration-300 group-hover:rotate-6 group-hover:scale-110">
-                    <img src={category.icon} alt={category.title} className="h-[42px] w-[42px] object-contain" />
-                  </div>
-                  <h3 className="font-quicksand text-[17px] font-bold text-[#3d4750]">
-                    {category.title}
-                  </h3>
-                  <p className="mt-[8px] font-Poppins text-[13px] font-light leading-[22px] text-[#686e7d]">
-                    {category.subtitle}
-                  </p>
-                </Link>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-      </section>
-      <WaterWaveDivider />
-      <section className="section-deal overflow-hidden py-[50px] max-[1199px]:py-[35px]">
-        <div className="bb-container">
-          <div className="grid gap-[24px] lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-            <div className="rounded-[24px] bg-[#0f766e] p-[35px] text-white" data-aos="fade-right">
-              <p className="mb-[8px] font-Poppins text-[14px] uppercase tracking-[0.18rem] text-white/80">
-                Need Bulk Quantities?
-              </p>
-              <h2 className="font-quicksand text-[34px] font-bold leading-[1.2] max-[767px]:text-[28px]">
-                Bulk order rates and dealership pricing are negotiable.
-              </h2>
-              <p className="mt-[16px] font-Poppins text-[15px] leading-[28px] text-white/85">
-                Ideal for hotels, restaurants, institutions, offices, retailers, and distributors.
-                Share your quantity requirement and get a custom quotation.
-              </p>
-              <div className="mt-[22px] grid gap-[10px] sm:grid-cols-2">
-                {bulkOrderItems.map((item) => (
-                  <div key={item} className="flex items-center gap-[8px] font-Poppins text-[14px]">
-                    <i className="ri-checkbox-circle-line text-[18px]" /> {item}
-                  </div>
-                ))}
-              </div>
-              <Link href="/contact-us" className="mt-[28px] inline-flex rounded-[10px] bg-white px-[22px] py-[11px] font-Poppins text-[14px] font-semibold text-[#0f766e] transition hover:-translate-y-1 hover:bg-[#e7fffb]">
-                For Bulk Orders Contact Us
-              </Link>
-            </div>
-            <div className="grid gap-[20px] sm:grid-cols-2">
-              {services.map((service, index) => (
-                <article key={service.title} className="bb-card p-[24px]" data-aos="fade-up" data-aos-delay={index * 90}>
-                  <div className="mb-[18px] flex h-[54px] w-[54px] items-center justify-center rounded-[16px] bg-[#0f766e]/10 text-[#0f766e]">
-                    <i className={`${service.icon} text-[28px]`} />
-                  </div>
-                  <h3 className="font-quicksand text-[19px] font-bold text-[#3d4750]">
-                    {service.title}
-                  </h3>
-                  <p className="mt-[10px] font-Poppins text-[14px] font-light leading-[26px] text-[#686e7d]">
-                    {service.text}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-      <section className="section-new-product bg-white py-[50px] max-[1199px]:py-[35px]">
-        <div className="bb-container">
-          <SectionHeading
-            eyebrow="Fresh products"
-            title="Shop our hydration range"
-            text="Blueberry-style product cards with your existing dynamic product API and teal brand theme."
-          />
-          {loading ? (
-            <div className="flex justify-center py-[50px]"><span className="bb-loader-ring" /></div>
-          ) : featuredProducts.length ? (
-            <Swiper
-              modules={[Navigation, Pagination]}
-              navigation
-              pagination={{ clickable: true }}
-              spaceBetween={24}
-              className="bb-swiper pb-[45px]"
-              breakpoints={{
-                0: { slidesPerView: 1 },
-                576: { slidesPerView: 2 },
-                992: { slidesPerView: 3 },
-                1200: { slidesPerView: 4 },
-              }}
-            >
-              {featuredProducts.map((product) => (
-                <SwiperSlide key={product.id} className="h-auto pb-[8px]">
-                  <ProductCard product={product} />
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          ) : (
-            <div className="rounded-[20px] border border-[#eee] bg-[#f8f8fb] p-[40px] text-center font-Poppins text-[#686e7d]">
-              No products found. Add products in your database to show them here.
-            </div>
-          )}
-        </div>
-      </section>
-      <section className="section-banner-two py-[50px] max-[1199px]:py-[35px]">
-        <div className="bb-container">
-          <div className="grid gap-[24px] lg:grid-cols-2">
-            <div className="relative overflow-hidden rounded-[24px] bg-[#e9fff8] p-[35px]" data-aos="fade-right">
-              <h3 className="font-quicksand text-[28px] font-bold text-[#3d4750]">
-                Daily hydration packs
-              </h3>
-              <p className="mt-[12px] max-w-[420px] font-Poppins text-[15px] leading-[28px] text-[#686e7d]">
-                Choose packaged drinking water for families, teams, retail counters, and events.
-              </p>
-              <Link href="/shop" className="bb-btn-2 mt-[22px]">Order Now</Link>
-              <i className="ri-water-flash-line absolute bottom-[-34px] right-[24px] text-[150px] text-[#0f766e]/10" />
-            </div>
-            <div className="relative overflow-hidden rounded-[24px] bg-[#fff6e8] p-[35px]" data-aos="fade-left">
-              <h3 className="font-quicksand text-[28px] font-bold text-[#3d4750]">
-                Custom quotation
-              </h3>
-              <p className="mt-[12px] max-w-[420px] font-Poppins text-[15px] leading-[28px] text-[#686e7d]">
-                Need regular supply or dealership pricing? Contact us with quantity and delivery area.
-              </p>
-              <Link href="/contact-us" className="bb-btn-1 mt-[22px]">Contact Us</Link>
-              <i className="ri-customer-service-2-line absolute bottom-[-34px] right-[24px] text-[150px] text-[#0f766e]/10" />
-            </div>
-          </div>
-        </div>
-      </section>
-      {newProducts.length ? (
-        <section className="section-product-tabs bg-white py-[50px] max-[1199px]:py-[35px]">
-          <div className="bb-container">
-            <SectionHeading eyebrow="New arrivals" title="More products to explore" />
-            <div className="grid grid-cols-1 gap-[24px] min-[576px]:grid-cols-2 min-[992px]:grid-cols-4">
-              {newProducts.slice(0, 4).map((product, index) => (
-                <div key={product.id} data-aos="fade-up" data-aos-delay={index * 80}>
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-      <DeliveryCoverage />
-      <section className="section-testimonials py-[50px] max-[1199px]:py-[35px]">
-        <div className="bb-container">
-          <SectionHeading
-            eyebrow="Testimonials"
-            title="Trusted by homes and businesses"
-            text="Simple ordering, dependable delivery, and flexible bulk pricing for different requirements."
-          />
-          <Swiper
-            modules={[Autoplay, Pagination]}
-            autoplay={{ delay: 3200, disableOnInteraction: false }}
-            pagination={{ clickable: true }}
-            spaceBetween={24}
-            className="bb-swiper pb-[45px]"
-            breakpoints={{ 0: { slidesPerView: 1 }, 768: { slidesPerView: 2 }, 1200: { slidesPerView: 3 } }}
-          >
-            {testimonials.map((testimonial) => (
-              <SwiperSlide key={testimonial.name}>
-                <article className="bb-card p-[28px] text-center">
-                  <div className="mx-auto mb-[18px] flex h-[62px] w-[62px] items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
-                    <i className="ri-double-quotes-l text-[30px]" />
-                  </div>
-                  <p className="font-Poppins text-[15px] font-light leading-[28px] text-[#686e7d]">
-                    “{testimonial.text}”
-                  </p>
-                  <h4 className="mt-[18px] font-quicksand text-[18px] font-bold text-[#3d4750]">
-                    {testimonial.name}
-                  </h4>
-                  <p className="mt-[4px] font-Poppins text-[13px] text-[#0f766e]">
-                    {testimonial.role}
-                  </p>
-                </article>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-      </section>
-    </main>
+    <div className="droplet-layer" aria-hidden="true">
+      <span className="droplet" />
+      <span className="droplet" />
+      <span className="droplet" />
+      <span className="droplet" />
+      <span className="droplet" />
+    </div>
+  );
+}
+````
+
+## File: src/components/common/WaterWaveDivider.tsx
+````typescript
+export default function WaterWaveDivider() {
+  return (
+    <div className="water-wave-divider">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <path
+          d="M0,64 C240,120 480,0 720,56 C960,112 1200,24 1440,72 L1440,120 L0,120 Z"
+          fill="#f8fafc"
+        />
+      </svg>
+    </div>
   );
 }
 ````
@@ -613,6 +502,15 @@ export default function AnimationProvider() {
 }
 ````
 
+## File: src/components/providers/AuthProvider.tsx
+````typescript
+"use client";
+import { SessionProvider } from "next-auth/react";
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
+  return <SessionProvider refetchOnWindowFocus={false}>{children}</SessionProvider>;
+}
+````
+
 ## File: src/components/shop/ShopPageClient.tsx
 ````typescript
 "use client";
@@ -630,7 +528,6 @@ const SHOP_CATEGORIES = [
   "Jeera Drink",
   "Healthy Snacks",
 ];
-const PACK_SIZES = ["500 ml", "1 L", "5 L", "20 L", "Bulk Pack"];
 function getPriceNumber(price: string) {
   return Number(price.replace(/[^0-9.]/g, "")) || 0;
 }
@@ -848,19 +745,6 @@ export default function ShopPageClient() {
                     ))}
                   </div>
                 </div>
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="160">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Pack Size
-                  </h4>
-                  <div className="space-y-[13px]">
-                    {PACK_SIZES.map((size) => (
-                      <label key={size} className="bb-sidebar-checkbox">
-                        <input type="checkbox" />
-                        {size}
-                      </label>
-                    ))}
-                  </div>
-                </div>
                 {productTags.length > 0 ? (
                   <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="200">
                     <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
@@ -946,294 +830,6 @@ export default function ShopPageClient() {
 }
 ````
 
-## File: src/types/aos.d.ts
-````typescript
-declare module "aos" {
-  export interface AosOptions {
-    offset?: number;
-    delay?: number;
-    duration?: number;
-    easing?: string;
-    once?: boolean;
-    mirror?: boolean;
-    anchorPlacement?: string;
-  }
-  const AOS: {
-    init: (options?: AosOptions) => void;
-    refresh: () => void;
-    refreshHard: () => void;
-  };
-  export default AOS;
-}
-````
-
-## File: AGENTS.md
-````markdown
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
-````
-
-## File: architecture.md
-````markdown
-src/
-├── app/                           # App Router Core
-│   ├── layout.tsx                 # Root layout (Includes global Providers, Header, Footer)
-│   ├── page.tsx                   # Homepage (index.html)
-│   ├── (auth)/                    # Auth Route Group
-│   │   ├── login/page.tsx         # login.html
-│   │   └── register/page.tsx      # register.html
-│   ├── shop/
-│   │   ├── page.tsx               # Shop Catalog (Grid/List views)
-│   │   └── [productId]/page.tsx   # Dynamic Product Details
-│   ├── cart/page.tsx              # cart.html
-│   ├── checkout/page.tsx          # checkout.html
-│   └── api/                       # Next.js Route Handlers (BFF layer)
-├── components/                    # Modular UI Component Layer
-│   ├── common/                    # Header, Footer, Custom Selectors
-│   ├── product/                   # ProductCard, ProductGrid, Rating
-│   ├── cart/                      # CartSidebar overlay
-│   └── ui/                        # Reusable Primitive Elements (Buttons, Inputs)
-├── store/                         # Global State Management (Zustand or React Context)
-│   ├── useCartStore.ts            # Client-side Cart state & persistent sync
-│   └── useWishlistStore.ts        # Client-side Wishlist state
-└── styles/
-    └── globals.css                # Custom Tailwind layer directives
-````
-
-## File: eslint.config.mjs
-````javascript
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
-
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
-]);
-
-export default eslintConfig;
-````
-
-## File: README.md
-````markdown
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-````
-
-## File: src/app/api/auth/[...nextauth]/route.ts
-````typescript
-export const runtime = "nodejs";
-import { handlers } from "@/auth";
-export const { GET, POST } = handlers;
-````
-
-## File: src/app/api/products/menu/route.ts
-````typescript
-export const runtime = "nodejs";
-import productService from "@/lib/services/product.service";
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-export async function POST() {
-  try {
-    const menu = await productService.getProductMenu();
-    return jsonSuccess({
-      success: true,
-      menu,
-    });
-  } catch (error) {
-    console.error("PRODUCTS_MENU_POST_ERROR", error);
-    return jsonError(getErrorMessage(error, "Failed to fetch product menu"), 500);
-  }
-}
-````
-
-## File: src/components/common/DeliveryCoverage.tsx
-````typescript
-const deliveryAreas = [
-  "Kanpur",
-  "Kanpur Dehat",
-  "Unnao",
-  "Raibareli",
-  "Lucknow",
-  "Unchahar",
-];
-const mapSrc =
-  "https://www.google.com/maps?q=Kanpur,Lucknow,Unnao,Raibareli,Unchahar&output=embed";
-export default function DeliveryCoverage() {
-  return (
-    <section className="bg-white px-4 py-16 md:py-20">
-      <div className="mx-auto max-w-7xl">
-        <div className="mx-auto mb-10 max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
-            Delivery Coverage
-          </p>
-          <h2 className="mt-3 text-3xl font-semibold text-slate-900 md:text-4xl">
-            Fresh water delivered across your city
-          </h2>
-          <p className="mt-4 text-sm leading-7 text-slate-600">
-            2goodplus currently delivers packaged drinking water across Kanpur,
-            Kanpur Dehat, Unnao, Raibareli, Lucknow, and Unchahar.
-          </p>
-        </div>
-        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
-          <div className="rounded-[28px] border border-slate-200 bg-[#f8fafc] p-6 md:p-8">
-            <h3 className="text-2xl font-semibold text-slate-900">
-              Available Service Areas
-            </h3>
-            <p className="mt-3 text-sm leading-7 text-slate-600">
-              Place your order online or contact us for home, office, shop, and
-              bulk water delivery support in these locations.
-            </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {deliveryAreas.map((area) => (
-                <div
-                  key={area}
-                  className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e8f7f4] text-[#0f766e]">
-                    <i className="ri-map-pin-line text-lg" />
-                  </span>
-                  {area}
-                </div>
-              ))}
-            </div>
-            <div className="mt-8 rounded-3xl bg-[#0f766e] p-5 text-white">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80">
-                Need bulk delivery?
-              </p>
-              <h4 className="mt-2 text-xl font-semibold">
-                Contact us for regular jar and bottle supply.
-              </h4>
-              <a
-                href="/contact-us"
-                className="mt-5 inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-semibold !text-[#0f766e] transition hover:-translate-y-1"
-              >
-                Contact Now
-              </a>
-            </div>
-          </div>
-          <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-            <iframe
-              title="2goodplus delivery coverage map"
-              src={mapSrc}
-              className="h-[420px] w-full border-0 md:h-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-````
-
-## File: src/components/common/FloatingWhatsApp.tsx
-````typescript
-import Link from "next/link";
-const whatsappNumber = "919967399880";
-export default function FloatingWhatsApp() {
-  const message = encodeURIComponent(
-    "Hi, I am interested in 2good Plus wellness products.",
-  );
-  return (
-    <Link
-      href={`https://wa.me/${whatsappNumber}?text=${message}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Chat with us on WhatsApp"
-      className="fixed bottom-6 right-6 z-[998] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_10px_30px_rgba(37,211,102,0.35)] transition hover:-translate-y-1 hover:scale-105 hover:bg-[#1ebe5d] max-[575px]:bottom-5 max-[575px]:right-5"
-    >
-      <i className="ri-whatsapp-line text-[30px]" />
-    </Link>
-  );
-}
-````
-
-## File: src/components/common/WaterDroplets.tsx
-````typescript
-export default function WaterDroplets() {
-  return (
-    <div className="droplet-layer" aria-hidden="true">
-      <span className="droplet" />
-      <span className="droplet" />
-      <span className="droplet" />
-      <span className="droplet" />
-      <span className="droplet" />
-    </div>
-  );
-}
-````
-
-## File: src/components/common/WaterWaveDivider.tsx
-````typescript
-export default function WaterWaveDivider() {
-  return (
-    <div className="water-wave-divider">
-      <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-        <path
-          d="M0,64 C240,120 480,0 720,56 C960,112 1200,24 1440,72 L1440,120 L0,120 Z"
-          fill="#f8fafc"
-        />
-      </svg>
-    </div>
-  );
-}
-````
-
-## File: src/components/providers/AuthProvider.tsx
-````typescript
-"use client";
-import { SessionProvider } from "next-auth/react";
-export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  return <SessionProvider refetchOnWindowFocus={false}>{children}</SessionProvider>;
-}
-````
-
 ## File: src/lib/apiClient.ts
 ````typescript
 import axios from "axios";
@@ -1271,6 +867,8 @@ export function mapOrderItemsToCart(
       id: item.product.id,
       product_name: item.product.productName,
       product_description: item.product.productDescription,
+      product_subdescription: item.product.productSubDescription,
+      product_details: item.product.productDetails,
       product_category: item.product.productCategory,
       price: toNumber(item.product.price),
       stock: item.product.stock,
@@ -1666,12 +1264,35 @@ export const useUiStore = create<UiState>((set) => ({
 
 ````
 
+## File: src/types/aos.d.ts
+````typescript
+declare module "aos" {
+  export interface AosOptions {
+    offset?: number;
+    delay?: number;
+    duration?: number;
+    easing?: string;
+    once?: boolean;
+    mirror?: boolean;
+    anchorPlacement?: string;
+  }
+  const AOS: {
+    init: (options?: AosOptions) => void;
+    refresh: () => void;
+    refreshHard: () => void;
+  };
+  export default AOS;
+}
+````
+
 ## File: src/types/cart.ts
 ````typescript
 export interface CartProduct {
   id: string;
   product_name: string;
   product_description: string;
+  product_subdescription: string;
+  product_details: string;
   product_category: string;
   price: number;
   stock: number;
@@ -3210,6 +2831,8 @@ export function toProductDto(product: Product): ProductDto {
     product_name: product.productName,
     product_packsize: product.productPacksize,
     product_description: product.productDescription,
+    product_subdescription: product.productSubDescription,
+    product_details: product.productDetails,
     product_category: product.productCategory,
     price: formatPrice(product.price),
     Stock: product.stock,
@@ -3302,33 +2925,6 @@ export function parseRequestNumber(value: unknown, fallback = 0): number {
 }
 ````
 
-## File: src/types/product.ts
-````typescript
-export interface ProductDto {
-  id: string;
-  product_name: string;
-  product_description: string;
-  product_category: string;
-  price: string;
-  Stock: number;
-  image: string;
-  Badge?: string | null;
-  Tag: string;
-  isActive?: boolean;
-  product_packsize?: number | null;
-}
-export interface ProductsListResponse {
-  success: boolean;
-  products: ProductDto[];
-  product?: ProductDto | null;
-}
-export interface ProductDetailResponse {
-  success: boolean;
-  product: ProductDto | null;
-  products: ProductDto[];
-}
-````
-
 ## File: prisma/schema.prisma
 ````prisma
 generator client {
@@ -3362,20 +2958,22 @@ model User {
 }
 
 model Product {
-  id                  String      @id
-  productName         String      @map("product_name") @db.VarChar(255)
-  productDescription  String      @map("product_description")
-  productCategory     String      @map("product_category") @db.VarChar(150)
-  price               Decimal     @db.Decimal(10, 2)
-  stock               Int         @default(0)
-  image               String
-  badge               String?     @db.VarChar(80)
-  tag                 String?     @db.VarChar(100)
-  createdAt           DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  orderItems          OrderItem[]
-  isActive           Boolean  @default(true) @map("is_active")
-  productPacksize    Int      @default(12) @map("product_packsize")
+  id                    String      @id
+  productName           String      @map("product_name") @db.VarChar(255)
+  productDescription    String      @map("product_description")
+  productSubDescription String      @map("product_subdescription")
+  productDetails        String      @map("product_details")
+  productCategory       String      @map("product_category") @db.VarChar(150)
+  price                 Decimal     @db.Decimal(10, 2)
+  stock                 Int         @default(0)
+  image                 String
+  badge                 String?     @db.VarChar(80)
+  tag                   String?     @db.VarChar(100)
+  createdAt             DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  orderItems            OrderItem[]
+  isActive              Boolean     @default(true) @map("is_active")
+  productPacksize       Int         @default(12) @map("product_packsize")
 
   @@map("products")
 }
@@ -3428,6 +3026,8 @@ CREATE TABLE IF NOT EXISTS products (
   id VARCHAR(255) PRIMARY KEY,
   product_name VARCHAR(255) NOT NULL,
   product_description TEXT NOT NULL,
+  product_subdescription TEXT NOT NULL,
+  product_details TEXT NOT NULL,
   product_category VARCHAR(150) NOT NULL,
   product_packsize INTEGER NOT NULL DEFAULT 1 CHECK (product_packsize > 0),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -3580,141 +3180,6 @@ export default function LoginPage() {
             <Suspense>
               <LoginForm />
             </Suspense>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
-}
-````
-
-## File: src/app/about-us/page.tsx
-````typescript
-import Breadcrumb from "@/components/common/Breadcrumb";
-import SectionHeading from "@/components/common/SectionHeading";
-import { aboutContent } from "@/lib/site-content";
-const services = [
-  {
-    icon: "ri-water-flash-line",
-    title: "Pure Hydration",
-    text: "Fresh packaged drinking water prepared for daily home and business requirements.",
-  },
-  {
-    icon: "ri-shield-check-line",
-    title: "Quality Handling",
-    text: "A careful process focused on consistency, safety, sealed packaging, and trust.",
-  },
-  {
-    icon: "ri-truck-line",
-    title: "Delivery Support",
-    text: "Supply support for homes, offices, hotels, restaurants, institutions, and events.",
-  },
-  {
-    icon: "ri-store-2-line",
-    title: "Bulk Orders",
-    text: "Negotiable rates and custom quotations based on quantity and delivery requirement.",
-  },
-];
-const teamValues = [
-  "Customer-first service",
-  "Fresh and safe supply",
-  "Transparent communication",
-  "Reliable delivery planning",
-];
-export default function AboutPage() {
-  return (
-    <main>
-      <Breadcrumb title="About Us" current="About Us" />
-      <section className="section-about py-[50px] max-[1199px]:py-[35px]">
-        <div className="bb-container">
-          <div className="grid gap-[35px] lg:grid-cols-2 lg:items-center">
-            <div className="relative" data-aos="fade-right">
-              <div className="overflow-hidden rounded-[30px] border border-[#eee] bg-white p-[20px] shadow-sm">
-                <img
-                  src="/assets/img/about/one.png"
-                  alt="About 2good Plus"
-                  className="h-[430px] w-full rounded-[22px] object-cover max-[767px]:h-[300px]"
-                />
-              </div>
-              <div className="absolute bottom-[-22px] right-[25px] rounded-[20px] bg-[#0f766e] px-[24px] py-[18px] text-white shadow-xl max-[575px]:static max-[575px]:mt-[18px]">
-                <p className="font-quicksand text-[28px] font-bold leading-[1]">7+</p>
-                <p className="mt-[6px] font-Poppins text-[13px] leading-[20px]">Quality focused steps</p>
-              </div>
-            </div>
-            <div data-aos="fade-left">
-              <p className="mb-[8px] font-Poppins text-[14px] font-medium uppercase tracking-[0.18rem] text-[#0f766e]">
-                {aboutContent.eyebrow}
-              </p>
-              <h1 className="font-quicksand text-[42px] font-bold leading-[1.2] tracking-[0.03rem] text-[#3d4750] max-[767px]:text-[32px]">
-                {aboutContent.heroTitle}
-              </h1>
-              <p className="mt-[18px] font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-                {aboutContent.heroDescription}
-              </p>
-              <div className="mt-[24px] space-y-[13px]">
-                {aboutContent.highlights.map((item) => (
-                  <div key={item} className="flex items-center gap-[10px] font-Poppins text-[14px] text-[#686e7d]">
-                    <i className="ri-checkbox-circle-line text-[20px] text-[#0f766e]" />
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="mt-[70px] rounded-[30px] border border-[#eee] bg-white p-[30px] shadow-sm max-[767px]:p-[20px]" data-aos="fade-up">
-            <SectionHeading align="left" eyebrow="Our story" title={aboutContent.homeTitle} text={aboutContent.homeDescription} />
-            <div className="grid gap-[18px] lg:grid-cols-2">
-              {aboutContent.storyParagraphs.map((paragraph) => (
-                <p key={paragraph} className="font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-      <section className="section-services bg-white py-[50px] max-[1199px]:py-[35px]">
-        <div className="bb-container">
-          <SectionHeading
-            eyebrow="Our services"
-            title="Designed for homes, offices, and businesses"
-            text="The Blueberry layout has been adapted for your teal water brand with clean cards, icons, and scroll animations."
-          />
-          <div className="grid grid-cols-1 gap-[24px] sm:grid-cols-2 lg:grid-cols-4">
-            {services.map((service, index) => (
-              <article key={service.title} className="bb-card p-[25px] text-center" data-aos="fade-up" data-aos-delay={index * 80}>
-                <div className="mx-auto mb-[18px] flex h-[64px] w-[64px] items-center justify-center rounded-[18px] bg-[#0f766e]/10 text-[#0f766e]">
-                  <i className={`${service.icon} text-[32px]`} />
-                </div>
-                <h3 className="font-quicksand text-[18px] font-bold text-[#3d4750]">
-                  {service.title}
-                </h3>
-                <p className="mt-[10px] font-Poppins text-[14px] font-light leading-[25px] text-[#686e7d]">
-                  {service.text}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="section-team py-[50px] max-[1199px]:py-[35px]">
-        <div className="bb-container">
-          <div className="grid gap-[24px] lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-            <div data-aos="fade-right">
-              <SectionHeading align="left" eyebrow="Our promise" title="Simple, honest, and dependable hydration support" />
-              <p className="font-Poppins text-[15px] font-light leading-[28px] text-[#686e7d]">
-                Our team focuses on clear communication, responsive support, fresh supply, and
-                practical order handling for every customer requirement.
-              </p>
-            </div>
-            <div className="grid gap-[16px] sm:grid-cols-2" data-aos="fade-left">
-              {teamValues.map((value) => (
-                <div key={value} className="rounded-[18px] border border-[#eee] bg-white p-[20px] shadow-sm">
-                  <i className="ri-star-smile-line mb-[12px] block text-[28px] text-[#0f766e]" />
-                  <h3 className="font-quicksand text-[18px] font-bold text-[#3d4750]">{value}</h3>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -3913,227 +3378,6 @@ export default function HerbalBenefitsPage() {
         </section>
       </div>
     </main>
-  );
-}
-````
-
-## File: src/components/common/CartSidebar.tsx
-````typescript
-"use client";
-import Link from "next/link";
-import { useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { useCartStore } from "@/store/useCartStore";
-import { useUiStore } from "@/store/useUiStore";
-export default function CartSidebar() {
-  const { status } = useSession();
-  const { isCartOpen, toggleCart } = useUiStore();
-  const cart = useCartStore((state) => state.cart);
-  const isLoading = useCartStore((state) => state.isLoading);
-  const fetchCart = useCartStore((state) => state.fetchCart);
-  const updateItem = useCartStore((state) => state.updateItem);
-  const removeItem = useCartStore((state) => state.removeItem);
-  useEffect(() => {
-    if (isCartOpen && status === "authenticated") {
-      fetchCart();
-    }
-  }, [isCartOpen, status, fetchCart]);
-  return (
-    <>
-      <div
-        className={`fixed inset-0 z-50 bg-black/50 sidebar-transition ${
-          isCartOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
-        }`}
-        onClick={toggleCart}
-      />
-      <aside
-        className={`fixed right-0 top-0 z-50 h-full w-full bg-white shadow-2xl sidebar-transition sm:w-[450px] ${
-          isCartOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-[#eee] p-[24px]">
-            <div>
-              <p className="font-Poppins text-[13px] uppercase tracking-[0.18rem] text-[#0f766e]">Cart</p>
-              <h2 className="font-quicksand text-[24px] font-bold text-[#3d4750]">Your Cart</h2>
-            </div>
-            <button
-              onClick={toggleCart}
-              className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] bg-[#f8f8fb] text-[#3d4750] transition hover:bg-[#0f766e] hover:text-white"
-              aria-label="Close cart"
-              type="button"
-            >
-              <i className="ri-close-line text-[22px]" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-[24px]">
-            {status === "loading" || isLoading ? (
-              <div className="flex justify-center py-[45px]"><span className="bb-loader-ring" /></div>
-            ) : null}
-            {status === "unauthenticated" ? (
-              <div className="mt-[40px] text-center">
-                <div className="mx-auto mb-[18px] flex h-[64px] w-[64px] items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
-                  <i className="ri-user-3-line text-[30px]" />
-                </div>
-                <p className="mb-[18px] font-Poppins text-[14px] leading-[25px] text-[#686e7d]">
-                  Please login first to view your cart.
-                </p>
-                <Link
-                  href="/login?callbackUrl=/shop"
-                  onClick={toggleCart}
-                  className="bb-btn-2"
-                >
-                  Login
-                </Link>
-              </div>
-            ) : null}
-            {status === "authenticated" && !isLoading && (!cart || cart.items.length === 0) ? (
-              <div className="mt-[40px] text-center">
-                <div className="mx-auto mb-[18px] flex h-[64px] w-[64px] items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
-                  <i className="ri-shopping-cart-line text-[30px]" />
-                </div>
-                <p className="font-Poppins text-[14px] leading-[25px] text-[#686e7d]">
-                  Your cart is currently empty.
-                </p>
-              </div>
-            ) : null}
-            {status === "authenticated" && cart?.items.length ? (
-              <div className="space-y-[18px]">
-                {cart.items.map((item) => (
-                  <div key={item.id} className="relative flex gap-[14px] rounded-[18px] border border-[#eee] bg-[#f8f8fb] p-[14px]">
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.id)}
-                      className="absolute right-[-6px] top-[-6px] flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#3d4750] text-white opacity-70 transition hover:opacity-100"
-                      aria-label="Remove item"
-                    >
-                      <i className="ri-close-line text-[14px]" />
-                    </button>
-                    <img
-                      src={item.product.image}
-                      alt={item.product.product_name}
-                      className="h-[82px] w-[82px] rounded-[12px] border border-[#eee] bg-white object-contain p-[8px]"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <h3 className="line-clamp-1 font-Poppins text-[14px] font-medium leading-[20px] tracking-[0.03rem] text-[#3d4750]">
-                        {item.product.product_name}
-                      </h3>
-                      <p className="mt-[5px] font-Poppins text-[13px] text-[#686e7d]">
-                        ₹{item.product.price.toFixed(2)} x {item.quantity}
-                      </p>
-                      <div className="mt-[12px] flex items-center justify-between gap-[10px]">
-                        <div className="flex items-center overflow-hidden rounded-[10px] border border-[#eee] bg-white">
-                          <button type="button" onClick={() => updateItem(item.id, item.quantity - 1)} className="px-[11px] py-[5px] text-[#3d4750]">-</button>
-                          <span className="min-w-[32px] text-center font-Poppins text-[13px]">{item.quantity}</span>
-                          <button type="button" onClick={() => updateItem(item.id, item.quantity + 1)} className="px-[11px] py-[5px] text-[#3d4750]">+</button>
-                        </div>
-                        <p className="font-quicksand text-[15px] font-bold text-[#3d4750]">
-                          ₹{item.line_total.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
-          <div className="border-t border-[#eee] p-[24px]">
-            <div className="mb-[18px] flex justify-between font-quicksand text-[20px] font-bold text-[#3d4750]">
-              <span>Subtotal:</span>
-              <span>₹{(cart?.total || 0).toFixed(2)}</span>
-            </div>
-            <Link
-              href="/my-cart"
-              onClick={toggleCart}
-              className="bb-btn-2 w-full"
-            >
-              View My Cart
-            </Link>
-          </div>
-        </div>
-      </aside>
-    </>
-  );
-}
-````
-
-## File: src/components/shop/ProductActions.tsx
-````typescript
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useCartStore } from "@/store/useCartStore";
-import { useUiStore } from "@/store/useUiStore";
-interface ProductActionsProps {
-  productId: string;
-  compact?: boolean;
-}
-export default function ProductActions({ productId, compact = false }: ProductActionsProps) {
-  const router = useRouter();
-  const { status } = useSession();
-  const addToCart = useCartStore((state) => state.addToCart);
-  const isLoading = useCartStore((state) => state.isLoading);
-  const toggleCart = useUiStore((state) => state.toggleCart);
-  const [message, setMessage] = useState<string | null>(null);
-  const redirectToLogin = (callbackUrl: string) => {
-    alert("Please login first to continue.");
-    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  };
-  const handleAddToCart = async () => {
-    setMessage(null);
-    if (status !== "authenticated") {
-      redirectToLogin("/shop");
-      return;
-    }
-    try {
-      await addToCart(productId, 1);
-      setMessage("Added to cart");
-      toggleCart();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to add product.");
-    }
-  };
-  const handleBuyNow = async () => {
-    setMessage(null);
-    if (status !== "authenticated") {
-      redirectToLogin(`/my-cart?buyNow=${productId}`);
-      return;
-    }
-    try {
-      await addToCart(productId, 1);
-      router.push("/my-cart");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to continue.");
-    }
-  };
-  return (
-    <div className={compact ? "mt-[16px]" : "mt-[24px]"}>
-      <div className={compact ? "flex flex-col gap-[10px]" : "flex flex-wrap gap-[12px]"}>
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          disabled={isLoading || status === "loading"}
-          className="flex-1 rounded-[10px] border border-[#0f766e] bg-white px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-[#0f766e] transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <i className="ri-shopping-cart-line mr-[6px]" />
-          Add To Cart
-        </button>
-        <button
-          type="button"
-          onClick={handleBuyNow}
-          disabled={isLoading || status === "loading"}
-          className="flex-1 rounded-[10px] bg-[#0f766e] px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5f59] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          Buy Now
-        </button>
-      </div>
-      {message ? (
-        <p className="mt-[10px] text-center font-Poppins text-[12px] text-[#0f766e]">
-          {message}
-        </p>
-      ) : null}
-    </div>
   );
 }
 ````
@@ -4458,6 +3702,35 @@ export const useCartStore = create<CartState>((set) => ({
 }));
 ````
 
+## File: src/types/product.ts
+````typescript
+export interface ProductDto {
+  id: string;
+  product_name: string;
+  product_description: string;
+  product_subdescription: string;
+  product_details: string;
+  product_category: string;
+  price: string;
+  Stock: number;
+  image: string;
+  Badge?: string | null;
+  Tag: string;
+  isActive?: boolean;
+  product_packsize?: number | null;
+}
+export interface ProductsListResponse {
+  success: boolean;
+  products: ProductDto[];
+  product?: ProductDto | null;
+}
+export interface ProductDetailResponse {
+  success: boolean;
+  product: ProductDto | null;
+  products: ProductDto[];
+}
+````
+
 ## File: src/app/(auth)/register/page.tsx
 ````typescript
 "use client";
@@ -4595,6 +3868,141 @@ export default function RegisterPage() {
           <Suspense>
             <RegisterForm />
           </Suspense>
+        </div>
+      </section>
+    </main>
+  );
+}
+````
+
+## File: src/app/about-us/page.tsx
+````typescript
+import Breadcrumb from "@/components/common/Breadcrumb";
+import SectionHeading from "@/components/common/SectionHeading";
+import { aboutContent } from "@/lib/site-content";
+const services = [
+  {
+    icon: "ri-water-flash-line",
+    title: "Pure Hydration",
+    text: "Fresh packaged drinking water prepared for daily home and business requirements.",
+  },
+  {
+    icon: "ri-shield-check-line",
+    title: "Quality Handling",
+    text: "A careful process focused on consistency, safety, sealed packaging, and trust.",
+  },
+  {
+    icon: "ri-truck-line",
+    title: "Delivery Support",
+    text: "Supply support for homes, offices, hotels, restaurants, institutions, and events.",
+  },
+  {
+    icon: "ri-store-2-line",
+    title: "Bulk Orders",
+    text: "Negotiable rates and custom quotations based on quantity and delivery requirement.",
+  },
+];
+const teamValues = [
+  "Customer-first service",
+  "Fresh and safe supply",
+  "Transparent communication",
+  "Reliable delivery planning",
+];
+export default function AboutPage() {
+  return (
+    <main>
+      <Breadcrumb title="About Us" current="About Us" />
+      <section className="section-about py-[50px] max-[1199px]:py-[35px]">
+        <div className="bb-container">
+          <div className="grid gap-[35px] lg:grid-cols-2 lg:items-center">
+            <div className="relative" data-aos="fade-right">
+              <div className="overflow-hidden rounded-[30px] border border-[#eee] bg-white p-[20px] shadow-sm">
+                <img
+                  src="/assets/img/about/one.png"
+                  alt="About 2good Plus"
+                  className="h-[430px] w-full rounded-[22px] object-cover max-[767px]:h-[300px]"
+                />
+              </div>
+              <div className="absolute bottom-[-22px] right-[25px] rounded-[20px] bg-[#0f766e] px-[24px] py-[18px] text-white shadow-xl max-[575px]:static max-[575px]:mt-[18px]">
+                <p className="font-quicksand text-[28px] font-bold leading-[1]">7+</p>
+                <p className="mt-[6px] font-Poppins text-[13px] leading-[20px]">Quality focused steps</p>
+              </div>
+            </div>
+            <div data-aos="fade-left">
+              <p className="mb-[8px] font-Poppins text-[14px] font-medium uppercase tracking-[0.18rem] text-[#0f766e]">
+                {aboutContent.eyebrow}
+              </p>
+              <h1 className="font-quicksand text-[42px] font-bold leading-[1.2] tracking-[0.03rem] text-[#3d4750] max-[767px]:text-[32px]">
+                {aboutContent.heroTitle}
+              </h1>
+              <p className="mt-[18px] font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
+                {aboutContent.heroDescription}
+              </p>
+              <div className="mt-[24px] space-y-[13px]">
+                {aboutContent.highlights.map((item) => (
+                  <div key={item} className="flex items-center gap-[10px] font-Poppins text-[14px] text-[#686e7d]">
+                    <i className="ri-checkbox-circle-line text-[20px] text-[#0f766e]" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="mt-[70px] rounded-[30px] border border-[#eee] bg-white p-[30px] shadow-sm max-[767px]:p-[20px]" data-aos="fade-up">
+            <SectionHeading align="left" eyebrow="Our story" title={aboutContent.homeTitle} text={aboutContent.homeDescription} />
+            <div className="grid gap-[18px] lg:grid-cols-2">
+              {aboutContent.storyParagraphs.map((paragraph) => (
+                <p key={paragraph} className="font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="section-services bg-white py-[50px] max-[1199px]:py-[35px]">
+        <div className="bb-container">
+          <SectionHeading
+            eyebrow="Our services"
+            title="Designed for homes, offices, and businesses"
+            text="The Blueberry layout has been adapted for your teal water brand with clean cards, icons, and scroll animations."
+          />
+          <div className="grid grid-cols-1 gap-[24px] sm:grid-cols-2 lg:grid-cols-4">
+            {services.map((service, index) => (
+              <article key={service.title} className="bb-card p-[25px] text-center" data-aos="fade-up" data-aos-delay={index * 80}>
+                <div className="mx-auto mb-[18px] flex h-[64px] w-[64px] items-center justify-center rounded-[18px] bg-[#0f766e]/10 text-[#0f766e]">
+                  <i className={`${service.icon} text-[32px]`} />
+                </div>
+                <h3 className="font-quicksand text-[18px] font-bold text-[#3d4750]">
+                  {service.title}
+                </h3>
+                <p className="mt-[10px] font-Poppins text-[14px] font-light leading-[25px] text-[#686e7d]">
+                  {service.text}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section className="section-team py-[50px] max-[1199px]:py-[35px]">
+        <div className="bb-container">
+          <div className="grid gap-[24px] lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div data-aos="fade-right">
+              <SectionHeading align="left" eyebrow="Our promise" title="Simple, honest, and dependable hydration support" />
+              <p className="font-Poppins text-[15px] font-light leading-[28px] text-[#686e7d]">
+                Our team focuses on clear communication, responsive support, fresh supply, and
+                practical order handling for every customer requirement.
+              </p>
+            </div>
+            <div className="grid gap-[16px] sm:grid-cols-2" data-aos="fade-left">
+              {teamValues.map((value) => (
+                <div key={value} className="rounded-[18px] border border-[#eee] bg-white p-[20px] shadow-sm">
+                  <i className="ri-star-smile-line mb-[12px] block text-[28px] text-[#0f766e]" />
+                  <h3 className="font-quicksand text-[18px] font-bold text-[#3d4750]">{value}</h3>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -4949,16 +4357,758 @@ export default function HydrationTipsPage() {
 }
 ````
 
+## File: src/components/common/CartSidebar.tsx
+````typescript
+"use client";
+import Link from "next/link";
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useCartStore } from "@/store/useCartStore";
+import { useUiStore } from "@/store/useUiStore";
+export default function CartSidebar() {
+  const { status } = useSession();
+  const { isCartOpen, toggleCart } = useUiStore();
+  const cart = useCartStore((state) => state.cart);
+  const isLoading = useCartStore((state) => state.isLoading);
+  const fetchCart = useCartStore((state) => state.fetchCart);
+  const updateItem = useCartStore((state) => state.updateItem);
+  const removeItem = useCartStore((state) => state.removeItem);
+  useEffect(() => {
+    if (isCartOpen && status === "authenticated") {
+      fetchCart();
+    }
+  }, [isCartOpen, status, fetchCart]);
+  return (
+    <>
+      <div
+        className={`fixed inset-0 z-50 bg-black/50 sidebar-transition ${
+          isCartOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        }`}
+        onClick={toggleCart}
+      />
+      <aside
+        className={`fixed right-0 top-0 z-50 h-full w-full bg-white shadow-2xl sidebar-transition sm:w-[450px] ${
+          isCartOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between border-b border-[#eee] p-[24px]">
+            <div>
+              <p className="font-Poppins text-[13px] uppercase tracking-[0.18rem] text-[#0f766e]">Cart</p>
+              <h2 className="font-quicksand text-[24px] font-bold text-[#3d4750]">Your Cart</h2>
+            </div>
+            <button
+              onClick={toggleCart}
+              className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] bg-[#f8f8fb] text-[#3d4750] transition hover:bg-[#0f766e] hover:text-white"
+              aria-label="Close cart"
+              type="button"
+            >
+              <i className="ri-close-line text-[22px]" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-[24px]">
+            {status === "loading" || isLoading ? (
+              <div className="flex justify-center py-[45px]"><span className="bb-loader-ring" /></div>
+            ) : null}
+            {status === "unauthenticated" ? (
+              <div className="mt-[40px] text-center">
+                <div className="mx-auto mb-[18px] flex h-[64px] w-[64px] items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
+                  <i className="ri-user-3-line text-[30px]" />
+                </div>
+                <p className="mb-[18px] font-Poppins text-[14px] leading-[25px] text-[#686e7d]">
+                  Please login first to view your cart.
+                </p>
+                <Link
+                  href="/login?callbackUrl=/shop"
+                  onClick={toggleCart}
+                  className="bb-btn-2"
+                >
+                  Login
+                </Link>
+              </div>
+            ) : null}
+            {status === "authenticated" && !isLoading && (!cart || cart.items.length === 0) ? (
+              <div className="mt-[40px] text-center">
+                <div className="mx-auto mb-[18px] flex h-[64px] w-[64px] items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
+                  <i className="ri-shopping-cart-line text-[30px]" />
+                </div>
+                <p className="font-Poppins text-[14px] leading-[25px] text-[#686e7d]">
+                  Your cart is currently empty.
+                </p>
+              </div>
+            ) : null}
+            {status === "authenticated" && cart?.items.length ? (
+              <div className="space-y-[18px]">
+                {cart.items.map((item) => (
+                  <div key={item.id} className="relative flex gap-[14px] rounded-[18px] border border-[#eee] bg-[#f8f8fb] p-[14px]">
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.id)}
+                      className="absolute right-[-6px] top-[-6px] flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[#3d4750] text-white opacity-70 transition hover:opacity-100"
+                      aria-label="Remove item"
+                    >
+                      <i className="ri-close-line text-[14px]" />
+                    </button>
+                    <img
+                      src={item.product.image}
+                      alt={item.product.product_name}
+                      className="h-[82px] w-[82px] rounded-[12px] border border-[#eee] bg-white object-contain p-[8px]"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h3 className="line-clamp-1 font-Poppins text-[14px] font-medium leading-[20px] tracking-[0.03rem] text-[#3d4750]">
+                        {item.product.product_name}
+                      </h3>
+                      <p className="mt-[5px] font-Poppins text-[13px] text-[#686e7d]">
+                        ₹{item.product.price.toFixed(2)} x {item.quantity}
+                      </p>
+                      <div className="mt-[12px] flex items-center justify-between gap-[10px]">
+                        <div className="flex items-center overflow-hidden rounded-[10px] border border-[#eee] bg-white">
+                          <button type="button" onClick={() => updateItem(item.id, item.quantity - 1)} className="px-[11px] py-[5px] text-[#3d4750]">-</button>
+                          <span className="min-w-[32px] text-center font-Poppins text-[13px]">{item.quantity}</span>
+                          <button type="button" onClick={() => updateItem(item.id, item.quantity + 1)} className="px-[11px] py-[5px] text-[#3d4750]">+</button>
+                        </div>
+                        <p className="font-quicksand text-[15px] font-bold text-[#3d4750]">
+                          ₹{item.line_total.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          <div className="border-t border-[#eee] p-[24px]">
+            <div className="mb-[18px] flex justify-between font-quicksand text-[20px] font-bold text-[#3d4750]">
+              <span>Subtotal:</span>
+              <span>₹{(cart?.total || 0).toFixed(2)}</span>
+            </div>
+            <Link
+              href="/my-cart"
+              onClick={toggleCart}
+              className="bb-btn-2 w-full"
+            >
+              View My Cart
+            </Link>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
+````
+
+## File: src/components/home/HomePageClient.tsx
+````typescript
+"use client";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { Autoplay, EffectFade, Navigation, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import DeliveryCoverage from "@/components/common/DeliveryCoverage";
+import SectionHeading from "@/components/common/SectionHeading";
+import WaterDroplets from "@/components/common/WaterDroplets";
+import WaterWaveDivider from "@/components/common/WaterWaveDivider";
+import ProductCard from "@/components/shop/ProductCard";
+import { productsService } from "@/lib/services/productsService";
+import { homeContent } from "@/lib/site-content";
+import type { ProductDto } from "@/types/product";
+const categories = [
+  {
+    title: "Packaged Drinking Water",
+    subtitle: "Fresh sealed water bottles",
+    icon: "/assets/img/category/1.svg",
+    href: "/shop?category=Packaged%20Drinking%20Water",
+  },
+  {
+    title: "Healthy Drinks",
+    subtitle: "Refreshing daily wellness drinks",
+    icon: "/assets/img/category/7.svg",
+    href: "/shop?category=Healthy%20Drinks",
+  },
+  {
+    title: "Office Hydration",
+    subtitle: "Light herbal hydration options",
+    icon: "/assets/img/category/3.svg",
+    href: "/shop?category=Herbal%20Infusions",
+  },
+  {
+    title: "Bulk Orders",
+    subtitle: "Hotels, offices, and events",
+    icon: "/assets/img/category/4.svg",
+    href: "/contact-us",
+  },
+  {
+    title: "Home Delivery",
+    subtitle: "Doorstep hydration support",
+    icon: "/assets/img/category/2.svg",
+    href: "/contact-us",
+  },
+];
+const services = [
+  {
+    icon: "ri-water-flash-line",
+    title: "Purified Water",
+    text: "Clean packaged drinking water processed for consistent taste, freshness, and daily trust.",
+  },
+  {
+    icon: "ri-truck-line",
+    title: "Fast Delivery",
+    text: "Doorstep delivery support for homes, offices, hotels, restaurants, and institutional orders.",
+  },
+  {
+    icon: "ri-store-2-line",
+    title: "Bulk Pricing",
+    text: "Negotiable quantity-based rates for retailers, distributors, events, and corporate purchases.",
+  },
+  {
+    icon: "ri-shield-check-line",
+    title: "Quality Focused",
+    text: "Reliable handling, sealed packaging, and consistent quality control for every supply requirement.",
+  },
+];
+const testimonials = [
+  {
+    name: "Hotel Partner",
+    role: "Hospitality order",
+    text: "The delivery support is dependable and the team is quick with bulk requirements.",
+  },
+  {
+    name: "Office Buyer",
+    role: "Corporate supply",
+    text: "Simple ordering, clean packaging, and regular supply helped us manage daily hydration better.",
+  },
+  {
+    name: "Event Customer",
+    role: "Wedding order",
+    text: "They handled large quantities smoothly and gave clear pricing based on our requirement.",
+  },
+];
+const bulkOrderItems = [
+  "Corporate Orders",
+  "Events & Weddings",
+  "Hotels & Restaurants",
+  "Retailers & Distributors",
+  "Schools & Institutions",
+];
+export default function HomePageClient() {
+  const [products, setProducts] = useState<ProductDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProducts() {
+      try {
+        const data = await productsService.getAllProducts();
+        if (!cancelled && data?.success && Array.isArray(data.products)) {
+          setProducts(data.products);
+        }
+      } catch (error) {
+        console.error("Failed to load home products", error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadProducts();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const featuredProducts = useMemo(() => products.slice(0, 8), [products]);
+  const newProducts = useMemo(() => products.slice(4, 12), [products]);
+  return (
+    <main className="overflow-hidden">
+      <section
+        className="water-ripple group relative isolate overflow-hidden bg-[#f6f7ff] font-Poppins"
+        data-aos="fade-up"
+        data-aos-duration="900"
+        data-aos-once="true"
+      >
+        <WaterDroplets />
+        {}
+        <div className="pointer-events-none absolute -left-24 top-16 h-72 w-72 rounded-full bg-[#0f766e]/10 blur-3xl animate-pulse" />
+        <div className="pointer-events-none absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-cyan-200/30 blur-3xl animate-pulse" />
+        {}
+        <span className="absolute left-[8%] top-[22%] hidden h-5 w-5 rounded-full border border-[#0f766e]/20 bg-white/40 backdrop-blur-sm animate-bounce sm:block" />
+        <span className="absolute right-[16%] top-[18%] hidden h-8 w-8 rounded-full border border-[#0f766e]/20 bg-white/30 backdrop-blur-sm lg:block" />
+        <span className="absolute bottom-[18%] left-[44%] hidden h-4 w-4 rounded-full border border-[#0f766e]/20 bg-white/40 backdrop-blur-sm md:block" />
+        <Swiper
+          modules={[Autoplay, EffectFade, Pagination]}
+          effect="fade"
+          speed={900}
+          autoplay={{
+            delay: 4500,
+            disableOnInteraction: false,
+          }}
+          pagination={{
+            clickable: true,
+          }}
+          className="hero-swiper"
+        >
+          <SwiperSlide>
+            <div className="relative min-h-[unset] sm:min-h-[420px] lg:min-h-[500px]">
+              <img
+                src={homeContent.hero.image}
+                alt="2goodplus packaged drinking water"
+                className="absolute inset-0 h-full w-full object-cover object-[68%_center] opacity-35 transition-transform duration-[1800ms] ease-out group-hover:scale-105 sm:object-center sm:opacity-100"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/82 to-white/55 sm:bg-gradient-to-r sm:from-white/95 sm:via-white/65 sm:to-transparent" />
+              {}
+              <div className="pointer-events-none absolute inset-y-0 left-[-45%] hidden w-[35%] rotate-12 bg-white/20 blur-xl transition-all duration-1000 group-hover:left-[120%] lg:block" />
+              <div className="relative z-10 mx-auto flex min-h-[unset] max-w-7xl items-center px-4 py-10 sm:min-h-[420px] sm:px-6 sm:py-14 lg:min-h-[500px] lg:py-16">
+                <div
+                  className="w-full max-w-[620px] text-center sm:text-left"
+                  data-aos="fade-right"
+                  data-aos-duration="900"
+                  data-aos-delay="150"
+                  data-aos-once="true"
+                >
+                  <p className="animate__animated animate__fadeInDown mb-3 font-Poppins text-[10px] font-semibold uppercase tracking-[0.28em] text-[#0f766e] sm:mb-4 sm:text-sm">
+                    {homeContent.hero.eyebrow}
+                  </p>
+                  <h1 className="animate__animated animate__fadeInUp mb-4 font-quicksand text-[clamp(32px,11vw,44px)] font-bold leading-[1.08] text-[#3d4750] sm:text-[54px] lg:text-[68px]">
+                    <span className="relative inline-block text-[#0f766e]">
+                      Pure Water. Pure Life.
+                      <span className="absolute -bottom-2 left-1/2 h-[4px] w-[70%] -translate-x-1/2 rounded-full bg-[#0f766e]/20 sm:left-0 sm:translate-x-0" />
+                    </span>
+                  </h1>
+                  <p
+                    className="mx-auto max-w-xl font-Poppins text- leading-7 text-slate-700 sm:mx-0 sm:text-base sm:leading-8 lg:text-lg"
+                    data-aos="fade-up"
+                    data-aos-delay="300"
+                    data-aos-duration="800"
+                    data-aos-once="true"
+                  >
+                    {homeContent.hero.description}
+                  </p>
+                  <div
+                    className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4"
+                    data-aos="zoom-in"
+                    data-aos-delay="450"
+                    data-aos-duration="700"
+                    data-aos-once="true"
+                  >
+                    <Link
+                      href={homeContent.hero.ctaHref}
+                      className="water-ripple relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-[#0f766e] px-6 py-3.5 font-Poppins text-sm font-semibold !text-white shadow-[0_12px_30px_rgba(15,118,110,0.25)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:bg-[#0c5a52] hover:shadow-[0_18px_40px_rgba(15,118,110,0.35)] sm:w-auto sm:px-7 sm:py-4 sm:text-base"
+                    >
+                      <span className="relative z-10 font-Poppins">
+                        {homeContent.hero.ctaLabel}
+                      </span>
+                      <i className="ri-arrow-right-line relative z-10 ml-2 text-lg transition-transform duration-300 group-hover:translate-x-1" />
+                    </Link>
+                    <Link
+                      href={homeContent.hero.secondaryCtaHref}
+                      className="water-ripple relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-[#0f766e]/30 bg-white/95 px-6 py-3.5 font-Poppins text-sm font-semibold text-[#0f172a] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-[#0f766e] hover:bg-[#0f766e] hover:!text-white sm:w-auto sm:px-7 sm:py-4 sm:text-base"
+                    >
+                      <span className="relative z-10 font-Poppins">
+                        {homeContent.hero.secondaryCtaLabel}
+                      </span>
+                      <i className="ri-arrow-right-line relative z-10 ml-2 text-lg transition-transform duration-300 group-hover:translate-x-1" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </SwiperSlide>
+        </Swiper>
+        {}
+        <div className="pointer-events-none absolute bottom-0 left-0 z-10 w-full overflow-hidden leading-none">
+          <svg
+            className="relative block h-[42px] w-full"
+            viewBox="0 0 1440 90"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M0,48 C180,90 360,10 540,42 C720,74 900,92 1080,48 C1260,4 1350,28 1440,54 L1440,90 L0,90 Z"
+              fill="#ffffff"
+            />
+          </svg>
+        </div>
+      </section>
+      <section className="section-category mt-[10px] mb-[50px] max-[1199px]:mb-[35px]">
+        <div className="bb-container">
+          <Swiper
+            modules={[Autoplay]}
+            autoplay={{ delay: 2400, disableOnInteraction: false }}
+            spaceBetween={24}
+            breakpoints={{
+              0: { slidesPerView: 1 },
+              576: { slidesPerView: 2 },
+              992: { slidesPerView: 4 },
+              1200: { slidesPerView: 5 },
+            }}
+          >
+            {categories.map((category, index) => (
+              <SwiperSlide key={category.title}>
+                <Link
+                  href={category.href}
+                  className="bb-card group flex h-full flex-col items-center p-[25px] text-center"
+                  data-aos="fade-up"
+                  data-aos-delay={index * 80}
+                >
+                  <div className="mb-[18px] flex h-[70px] w-[70px] items-center justify-center rounded-[20px] bg-[#0f766e]/10 transition duration-300 group-hover:rotate-6 group-hover:scale-110">
+                    <img
+                      src={category.icon}
+                      alt={category.title}
+                      className="h-[42px] w-[42px] object-contain"
+                    />
+                  </div>
+                  <h3 className="font-quicksand text-[17px] font-bold text-[#3d4750]">
+                    {category.title}
+                  </h3>
+                  <p className="mt-[8px] font-Poppins text-[13px] font-light leading-[22px] text-[#686e7d]">
+                    {category.subtitle}
+                  </p>
+                </Link>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      </section>
+      <WaterWaveDivider />
+      <section className="section-deal overflow-hidden py-[50px] max-[1199px]:py-[35px]">
+        <div className="bb-container">
+          <div className="grid gap-[24px] lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div
+              className="rounded-[24px] bg-[#0f766e] p-[35px] text-white"
+              data-aos="fade-right"
+            >
+              <p className="mb-[8px] font-Poppins text-[14px] uppercase tracking-[0.18rem] text-white/80">
+                Need Bulk Quantities?
+              </p>
+              <h2 className="font-quicksand text-[34px] font-bold leading-[1.2] max-[767px]:text-[28px]">
+                Bulk order rates and dealership pricing are negotiable.
+              </h2>
+              <p className="mt-[16px] font-Poppins text-[15px] leading-[28px] text-white/85">
+                Ideal for hotels, restaurants, institutions, offices, retailers,
+                and distributors. Share your quantity requirement and get a
+                custom quotation.
+              </p>
+              <div className="mt-[22px] grid gap-[10px] sm:grid-cols-2">
+                {bulkOrderItems.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-[8px] font-Poppins text-[14px]"
+                  >
+                    <i className="ri-checkbox-circle-line text-[18px]" /> {item}
+                  </div>
+                ))}
+              </div>
+              <Link
+                href="/contact-us"
+                className="mt-[28px] inline-flex rounded-[10px] bg-white px-[22px] py-[11px] font-Poppins text-[14px] font-semibold !text-[#0f766e] transition hover:-translate-y-1 hover:bg-[#e7fffb]"
+              >
+                For Bulk Orders Contact Us
+              </Link>
+            </div>
+            <div className="grid gap-[20px] sm:grid-cols-2">
+              {services.map((service, index) => (
+                <article
+                  key={service.title}
+                  className="bb-card p-[24px]"
+                  data-aos="fade-up"
+                  data-aos-delay={index * 90}
+                >
+                  <div className="mb-[18px] flex h-[54px] w-[54px] items-center justify-center rounded-[16px] bg-[#0f766e]/10 text-[#0f766e]">
+                    <i className={`${service.icon} text-[28px]`} />
+                  </div>
+                  <h3 className="font-quicksand text-[19px] font-bold text-[#3d4750]">
+                    {service.title}
+                  </h3>
+                  <p className="mt-[10px] font-Poppins text-[14px] font-light leading-[26px] text-[#686e7d]">
+                    {service.text}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="section-new-product bg-white py-[50px] max-[1199px]:py-[35px]">
+        <div className="bb-container">
+          <SectionHeading
+            eyebrow="Fresh products"
+            title="Shop our hydration range"
+            text="Blueberry-style product cards with your existing dynamic product API and teal brand theme."
+          />
+          {loading ? (
+            <div className="flex justify-center py-[50px]">
+              <span className="bb-loader-ring" />
+            </div>
+          ) : featuredProducts.length ? (
+            <Swiper
+              modules={[Navigation, Pagination]}
+              navigation
+              pagination={{ clickable: true }}
+              spaceBetween={24}
+              className="bb-swiper pb-[45px]"
+              breakpoints={{
+                0: { slidesPerView: 1 },
+                576: { slidesPerView: 2 },
+                992: { slidesPerView: 3 },
+                1200: { slidesPerView: 4 },
+              }}
+            >
+              {featuredProducts.map((product) => (
+                <SwiperSlide key={product.id} className="h-auto pb-[8px]">
+                  <ProductCard product={product} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          ) : (
+            <div className="rounded-[20px] border border-[#eee] bg-[#f8f8fb] p-[40px] text-center font-Poppins text-[#686e7d]">
+              No products found. Add products in your database to show them
+              here.
+            </div>
+          )}
+        </div>
+      </section>
+      <section className="section-banner-two py-[50px] max-[1199px]:py-[35px]">
+        <div className="bb-container">
+          <div className="grid gap-[24px] lg:grid-cols-2">
+            <div
+              className="relative overflow-hidden rounded-[24px] bg-[#e9fff8] p-[35px]"
+              data-aos="fade-right"
+            >
+              <h3 className="font-quicksand text-[28px] font-bold text-[#3d4750]">
+                Daily hydration packs
+              </h3>
+              <p className="mt-[12px] max-w-[420px] font-Poppins text-[15px] leading-[28px] text-[#686e7d]">
+                Choose packaged drinking water for families, teams, retail
+                counters, and events.
+              </p>
+              <Link href="/shop" className="bb-btn-2 mt-[22px]">
+                Order Now
+              </Link>
+              <i className="ri-water-flash-line absolute bottom-[-34px] right-[24px] text-[150px] !text-[#0f766e]/10" />
+            </div>
+            <div
+              className="relative overflow-hidden rounded-[24px] bg-[#fff6e8] p-[35px]"
+              data-aos="fade-left"
+            >
+              <h3 className="font-quicksand text-[28px] font-bold text-[#3d4750]">
+                Custom quotation
+              </h3>
+              <p className="mt-[12px] max-w-[420px] font-Poppins text-[15px] leading-[28px] text-[#686e7d]">
+                Need regular supply or dealership pricing? Contact us with
+                quantity and delivery area.
+              </p>
+              <Link href="/contact-us" className="bb-btn-1 mt-[22px]">
+                Contact Us
+              </Link>
+              <i className="ri-customer-service-2-line absolute bottom-[-34px] right-[24px] text-[150px] text-[#0f766e]/10" />
+            </div>
+          </div>
+        </div>
+      </section>
+{
+}
+      <section className="section-testimonials py-[50px] max-[1199px]:py-[35px]">
+        <div className="bb-container">
+          <SectionHeading
+            eyebrow="Testimonials"
+            title="Trusted by homes and businesses"
+            text="Simple ordering, dependable delivery, and flexible bulk pricing for different requirements."
+          />
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            autoplay={{ delay: 3200, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            spaceBetween={24}
+            className="bb-swiper pb-[45px]"
+            breakpoints={{
+              0: { slidesPerView: 1 },
+              768: { slidesPerView: 2 },
+              1200: { slidesPerView: 3 },
+            }}
+          >
+            {testimonials.map((testimonial) => (
+              <SwiperSlide key={testimonial.name}>
+                <article className="bb-card p-[28px] text-center">
+                  <div className="mx-auto mb-[18px] flex h-[62px] w-[62px] items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
+                    <i className="ri-double-quotes-l text-[30px]" />
+                  </div>
+                  <p className="font-Poppins text-[15px] font-light leading-[28px] text-[#686e7d]">
+                    “{testimonial.text}”
+                  </p>
+                  <h4 className="mt-[18px] font-quicksand text-[18px] font-bold text-[#3d4750]">
+                    {testimonial.name}
+                  </h4>
+                  <p className="mt-[4px] font-Poppins text-[13px] text-[#0f766e]">
+                    {testimonial.role}
+                  </p>
+                </article>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      </section>
+    </main>
+  );
+}
+````
+
+## File: src/components/shop/ProductActions.tsx
+````typescript
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useCartStore } from "@/store/useCartStore";
+import { useUiStore } from "@/store/useUiStore";
+interface ProductActionsProps {
+  productId: string;
+  compact?: boolean;
+}
+export default function ProductActions({ productId, compact = false }: ProductActionsProps) {
+  const router = useRouter();
+  const { status } = useSession();
+  const addToCart = useCartStore((state) => state.addToCart);
+  const isLoading = useCartStore((state) => state.isLoading);
+  const toggleCart = useUiStore((state) => state.toggleCart);
+  const [message, setMessage] = useState<string | null>(null);
+  const redirectToLogin = (callbackUrl: string) => {
+    alert("Please login first to continue.");
+    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  };
+  const handleAddToCart = async () => {
+    setMessage(null);
+    if (status !== "authenticated") {
+      redirectToLogin("/shop");
+      return;
+    }
+    try {
+      await addToCart(productId, 1);
+      setMessage("Added to cart");
+      toggleCart();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to add product.");
+    }
+  };
+  const handleBuyNow = async () => {
+    setMessage(null);
+    if (status !== "authenticated") {
+      redirectToLogin(`/my-cart?buyNow=${productId}`);
+      return;
+    }
+    try {
+      await addToCart(productId, 1);
+      router.push("/my-cart");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to continue.");
+    }
+  };
+  return (
+    <div className={compact ? "mt-[16px]" : "mt-[24px]"}>
+      <div className={compact ? "flex flex-col gap-[10px]" : "flex flex-wrap gap-[12px]"}>
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={isLoading || status === "loading"}
+          className="flex-1 rounded-[10px] border border-[#0f766e] bg-white px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-[#0f766e] transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <i className="ri-shopping-cart-line mr-[6px]" />
+          Add To Cart
+        </button>
+        <button
+          type="button"
+          onClick={handleBuyNow}
+          disabled={isLoading || status === "loading"}
+          className="flex-1 rounded-[10px] bg-[#0f766e] px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5f59] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Buy Now
+        </button>
+      </div>
+      {message ? (
+        <p className="mt-[10px] text-center font-Poppins text-[12px] text-[#0f766e]">
+          {message}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+````
+
 ## File: src/lib/products.ts
 ````typescript
-export type { ProductDto as Product } from "@/types/product";
-export {
-  products,
-  getProductById,
-  getRelatedProducts,
-  productCategories,
-  productTags,
-} from "./products.data";
+
+````
+
+## File: src/components/common/AboutSection.tsx
+````typescript
+"use client";
+import Link from "next/link";
+import { aboutContent } from "@/lib/site-content";
+type AboutSectionProps = {
+  variant?: "home" | "page";
+};
+export default function AboutSection({ variant = "page" }: AboutSectionProps) {
+  const isHome = variant === "home";
+  return (
+    <section className={isHome ? "mx-auto max-w-7xl px-4 py-16 md:px-6" : ""}>
+      <div className="rounded-[32px] bg-white p-8 shadow-sm md:p-12 lg:p-16">
+        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          <div>
+            <p className="mb-4 text-xl font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+              {aboutContent.eyebrow}
+            </p>
+            <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+              {isHome ? aboutContent.homeTitle : aboutContent.heroTitle}
+            </h2>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
+              {isHome ? aboutContent.homeDescription : aboutContent.heroDescription}
+            </p>
+            {!isHome ? (
+              <div className="mt-8 space-y-5 text-sm leading-7 text-slate-600 md:text-base md:leading-8">
+                {aboutContent.storyParagraphs.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            ) : null}
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/shop"
+                className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold !text-white transition hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
+              >
+                Order Water
+              </Link>
+              <Link
+                href="/contact-us"
+                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#0f766e] hover:text-[#0f766e]"
+              >
+                Contact Us
+              </Link>
+            </div>
+          </div>
+          <div className="rounded-[28px] bg-[#f8fafc] p-8">
+            <h3 className="text-2xl font-semibold text-slate-900">
+              What makes us reliable?
+            </h3>
+            <ul className="mt-6 space-y-5 text-slate-600">
+              {aboutContent.highlights.map((highlight) => (
+                <li key={highlight} className="flex gap-3">
+                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
+                    ✓
+                  </span>
+                  <span>{highlight}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 rounded-[24px] bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0f766e]">
+                Our promise
+              </p>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                Tested, trusted, and delivered fresh — every bottle is handled
+                with the care your family deserves.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 ````
 
 ## File: src/app/contact-us/page.tsx
@@ -5089,83 +5239,6 @@ export default function ContactPage() {
 }
 ````
 
-## File: src/components/common/AboutSection.tsx
-````typescript
-"use client";
-import Link from "next/link";
-import { aboutContent } from "@/lib/site-content";
-type AboutSectionProps = {
-  variant?: "home" | "page";
-};
-export default function AboutSection({ variant = "page" }: AboutSectionProps) {
-  const isHome = variant === "home";
-  return (
-    <section className={isHome ? "mx-auto max-w-7xl px-4 py-16 md:px-6" : ""}>
-      <div className="rounded-[32px] bg-white p-8 shadow-sm md:p-12 lg:p-16">
-        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-          <div>
-            <p className="mb-4 text-xl font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
-              {aboutContent.eyebrow}
-            </p>
-            <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              {isHome ? aboutContent.homeTitle : aboutContent.heroTitle}
-            </h2>
-            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-              {isHome ? aboutContent.homeDescription : aboutContent.heroDescription}
-            </p>
-            {!isHome ? (
-              <div className="mt-8 space-y-5 text-sm leading-7 text-slate-600 md:text-base md:leading-8">
-                {aboutContent.storyParagraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
-            ) : null}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/shop"
-                className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold !text-white transition hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
-              >
-                Order Water
-              </Link>
-              <Link
-                href="/contact-us"
-                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#0f766e] hover:text-[#0f766e]"
-              >
-                Contact Us
-              </Link>
-            </div>
-          </div>
-          <div className="rounded-[28px] bg-[#f8fafc] p-8">
-            <h3 className="text-2xl font-semibold text-slate-900">
-              What makes us reliable?
-            </h3>
-            <ul className="mt-6 space-y-5 text-slate-600">
-              {aboutContent.highlights.map((highlight) => (
-                <li key={highlight} className="flex gap-3">
-                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
-                    ✓
-                  </span>
-                  <span>{highlight}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-8 rounded-[24px] bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0f766e]">
-                Our promise
-              </p>
-              <p className="mt-3 text-sm leading-7 text-slate-600">
-                Tested, trusted, and delivered fresh — every bottle is handled
-                with the care your family deserves.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-````
-
 ## File: src/components/shop/ProductCard.tsx
 ````typescript
 import Link from "next/link";
@@ -5183,7 +5256,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <img
             src={product.image}
             alt={product.product_name}
-            className="h-[255px] w-full object-contain p-[22px] transition-all duration-500 group-hover:scale-110"
+            className="max-h-[260px] h-auto w-full object-contain p-[22px] transition-all duration-500 group-hover:scale-110"
           />
         </Link>
         {product.Badge ? (
@@ -5258,7 +5331,7 @@ export const homeContent = {
     highlightedWord: "Pure Life.",
     description:
       "Every drop of 2goodplus packaged drinking water is purified through a 7-stage filtration process, tested to BIS standards, and sealed fresh — so you can trust every sip your family takes, every single day.",
-    ctaLabel: "Order now →",
+    ctaLabel: "Order now",
     ctaHref: "/shop",
     secondaryCtaLabel: "Contact for bulk orders",
     secondaryCtaHref: "/contact-us",
@@ -5347,6 +5420,54 @@ export const contactContent = {
   mapQuery:
     "Plot No. 24, DIC Industrial Sate Raniya, Kanpur Dehat 209304 Uttar Pradesh",
 };
+````
+
+## File: package.json
+````json
+{
+  "name": "twogooddrinks",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "jumpstart": "next build && next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "animate.css": "^4.1.1",
+    "aos": "^2.3.4",
+    "axios": "^1.17.0",
+    "bcryptjs": "^3.0.2",
+    "lucide-react": "^1.17.0",
+    "next": "16.2.7",
+    "next-auth": "^5.0.0-beta.29",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "remixicon": "^4.9.1",
+    "sass": "^1.101.0",
+    "slick-carousel": "^1.8.1",
+    "swiper": "^12.2.0",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.7",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
 ````
 
 ## File: src/styles/globals.css
@@ -5646,52 +5767,50 @@ img {
 .line-clamp-1 { -webkit-line-clamp: 1; }
 .line-clamp-2 { -webkit-line-clamp: 2; }
 .line-clamp-3 { -webkit-line-clamp: 3; }
-````
-
-## File: package.json
-````json
-{
-  "name": "twogooddrinks",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "jumpstart": "next build && next start",
-    "lint": "eslint",
-    "postinstall": "prisma generate",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio"
-  },
-  "dependencies": {
-    "@prisma/client": "^5.22.0",
-    "animate.css": "^4.1.1",
-    "aos": "^2.3.4",
-    "axios": "^1.17.0",
-    "bcryptjs": "^3.0.2",
-    "lucide-react": "^1.17.0",
-    "next": "16.2.7",
-    "next-auth": "^5.0.0-beta.29",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "remixicon": "^4.9.1",
-    "slick-carousel": "^1.8.1",
-    "swiper": "^12.2.0",
-    "zustand": "^5.0.14"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.7",
-    "prisma": "^5.22.0",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+.bb-main-dropdown .bb-dropdown-item {
+  position: relative;
+}
+.bb-main-dropdown .bb-dropdown-item::after {
+  content: "";
+  position: absolute;
+  right: -16px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border: 1px solid #3d4750;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  transition: all 0.3s ease-in-out;
+}
+.bb-main-dropdown:hover .bb-dropdown-item::after {
+  border-color: #0f766e;
+  background-color: #0f766e;
+}
+.bb-main-dropdown .mega-menu {
+  box-shadow: 2px 2px 15px 0 rgba(0, 0, 0, 0.07);
+}
+.bb-main-dropdown:hover .mega-menu {
+  margin-top: 10px;
+  opacity: 1;
+  visibility: visible;
+}
+.bb-header-btn p,
+.bb-header-btn span,
+.bb-header-btn i {
+  transition: all 0.3s ease-in-out;
+}
+.bb-header-btn:hover p {
+  color: #0f766e;
+}
+.bb-dropdown-menu {
+  transform: translateY(4px);
+}
+.group:hover .bb-dropdown-menu {
+  transform: translateY(0);
+}
+.bb-main-menu-desk a,
+.bb-main-menu-desk button {
+  will-change: transform;
 }
 ````
 
@@ -5860,9 +5979,14 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
 
 ## File: src/components/common/Footer.tsx
 ````typescript
+"use client";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 const productLinks = [
-  { label: "Packaged Drinking Water", href: "/shop?category=Packaged%20Drinking%20Water" },
+  {
+    label: "Packaged Drinking Water",
+    href: "/shop?category=Packaged%20Drinking%20Water",
+  },
   { label: "Healthy Drinks", href: "/shop?category=Healthy%20Drinks" },
   { label: "Herbal Infusions", href: "/shop?category=Herbal%20Infusions" },
   { label: "Bulk Orders", href: "/contact-us" },
@@ -5882,7 +6006,11 @@ const socialLinks = [
   { label: "Facebook", icon: "ri-facebook-fill", href: "#" },
   { label: "Instagram", icon: "ri-instagram-line", href: "#" },
   { label: "LinkedIn", icon: "ri-linkedin-fill", href: "#" },
-  { label: "WhatsApp", icon: "ri-whatsapp-line", href: "https://wa.me/919967399880" },
+  {
+    label: "WhatsApp",
+    icon: "ri-whatsapp-line",
+    href: "https://wa.me/919967399880",
+  },
 ];
 function FooterColumn({
   title,
@@ -5912,22 +6040,48 @@ function FooterColumn({
   );
 }
 export default function Footer() {
+  const ref = useRef<HTMLElement | null>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setVisible(true);
+        });
+      },
+      { threshold: 0.1 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <footer className="bb-footer mt-[50px] border-t border-[#eee] bg-white max-[1199px]:mt-[35px]">
+    <footer
+      ref={ref}
+      className={`bb-footer mt-[50px] border-t border-[#eee] bg-white max-[1199px]:mt-[35px] transform transition-all duration-700 ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      }`}
+    >
       <div className="py-[50px] max-[1199px]:py-[35px]">
         <div className="bb-container flex flex-wrap">
           <div className="w-full px-[12px] lg:w-[25%]">
             <div className="bb-footer-widget mb-[35px]">
-              <Link href="/" className="mb-[25px] inline-flex items-center gap-[12px]">
+              <Link
+                href="/"
+                className="mb-[25px] inline-flex items-center gap-[12px]"
+              >
                 <img
                   src="/assets/img/logo/logo-icon2.png"
                   alt="2good Plus logo"
-                  className="h-[70px] w-auto object-contain"
+                  className="!h-[55px] w-auto object-contain"
                 />
               </Link>
               <p className="mb-[22px] max-w-[380px] font-Poppins text-[14px] font-light leading-[27px] tracking-[0.03rem] text-[#686e7d]">
-                2good Plus delivers pure, safe, and refreshing packaged drinking water for homes,
-                offices, hotels, restaurants, retailers, events, and institutional bulk orders.
+                2good plus is committed to delivering pure, safe, and refreshing
+                packaged drinking water. With advanced purification processes,
+                we ensure every bottle provides freshness and trust for homes,
+                offices, events, and businesses.
               </p>
               <div className="flex flex-wrap gap-[8px]">
                 {socialLinks.map((item) => (
@@ -5961,19 +6115,25 @@ export default function Footer() {
                 <li className="mb-[14px] flex items-start gap-[12px]">
                   <i className="ri-map-pin-line mt-[4px] text-[18px] text-[#0f766e]" />
                   <p className="font-Poppins text-[14px] font-light leading-[25px] tracking-[0.03rem] text-[#686e7d]">
-                    Plot No. 24, DIC Industrial Estate, Rania, Kanpur Dehat - 209304,
-                    Uttar Pradesh, India
+                    Plot No. 24, DIC Industrial Estate, Rania, Kanpur Dehat -
+                    209304, Uttar Pradesh, India
                   </p>
                 </li>
                 <li className="mb-[14px] flex items-center gap-[12px]">
                   <i className="ri-phone-line text-[18px] text-[#0f766e]" />
-                  <Link href="tel:+919967399880" className="font-Poppins text-[14px] text-[#686e7d] transition hover:text-[#0f766e]">
+                  <Link
+                    href="tel:+919967399880"
+                    className="font-Poppins text-[14px] text-[#686e7d] transition hover:text-[#0f766e]"
+                  >
                     +91 99673 99880
                   </Link>
                 </li>
                 <li className="mb-[14px] flex items-center gap-[12px]">
                   <i className="ri-mail-line text-[18px] text-[#0f766e]" />
-                  <Link href="mailto:Corporate@gmhospitality.in" className="font-Poppins text-[14px] text-[#686e7d] transition hover:text-[#0f766e]">
+                  <Link
+                    href="mailto:Corporate@gmhospitality.in"
+                    className="font-Poppins text-[14px] text-[#686e7d] transition hover:text-[#0f766e]"
+                  >
                     Corporate@gmhospitality.in
                   </Link>
                 </li>
@@ -5994,7 +6154,10 @@ export default function Footer() {
         <div className="bb-container flex flex-wrap items-center justify-between gap-[14px] max-[991px]:flex-col">
           <p className="font-Poppins text-[13px] leading-[26px] tracking-[0.03rem] text-[#686e7d]">
             Copyright © 2026{" "}
-            <Link href="/" className="font-semibold text-[#0f766e] transition hover:text-[#3d4750]">
+            <Link
+              href="/"
+              className="font-semibold text-[#0f766e] transition hover:text-[#3d4750]"
+            >
               2good Plus
             </Link>{" "}
             all rights reserved.
@@ -6021,6 +6184,7 @@ import CartSidebar from "@/components/common/CartSidebar";
 import FloatingWhatsApp from "@/components/common/FloatingWhatsApp";
 import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
+import PageLoader from "@/components/common/PageLoader";
 import "remixicon/fonts/remixicon.css";
 import "aos/dist/aos.css";
 import "swiper/css";
@@ -6058,6 +6222,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <AnimationProvider />
+          <PageLoader />
           <CartSidebar />
           <Header />
           <main className="min-h-screen overflow-x-clip">{children}</main>
@@ -6090,6 +6255,14 @@ export default function ShopPage() {
       <ShopPageClient />
     </Suspense>
   );
+}
+````
+
+## File: src/app/page.tsx
+````typescript
+import HomePageClient from "@/components/home/HomePageClient";
+export default function HomePage() {
+  return <HomePageClient />;
 }
 ````
 
@@ -6175,20 +6348,27 @@ export default function Header() {
   };
   const closeMobile = () => setMobileOpen(false);
   return (
-    <header className="bb-header sticky top-0 z-50 border-b border-[#eee] bg-white font-Poppins shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+    <header className="bb-header  border-b border-[#eee] bg-white/95 font-Poppins shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_12px_35px_rgba(15,23,42,0.08)]">
       <div className="top-header bg-[#3d4750] py-[6px] max-[991px]:hidden">
         <div className="bb-container flex items-center justify-between">
           <Link
             href="/shop"
-            className="text-[14px] font-light leading-[28px] tracking-[0.03rem] text-white transition hover:text-[#d1faf4]"
+            className="text-[14px] font-light leading-[28px] tracking-[0.03rem] text-white transition-all duration-300 hover:text-[#d1faf4]"
           >
-            Pure packaged drinking water for homes, offices, events, and bulk orders.
+            Pure packaged drinking water for homes, offices, events, and bulk
+            orders.
           </Link>
           <div className="flex items-center gap-[24px] text-[14px] font-light leading-[28px] tracking-[0.03rem] text-white">
-            <Link href="/contact-us" className="transition hover:text-[#d1faf4]">
+            <Link
+              href="/contact-us"
+              className="transition-all duration-300 hover:-translate-y-[1px] hover:text-[#d1faf4]"
+            >
               Help?
             </Link>
-            <Link href="/contact-us" className="transition hover:text-[#d1faf4]">
+            <Link
+              href="/contact-us"
+              className="transition-all duration-300 hover:-translate-y-[1px] hover:text-[#d1faf4]"
+            >
               Track Order
             </Link>
             <span>Available: Kanpur | Lucknow | Unnao</span>
@@ -6197,13 +6377,17 @@ export default function Header() {
       </div>
       <div className="bottom-header py-[18px] max-[991px]:py-[14px]">
         <div className="bb-container flex items-center justify-between gap-[24px]">
-          <Link href="/" className="flex shrink-0 items-center" aria-label="2good Plus home">
+          <Link
+            href="/"
+            className="group flex shrink-0 items-center transition-all duration-300 hover:-translate-y-[2px]"
+            aria-label="2good Plus home"
+          >
             <Image
               src="/assets/img/logo/logo-icon2.png"
               alt="2good Plus logo"
               width={132}
               height={68}
-              className="h-auto w-[125px] max-[575px]:w-[108px]"
+              className="h-auto w-[125px] transition-all duration-300 group-hover:scale-[1.04] max-[575px]:w-[108px]"
               priority
             />
           </Link>
@@ -6214,7 +6398,7 @@ export default function Header() {
             <select
               value={category}
               onChange={(event) => setCategory(event.target.value)}
-              className="absolute left-0 top-0 h-full w-[165px] rounded-l-[10px] border border-[#eee] bg-white px-[15px] font-Poppins text-[13px] text-[#777] outline-none"
+              className="absolute left-0 top-0 h-full w-[165px] rounded-l-[10px] border border-[#eee] bg-white px-[15px] font-Poppins text-[13px] text-[#777] outline-none transition-all duration-300 hover:border-[#0f766e]/50 focus:border-[#0f766e]"
             >
               {categories.map((item) => (
                 <option key={item} value={item}>
@@ -6227,11 +6411,11 @@ export default function Header() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search products..."
-              className="h-[48px] w-full rounded-[10px] border border-[#eee] bg-white py-[10px] pl-[180px] pr-[50px] font-Poppins text-[14px] leading-[1] tracking-[0.5px] text-[#777] outline-none transition focus:border-[#0f766e]"
+              className="h-[48px] w-full rounded-[10px] border border-[#eee] bg-white py-[10px] pl-[180px] pr-[50px] font-Poppins text-[14px] leading-[1] tracking-[0.5px] text-[#777] outline-none transition-all duration-300 hover:border-[#0f766e]/50 hover:shadow-[0_8px_22px_rgba(15,118,110,0.08)] focus:border-[#0f766e] focus:shadow-[0_8px_22px_rgba(15,118,110,0.12)]"
             />
             <button
               type="submit"
-              className="absolute right-0 top-0 flex h-full w-[48px] items-center justify-center rounded-r-[10px] text-[#555] transition hover:text-[#0f766e]"
+              className="absolute right-0 top-0 flex h-full w-[48px] items-center justify-center rounded-r-[10px] text-[#555] transition-all duration-300 hover:bg-[#0f766e] hover:text-white"
               aria-label="Search"
             >
               <i className="ri-search-line text-[19px]" />
@@ -6239,28 +6423,34 @@ export default function Header() {
           </form>
           <div className="bb-header-buttons flex items-center justify-end gap-[24px] max-[575px]:gap-[14px]">
             <div className="group relative max-[480px]:hidden">
-              <button className="bb-header-btn flex items-center whitespace-nowrap" type="button">
-                <i className="ri-user-3-line text-[28px] text-[#0f766e] max-[575px]:text-[24px]" />
+              <button
+                className="bb-header-btn group/account flex items-center whitespace-nowrap rounded-[12px] px-[8px] py-[6px] transition-all duration-300 hover:-translate-y-[2px] hover:bg-[#f0fdfa]"
+                type="button"
+              >
+                <i className="ri-user-3-line text-[28px] text-[#0f766e] transition-all duration-300 group-hover/account:scale-110 max-[575px]:text-[24px]" />
                 <div className="ml-[10px] flex flex-col text-left max-[1199px]:hidden">
-                  <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750]">
+                  <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750] transition-all duration-300 group-hover/account:text-[#0f766e]">
                     Account
                   </p>
-                  <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750]">
+                  <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750] transition-all duration-300 group-hover/account:text-[#0f766e]">
                     {status === "authenticated" ? "Profile" : "Login"}
                   </p>
                 </div>
               </button>
-              <ul className="bb-dropdown-menu invisible absolute right-0 top-full z-50 mt-[18px] min-w-[165px] rounded-[10px] border border-[#eee] bg-white px-[8px] py-[10px] opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:visible group-hover:mt-[12px] group-hover:opacity-100">
+              <ul className="bb-dropdown-menu invisible absolute right-0 top-full z-50 mt-[18px] min-w-[165px] translate-y-[4px] rounded-[10px] border border-[#eee] bg-white px-[8px] py-[10px] opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:visible group-hover:mt-[12px] group-hover:translate-y-0 group-hover:opacity-100">
                 {[
                   { label: "Register", href: "/register" },
                   { label: "Login", href: "/login" },
                   { label: "Checkout", href: "/checkout" },
                   { label: "My Cart", href: "/my-cart" },
                 ].map((item) => (
-                  <li key={item.href} className="rounded-[8px] px-[12px] py-[5px] transition hover:bg-[#f8f8fb]">
+                  <li
+                    key={item.href}
+                    className="rounded-[8px] px-[12px] py-[5px] transition-all duration-300 hover:bg-[#f0fdfa]"
+                  >
                     <Link
                       href={item.href}
-                      className="block text-[13px] font-normal leading-[22px] tracking-[0.03rem] text-[#686e7d] transition hover:text-[#0f766e]"
+                      className="block text-[13px] font-normal leading-[22px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:translate-x-[4px] hover:text-[#0f766e]"
                     >
                       {item.label}
                     </Link>
@@ -6268,13 +6458,16 @@ export default function Header() {
                 ))}
               </ul>
             </div>
-            <Link href="tel:+919967399880" className="bb-header-btn flex items-center whitespace-nowrap">
-              <i className="ri-phone-line text-[28px] text-[#0f766e] max-[575px]:text-[24px]" />
+            <Link
+              href="tel:+919967399880"
+              className="bb-header-btn group/call flex items-center whitespace-nowrap rounded-[12px] px-[8px] py-[6px] transition-all duration-300 hover:-translate-y-[2px] hover:bg-[#f0fdfa]"
+            >
+              <i className="ri-phone-line text-[28px] text-[#0f766e] transition-all duration-300 group-hover/call:scale-110 group-hover/call:rotate-[-8deg] max-[575px]:text-[24px]" />
               <div className="ml-[10px] flex flex-col max-[1199px]:hidden">
-                <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750]">
+                <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750] transition-all duration-300 group-hover/call:text-[#0f766e]">
                   Call Us
                 </p>
-                <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750]">
+                <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750] transition-all duration-300 group-hover/call:text-[#0f766e]">
                   +91 99673 99880
                 </p>
               </div>
@@ -6282,27 +6475,27 @@ export default function Header() {
             <button
               type="button"
               onClick={toggleCart}
-              className="bb-header-btn relative flex items-center whitespace-nowrap"
+              className="bb-header-btn group/cart relative flex items-center whitespace-nowrap rounded-[12px] px-[8px] py-[6px] transition-all duration-300 hover:-translate-y-[2px] hover:bg-[#f0fdfa]"
               aria-label="Open cart"
             >
-              <i className="ri-shopping-cart-line text-[28px] text-[#0f766e] max-[575px]:text-[24px]" />
+              <i className="ri-shopping-cart-line text-[28px] text-[#0f766e] transition-all duration-300 group-hover/cart:scale-110 group-hover/cart:rotate-[-6deg] max-[575px]:text-[24px]" />
               {cart?.item_count ? (
-                <span className="absolute left-[18px] top-[-8px] flex h-[19px] min-w-[19px] items-center justify-center rounded-full bg-[#3d4750] px-[5px] text-[10px] font-semibold text-white">
+                <span className="absolute left-[18px] top-[-8px] flex h-[19px] min-w-[19px] items-center justify-center rounded-full bg-[#3d4750] px-[5px] text-[10px] font-semibold text-white transition-all duration-300 group-hover/cart:bg-[#0f766e]">
                   {cart.item_count}
                 </span>
               ) : null}
               <div className="ml-[10px] flex flex-col max-[1199px]:hidden">
-                <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750]">
+                <p className="mb-[4px] text-[12px] font-medium leading-[1] tracking-[0.6px] text-[#3d4750] transition-all duration-300 group-hover/cart:text-[#0f766e]">
                   Cart
                 </p>
-                <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750]">
+                <p className="text-[14px] font-semibold leading-[16px] tracking-[0.03rem] text-[#3d4750] transition-all duration-300 group-hover/cart:text-[#0f766e]">
                   {cart?.item_count || 0} items
                 </p>
               </div>
             </button>
             <button
               onClick={() => setMobileOpen(true)}
-              className="hidden h-[40px] w-[40px] items-center justify-center rounded-[12px] border border-[#eee] max-[991px]:flex"
+              className="hidden h-[40px] w-[40px] items-center justify-center rounded-[12px] border border-[#eee] transition-all duration-300 hover:border-[#0f766e] hover:bg-[#f0fdfa] max-[991px]:flex"
               aria-label="Open menu"
               type="button"
             >
@@ -6317,52 +6510,85 @@ export default function Header() {
             <li className="group relative mr-[30px]">
               <button
                 type="button"
-                className="relative flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border border-[#eee] bg-white p-[8px]"
+                className="relative flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border border-[#eee] bg-white p-[8px] transition-all duration-300 hover:-translate-y-[2px] hover:border-[#0f766e] hover:bg-[#f0fdfa] hover:shadow-[0_8px_20px_rgba(15,118,110,0.12)]"
               >
-                <i className="ri-function-line text-[24px] text-[#0f766e]" />
+                <i className="ri-function-line text-[24px] text-[#0f766e] transition-all duration-300 group-hover:scale-110" />
               </button>
-              <ul className="bb-dropdown-menu invisible absolute left-0 top-full z-[999] mt-[18px] min-w-[210px] rounded-[10px] border border-[#eee] bg-white p-[10px] opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:visible group-hover:mt-[12px] group-hover:opacity-100">
+              <ul className="bb-dropdown-menu invisible absolute left-0 top-full z-[999] mt-[18px] min-w-[210px] translate-y-[4px] rounded-[10px] border border-[#eee] bg-white p-[10px] opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:visible group-hover:mt-[12px] group-hover:translate-y-0 group-hover:opacity-100">
                 {serviceAreas.map((area) => (
-                  <li key={area} className="rounded-[8px] px-[12px] py-[6px] font-Poppins text-[14px] text-[#686e7d] transition hover:bg-[#f8f8fb] hover:text-[#0f766e]">
+                  <li
+                    key={area}
+                    className="rounded-[8px] px-[12px] py-[6px] font-Poppins text-[14px] text-[#686e7d] transition-all duration-300 hover:translate-x-[4px] hover:bg-[#f0fdfa] hover:text-[#0f766e]"
+                  >
                     {area}
                   </li>
                 ))}
               </ul>
             </li>
-            {navLinks.map((link) => {
-              const active = pathname === link.href;
-              if (link.label === "Products") {
+            {navLinks.map((item) => {
+              const active = pathname === item.href;
+              if (item.label === "Products") {
                 return (
-                  <li key={link.href} className="group relative mr-[45px] flex items-center">
+                  <li
+                    key={item.href}
+                    className="nav-item bb-main-dropdown group relative mr-[45px] flex items-center"
+                  >
                     <Link
-                      href={link.href}
-                      className={`block font-Poppins text-[15px] font-medium leading-[28px] tracking-[0.03rem] transition-all duration-300 ${
-                        pathname.startsWith("/shop") ? "text-[#0f766e]" : "text-[#3d4750] hover:text-[#0f766e]"
+                      href={item.href}
+                      className={`nav-link bb-dropdown-item block font-Poppins text-[15px] font-medium leading-[28px] tracking-[0.03rem] transition-all duration-300 ${
+                        pathname.startsWith("/shop")
+                          ? "text-[#6674e8]"
+                          : "text-[#3d4750] hover:text-[#6674e8]"
                       }`}
                     >
                       Products
                     </Link>
-                    <ul className="bb-dropdown-menu invisible absolute left-0 top-full z-[999] mt-[18px] flex min-w-[235px] flex-col rounded-[10px] border border-[#eee] bg-white p-[10px] text-left opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:visible group-hover:mt-[12px] group-hover:opacity-100">
-                      <li className="rounded-[8px] px-[15px] py-[5px] transition hover:bg-[#f8f8fb]">
-                        <Link href="/shop" className="block py-[5px] text-[14px] leading-[22px] tracking-[0.03rem] text-[#686e7d] transition hover:text-[#0f766e]">
-                          All Products
-                        </Link>
-                      </li>
+                    <ul className="mega-menu invisible absolute left-0 top-full z-[999] mt-[18px] min-w-[205px] rounded-[10px] border border-[#eee] bg-white py-[10px] text-left opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:visible group-hover:mt-[10px] group-hover:opacity-100">
                       {menuLoading ? (
-                        <li className="px-[15px] py-[8px] text-[14px] text-[#686e7d]">Loading...</li>
+                        <li className="px-[24px] py-[10px] font-Poppins text-[15px] text-[#686e7d]">
+                          Loading...
+                        </li>
                       ) : productMenu.length ? (
-                        productMenu.map((item) => (
-                          <li key={item.category} className="rounded-[8px] px-[15px] py-[5px] transition hover:bg-[#f8f8fb]">
-                            <Link href={item.href} className="block py-[5px] text-[14px] leading-[22px] tracking-[0.03rem] text-[#686e7d] transition hover:text-[#0f766e]">
-                              {item.category}
+                        productMenu.map((category) => (
+                          <li
+                            key={category.category}
+                            className="relative group/sub"
+                          >
+                            <Link
+                              href={category.href}
+                              className="flex items-center justify-between px-[24px] py-[10px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                            >
+                              {category.category}
+                              {category.products?.length ? (
+                                <i className="ri-arrow-right-s-line text-[18px]" />
+                              ) : null}
                             </Link>
+                            {category.products?.length ? (
+                              <ul className="invisible absolute left-full top-[-10px] z-[1000] ml-[1px] min-w-[235px] rounded-[10px] border border-[#eee] bg-white py-[14px] opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover/sub:visible group-hover/sub:opacity-100">
+                                {category.products
+                                  .slice(0, 3)
+                                  .map((product) => (
+                                    <li key={product.id}>
+                                      <Link
+                                        href={product.href}
+                                        className="block px-[24px] py-[9px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                                      >
+                                        {product.name}
+                                      </Link>
+                                    </li>
+                                  ))}
+                              </ul>
+                            ) : null}
                           </li>
                         ))
                       ) : (
-                        fallbackCategories.map((item) => (
-                          <li key={item} className="rounded-[8px] px-[15px] py-[5px] transition hover:bg-[#f8f8fb]">
-                            <Link href={`/shop?category=${encodeURIComponent(item)}`} className="block py-[5px] text-[14px] leading-[22px] tracking-[0.03rem] text-[#686e7d] transition hover:text-[#0f766e]">
-                              {item}
+                        fallbackCategories.map((category) => (
+                          <li key={category}>
+                            <Link
+                              href={`/shop?category=${encodeURIComponent(category)}`}
+                              className="block px-[24px] py-[10px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                            >
+                              {category}
                             </Link>
                           </li>
                         ))
@@ -6372,14 +6598,14 @@ export default function Header() {
                 );
               }
               return (
-                <li key={link.href} className="mr-[45px] flex items-center">
+                <li key={item.href} className="mr-[45px] flex items-center">
                   <Link
-                    href={link.href}
-                    className={`block font-Poppins text-[15px] font-medium leading-[28px] tracking-[0.03rem] transition-all duration-300 ${
-                      active ? "text-[#0f766e]" : "text-[#3d4750] hover:text-[#0f766e]"
+                    href={item.href}
+                    className={`relative block font-Poppins text-[15px] font-medium leading-[28px] tracking-[0.03rem] transition-all duration-300 after:absolute after:bottom-[-8px] after:left-0 after:h-[2px] after:w-0 after:rounded-full after:bg-[#0f766e] after:transition-all after:duration-300 hover:-translate-y-[1px] hover:text-[#0f766e] hover:after:w-full ${
+                      active ? "text-[#0f766e] after:w-full" : "text-[#3d4750]"
                     }`}
                   >
-                    {link.label}
+                    {item.label}
                   </Link>
                 </li>
               );
@@ -6387,9 +6613,10 @@ export default function Header() {
           </ul>
           <Link
             href="/contact-us"
-            className="font-Poppins text-[14px] font-medium leading-[28px] tracking-[0.03rem] text-[#686e7d] transition hover:text-[#0f766e]"
+            className="group rounded-full border border-[#eee] px-[16px] py-[7px] font-Poppins text-[14px] font-medium leading-[28px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:-translate-y-[2px] hover:border-[#0f766e] hover:bg-[#0f766e] hover:text-white hover:shadow-[0_10px_24px_rgba(15,118,110,0.22)]"
           >
-            <i className="ri-whatsapp-line mr-[6px] text-[#0f766e]" /> Bulk Orders
+            <i className="ri-whatsapp-line mr-[6px] text-[#0f766e] transition-all duration-300 group-hover:text-white" />
+            Bulk Orders
           </Link>
         </div>
       </nav>
@@ -6405,7 +6632,12 @@ export default function Header() {
         }`}
       >
         <div className="flex items-center justify-between border-b border-[#eee] p-[20px]">
-          <Image src="/assets/img/logo/logo-icon2.png" alt="2good Plus" width={105} height={54} />
+          <Image
+            src="/assets/img/logo/logo-icon2.png"
+            alt="2good Plus"
+            width={105}
+            height={54}
+          />
           <button type="button" onClick={closeMobile} aria-label="Close menu">
             <i className="ri-close-line text-[26px] text-[#3d4750]" />
           </button>
@@ -6418,7 +6650,11 @@ export default function Header() {
               placeholder="Search products..."
               className="bb-input pr-[44px]"
             />
-            <button type="submit" className="absolute right-[12px] top-[11px] text-[#0f766e]" aria-label="Search">
+            <button
+              type="submit"
+              className="absolute right-[12px] top-[11px] text-[#0f766e]"
+              aria-label="Search"
+            >
               <i className="ri-search-line text-[18px]" />
             </button>
           </form>
@@ -6428,29 +6664,27 @@ export default function Header() {
                 key={link.href}
                 href={link.href}
                 onClick={closeMobile}
-                className="block rounded-[10px] border border-[#eee] px-[14px] py-[12px] font-Poppins text-[15px] font-medium text-[#686e7d] transition hover:border-[#0f766e] hover:text-[#0f766e]"
+                className="block rounded-[10px] border border-[#eee] px-[14px] py-[12px] font-Poppins text-[15px] font-medium text-[#686e7d] transition-all duration-300 hover:border-[#0f766e] hover:bg-[#f0fdfa] hover:text-[#0f766e]"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
           <div className="mt-[22px] rounded-[14px] bg-[#f8f8fb] p-[16px]">
-            <p className="mb-[8px] font-quicksand text-[16px] font-bold text-[#3d4750]">Contact</p>
-            <Link href="tel:+919967399880" className="font-Poppins text-[14px] text-[#686e7d] hover:text-[#0f766e]">
-              <i className="ri-phone-line mr-[6px] text-[#0f766e]" /> +91 99673 99880
+            <p className="mb-[8px] font-quicksand text-[16px] font-bold text-[#3d4750]">
+              Contact
+            </p>
+            <Link
+              href="tel:+919967399880"
+              className="font-Poppins text-[14px] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+            >
+              <i className="ri-phone-line mr-[6px] text-[#0f766e]" />
+              +91 99673 99880
             </Link>
           </div>
         </div>
       </aside>
     </header>
   );
-}
-````
-
-## File: src/app/page.tsx
-````typescript
-import HomePageClient from "@/components/home/HomePageClient";
-export default function HomePage() {
-  return <HomePageClient />;
 }
 ````

@@ -430,29 +430,6 @@ export default function HomePageClient() {
         </div>
       </section>
 
-      {newProducts.length ? (
-        <section className="section-product-tabs bg-white py-[50px] max-[1199px]:py-[35px]">
-          <div className="bb-container">
-            <SectionHeading
-              eyebrow="New arrivals"
-              title="More products to explore"
-            />
-            <div className="grid grid-cols-1 gap-[24px] min-[576px]:grid-cols-2 min-[992px]:grid-cols-4">
-              {newProducts.slice(0, 4).map((product, index) => (
-                <div
-                  key={product.id}
-                  data-aos="fade-up"
-                  data-aos-delay={index * 80}
-                >
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      <DeliveryCoverage />
 
       <section className="section-testimonials py-[50px] max-[1199px]:py-[35px]">
         <div className="bb-container">

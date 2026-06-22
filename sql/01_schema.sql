@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS products (
   id VARCHAR(255) PRIMARY KEY,
   product_name VARCHAR(255) NOT NULL,
   product_description TEXT NOT NULL,
+  product_subdescription TEXT NOT NULL,
+  product_details TEXT NOT NULL,
   product_category VARCHAR(150) NOT NULL,
   product_packsize INTEGER NOT NULL DEFAULT 1 CHECK (product_packsize > 0),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
