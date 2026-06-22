@@ -209,9 +209,10 @@ export default function HomePageClient() {
                       href={homeContent.hero.ctaHref}
                       className="water-ripple relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-[#0f766e] px-6 py-3.5 font-Poppins text-sm font-semibold !text-white shadow-[0_12px_30px_rgba(15,118,110,0.25)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:bg-[#0c5a52] hover:shadow-[0_18px_40px_rgba(15,118,110,0.35)] sm:w-auto sm:px-7 sm:py-4 sm:text-base"
                     >
-                      <span className="relative z-10">
+                      <span className="relative z-10 font-Poppins">
                         {homeContent.hero.ctaLabel}
                       </span>
+
                       <i className="ri-arrow-right-line relative z-10 ml-2 text-lg transition-transform duration-300 group-hover:translate-x-1" />
                     </Link>
 
@@ -219,9 +220,10 @@ export default function HomePageClient() {
                       href={homeContent.hero.secondaryCtaHref}
                       className="water-ripple relative inline-flex w-full items-center justify-center overflow-hidden rounded-full border border-[#0f766e]/30 bg-white/95 px-6 py-3.5 font-Poppins text-sm font-semibold text-[#0f172a] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-[#0f766e] hover:bg-[#0f766e] hover:!text-white sm:w-auto sm:px-7 sm:py-4 sm:text-base"
                     >
-                      <span className="relative z-10">
+                      <span className="relative z-10 font-Poppins">
                         {homeContent.hero.secondaryCtaLabel}
                       </span>
+
                       <i className="ri-arrow-right-line relative z-10 ml-2 text-lg transition-transform duration-300 group-hover:translate-x-1" />
                     </Link>
                   </div>
