@@ -96,7 +96,7 @@ export default function Header() {
   const closeMobile = () => setMobileOpen(false);
 
   return (
-    <header className="bb-header  border-b border-[#eee] bg-white/95 font-Poppins shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_12px_35px_rgba(15,23,42,0.08)]">
+    <header className="bb-header relative z-[1000] border-b border-[#eee] bg-white/95 font-Poppins shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_12px_35px_rgba(15,23,42,0.08)]">
       <div className="top-header bg-[#3d4750] py-[6px] max-[991px]:hidden">
         <div className="bb-container flex items-center justify-between">
           <Link

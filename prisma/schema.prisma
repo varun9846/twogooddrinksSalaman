@@ -29,20 +29,22 @@ model User {
 }
 
 model Product {
-  id                  String      @id
-  productName         String      @map("product_name") @db.VarChar(255)
-  productDescription  String      @map("product_description")
-  productCategory     String      @map("product_category") @db.VarChar(150)
-  price               Decimal     @db.Decimal(10, 2)
-  stock               Int         @default(0)
-  image               String
-  badge               String?     @db.VarChar(80)
-  tag                 String?     @db.VarChar(100)
-  createdAt           DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  orderItems          OrderItem[]
-  isActive           Boolean  @default(true) @map("is_active")
-  productPacksize    Int      @default(12) @map("product_packsize")
+  id                    String      @id
+  productName           String      @map("product_name") @db.VarChar(255)
+  productDescription    String      @map("product_description")
+  productSubDescription String      @map("product_subdescription")
+  productDetails        String      @map("product_details")
+  productCategory       String      @map("product_category") @db.VarChar(150)
+  price                 Decimal     @db.Decimal(10, 2)
+  stock                 Int         @default(0)
+  image                 String
+  badge                 String?     @db.VarChar(80)
+  tag                   String?     @db.VarChar(100)
+  createdAt             DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  orderItems            OrderItem[]
+  isActive              Boolean     @default(true) @map("is_active")
+  productPacksize       Int         @default(12) @map("product_packsize")
 
   @@map("products")
 }

@@ -3,15 +3,6 @@ import { toProductDto, toProductDtoList } from "@/lib/mappers/product.mapper";
 import { prisma } from "@/lib/prisma";
 import type { ProductDto } from "@/types/product";
 
-export const PRODUCT_MENU_CATEGORIES = [
-  "Healthy Drinks",
-  "Packaged Drinking Water",
-  "Herbal Infusions",
-] as const;
-
-export type ProductMenuCategoryName =
-  (typeof PRODUCT_MENU_CATEGORIES)[number];
-
 export interface ProductMenuItem {
   id: string;
   name: string;
@@ -19,23 +10,31 @@ export interface ProductMenuItem {
 }
 
 export interface ProductMenuCategory {
-  category: ProductMenuCategoryName;
+  category: string;
   href: string;
   products: ProductMenuItem[];
 }
 
-export async function getAllProducts(category?: string): Promise<ProductDto[]> {
-  const where: Prisma.ProductWhereInput = {};
+function normalizeCategory(category: string) {
+  return category.trim();
+}
 
-  if (category) {
+export async function getAllProducts(category?: string): Promise<ProductDto[]> {
+  const where: Prisma.ProductWhereInput = {
+    isActive: true,
+  };
+
+  const cleanCategory = category?.trim();
+
+  if (cleanCategory) {
     where.productCategory = {
-      equals: category,
+      equals: cleanCategory,
       mode: "insensitive",
     };
   }
 
   const products = await prisma.product.findMany({
-    where :{isActive: true},
+    where,
     orderBy: {
       createdAt: "desc",
     },
@@ -47,10 +46,10 @@ export async function getAllProducts(category?: string): Promise<ProductDto[]> {
 export async function getProductById(
   productId: string,
 ): Promise<ProductDto | null> {
-  const product = await prisma.product.findUnique({
+  const product = await prisma.product.findFirst({
     where: {
-      isActive: true,
       id: productId,
+      isActive: true,
     },
   });
 
@@ -61,25 +60,47 @@ export async function getProductMenu(): Promise<ProductMenuCategory[]> {
   const products = await prisma.product.findMany({
     where: {
       isActive: true,
-      productCategory: {
-        in: [...PRODUCT_MENU_CATEGORIES],
-      },
     },
-    select: {id: true,productName: true,productCategory: true,},
-    orderBy: [{productCategory: "desc",},{productName: "desc",},],
+    select: {
+      id: true,
+      productName: true,
+      productCategory: true,
+    },
+    orderBy: [
+      {
+        productCategory: "asc",
+      },
+      {
+        productName: "asc",
+      },
+    ],
   });
 
-  return PRODUCT_MENU_CATEGORIES.map((category) => ({
-    category,
-    href: `/shop?category=${encodeURIComponent(category)}`,
-    products: products
-      .filter((product) => product.productCategory === category)
-      .map((product) => ({
-        id: product.id,
-        name: product.productName,
-        href: `/shop/${product.id}`,
-      })),
-  }));
+  const menuMap = new Map<string, ProductMenuItem[]>();
+
+  products.forEach((product) => {
+    const category = normalizeCategory(product.productCategory);
+
+    if (!category) return;
+
+    const currentProducts = menuMap.get(category) ?? [];
+
+    currentProducts.push({
+      id: product.id,
+      name: product.productName,
+      href: `/shop/${product.id}`,
+    });
+
+    menuMap.set(category, currentProducts);
+  });
+
+  return Array.from(menuMap.entries())
+    .sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB))
+    .map(([category, products]) => ({
+      category,
+      href: `/shop?category=${encodeURIComponent(category)}`,
+      products,
+    }));
 }
 
 export const productService = {

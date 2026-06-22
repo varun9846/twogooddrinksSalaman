@@ -20,6 +20,15 @@ const productHighlights = [
   { icon: "ri-customer-service-2-line", label: "Bulk support" },
 ];
 
+function splitProductDetails(details?: string | null) {
+  if (!details) return [];
+
+  return details
+    .split(/\r?\n|•|,|;/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export default async function ProductDetailsPage({ params }: ProductDetailsPageProps) {
   const { productId } = await params;
   const product = await getProductById(productId);
@@ -32,8 +41,8 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
   const relatedProducts = categoryProducts
     .filter((item) => item.id !== product.id)
     .slice(0, 4);
-
   const packSize = product.product_packsize ? `${product.product_packsize} ml` : "Standard pack";
+  const productDetails = splitProductDetails(product.product_details);
 
   return (
     <main>
@@ -65,8 +74,15 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
 
               <div className="mt-[16px] grid grid-cols-3 gap-[12px]">
                 {[product.image, product.image, product.image].map((image, index) => (
-                  <div key={`${image}-${index}`} className="rounded-[16px] border border-[#eee] bg-[#f8f8fb] p-[10px]">
-                    <img src={image} alt={`${product.product_name} ${index + 1}`} className="h-[95px] w-full object-contain" />
+                  <div
+                    key={`${image}-${index}`}
+                    className="rounded-[16px] border border-[#eee] bg-[#f8f8fb] p-[10px]"
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.product_name} ${index + 1}`}
+                      className="h-[95px] w-full object-contain"
+                    />
                   </div>
                 ))}
               </div>
@@ -91,7 +107,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
               </div>
 
               <p className="mt-[18px] font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-                {product.product_description}
+                {product.product_subdescription || product.product_description}
               </p>
 
               <div className="mt-[22px] flex flex-wrap items-center gap-[14px]">
@@ -115,7 +131,10 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
 
               <div className="mt-[28px] grid gap-[12px] sm:grid-cols-3">
                 {productHighlights.map((item) => (
-                  <div key={item.label} className="rounded-[14px] border border-[#eee] bg-[#f8f8fb] p-[14px] text-center">
+                  <div
+                    key={item.label}
+                    className="rounded-[14px] border border-[#eee] bg-[#f8f8fb] p-[14px] text-center"
+                  >
                     <i className={`${item.icon} mb-[6px] block text-[24px] text-[#0f766e]`} />
                     <p className="font-Poppins text-[13px] text-[#4b5563]">{item.label}</p>
                   </div>
@@ -129,7 +148,10 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
                 <p className="font-Poppins text-[14px] font-light leading-[25px] text-[#686e7d]">
                   Bulk order rates are negotiable based on quantity requirements. Contact us for a custom quotation.
                 </p>
-                <Link href="/contact-us" className="mt-[14px] inline-flex font-Poppins text-[14px] font-semibold text-[#0f766e] hover:text-[#3d4750]">
+                <Link
+                  href="/contact-us"
+                  className="mt-[14px] inline-flex font-Poppins text-[14px] font-semibold text-[#0f766e] hover:text-[#3d4750]"
+                >
                   Contact for bulk orders <i className="ri-arrow-right-line ml-[5px]" />
                 </Link>
               </div>
@@ -140,14 +162,50 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
 
       <section className="section-product-description pb-[50px] max-[767px]:pb-[35px]">
         <div className="bb-container">
-          <div className="rounded-[24px] border border-[#eee] bg-white p-[28px] shadow-sm" data-aos="fade-up">
-            <h2 className="mb-[12px] font-quicksand text-[24px] font-bold text-[#3d4750]">
-              Description
-            </h2>
-            <p className="font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-              {product.product_description} This product is suitable for daily hydration, office use, retail supply,
-              event requirements, and bulk order planning based on your quantity needs.
-            </p>
+          <div className="rounded-[24px] border border-[#eee] bg-white shadow-sm" data-aos="fade-up">
+            <div className="flex flex-wrap border-b border-[#eee]">
+              <div className="border-r border-[#eee] px-[24px] py-[16px]">
+                <span className="font-quicksand text-[17px] font-bold text-[#0f766e]">
+                  Description
+                </span>
+              </div>
+              <div className="px-[24px] py-[16px]">
+                <span className="font-quicksand text-[17px] font-bold text-[#3d4750]">
+                  Product Details
+                </span>
+              </div>
+            </div>
+
+            <div className="grid gap-[30px] p-[28px] lg:grid-cols-2">
+              <div>
+                <h2 className="mb-[12px] font-quicksand text-[24px] font-bold text-[#3d4750]">
+                  Product Description
+                </h2>
+                <p className="font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
+                  {product.product_description}
+                </p>
+              </div>
+
+              <div>
+                <h2 className="mb-[12px] font-quicksand text-[24px] font-bold text-[#3d4750]">
+                  Product Details
+                </h2>
+                {productDetails.length > 0 ? (
+                  <ul className="space-y-[12px]">
+                    {productDetails.map((detail) => (
+                      <li key={detail} className="flex gap-[10px] font-Poppins text-[15px] font-light leading-[26px] text-[#686e7d]">
+                        <i className="ri-check-double-line mt-[4px] text-[18px] text-[#0f766e]" />
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="font-Poppins text-[15px] font-light leading-[28px] text-[#686e7d]">
+                    Product details will be updated soon.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </section>

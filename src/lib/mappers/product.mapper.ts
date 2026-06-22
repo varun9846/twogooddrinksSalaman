@@ -8,6 +8,8 @@ export function toProductDto(product: Product): ProductDto {
     product_name: product.productName,
     product_packsize: product.productPacksize,
     product_description: product.productDescription,
+    product_subdescription: product.productSubDescription,
+    product_details: product.productDetails,
     product_category: product.productCategory,
     price: formatPrice(product.price),
     Stock: product.stock,

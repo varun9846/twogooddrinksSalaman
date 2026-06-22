@@ -2,6 +2,8 @@ export interface ProductDto {
   id: string;
   product_name: string;
   product_description: string;
+  product_subdescription: string;
+  product_details: string;
   product_category: string;
   price: string;
   Stock: number;
