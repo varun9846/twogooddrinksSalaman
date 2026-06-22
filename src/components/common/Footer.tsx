@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const productLinks = [
-  { label: "Packaged Drinking Water", href: "/shop?category=Packaged%20Drinking%20Water" },
+  {
+    label: "Packaged Drinking Water",
+    href: "/shop?category=Packaged%20Drinking%20Water",
+  },
   { label: "Healthy Drinks", href: "/shop?category=Healthy%20Drinks" },
   { label: "Herbal Infusions", href: "/shop?category=Herbal%20Infusions" },
   { label: "Bulk Orders", href: "/contact-us" },
@@ -27,7 +30,11 @@ const socialLinks = [
   { label: "Facebook", icon: "ri-facebook-fill", href: "#" },
   { label: "Instagram", icon: "ri-instagram-line", href: "#" },
   { label: "LinkedIn", icon: "ri-linkedin-fill", href: "#" },
-  { label: "WhatsApp", icon: "ri-whatsapp-line", href: "https://wa.me/919967399880" },
+  {
+    label: "WhatsApp",
+    icon: "ri-whatsapp-line",
+    href: "https://wa.me/919967399880",
+  },
 ];
 
 function FooterColumn({
@@ -71,7 +78,7 @@ export default function Footer() {
           if (entry.isIntersecting) setVisible(true);
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -88,16 +95,21 @@ export default function Footer() {
         <div className="bb-container flex flex-wrap">
           <div className="w-full px-[12px] lg:w-[25%]">
             <div className="bb-footer-widget mb-[35px]">
-              <Link href="/" className="mb-[25px] inline-flex items-center gap-[12px]">
+              <Link
+                href="/"
+                className="mb-[25px] inline-flex items-center gap-[12px]"
+              >
                 <img
                   src="/assets/img/logo/logo-icon2.png"
                   alt="2good Plus logo"
-                  className="h-[70px] w-auto object-contain"
+                  className="!h-[55px] w-auto object-contain"
                 />
               </Link>
               <p className="mb-[22px] max-w-[380px] font-Poppins text-[14px] font-light leading-[27px] tracking-[0.03rem] text-[#686e7d]">
-                2good Plus delivers pure, safe, and refreshing packaged drinking water for homes,
-                offices, hotels, restaurants, retailers, events, and institutional bulk orders.
+                2good plus is committed to delivering pure, safe, and refreshing
+                packaged drinking water. With advanced purification processes,
+                we ensure every bottle provides freshness and trust for homes,
+                offices, events, and businesses.
               </p>
               <div className="flex flex-wrap gap-[8px]">
                 {socialLinks.map((item) => (
@@ -133,19 +145,25 @@ export default function Footer() {
                 <li className="mb-[14px] flex items-start gap-[12px]">
                   <i className="ri-map-pin-line mt-[4px] text-[18px] text-[#0f766e]" />
                   <p className="font-Poppins text-[14px] font-light leading-[25px] tracking-[0.03rem] text-[#686e7d]">
-                    Plot No. 24, DIC Industrial Estate, Rania, Kanpur Dehat - 209304,
-                    Uttar Pradesh, India
+                    Plot No. 24, DIC Industrial Estate, Rania, Kanpur Dehat -
+                    209304, Uttar Pradesh, India
                   </p>
                 </li>
                 <li className="mb-[14px] flex items-center gap-[12px]">
                   <i className="ri-phone-line text-[18px] text-[#0f766e]" />
-                  <Link href="tel:+919967399880" className="font-Poppins text-[14px] text-[#686e7d] transition hover:text-[#0f766e]">
+                  <Link
+                    href="tel:+919967399880"
+                    className="font-Poppins text-[14px] text-[#686e7d] transition hover:text-[#0f766e]"
+                  >
                     +91 99673 99880
                   </Link>
                 </li>
                 <li className="mb-[14px] flex items-center gap-[12px]">
                   <i className="ri-mail-line text-[18px] text-[#0f766e]" />
-                  <Link href="mailto:Corporate@gmhospitality.in" className="font-Poppins text-[14px] text-[#686e7d] transition hover:text-[#0f766e]">
+                  <Link
+                    href="mailto:Corporate@gmhospitality.in"
+                    className="font-Poppins text-[14px] text-[#686e7d] transition hover:text-[#0f766e]"
+                  >
                     Corporate@gmhospitality.in
                   </Link>
                 </li>
@@ -167,7 +185,10 @@ export default function Footer() {
         <div className="bb-container flex flex-wrap items-center justify-between gap-[14px] max-[991px]:flex-col">
           <p className="font-Poppins text-[13px] leading-[26px] tracking-[0.03rem] text-[#686e7d]">
             Copyright © 2026{" "}
-            <Link href="/" className="font-semibold text-[#0f766e] transition hover:text-[#3d4750]">
+            <Link
+              href="/"
+              className="font-semibold text-[#0f766e] transition hover:text-[#3d4750]"
+            >
               2good Plus
             </Link>{" "}
             all rights reserved.
