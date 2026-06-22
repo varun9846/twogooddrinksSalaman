@@ -146,7 +146,6 @@ export default function HomePageClient() {
         <Swiper
           modules={[Autoplay, EffectFade, Pagination]}
           effect="fade"
-          loop
           speed={900}
           autoplay={{
             delay: 4500,
@@ -253,7 +252,6 @@ export default function HomePageClient() {
           <Swiper
             modules={[Autoplay]}
             autoplay={{ delay: 2400, disableOnInteraction: false }}
-            loop
             spaceBetween={24}
             breakpoints={{
               0: { slidesPerView: 1 },
