@@ -1,9 +1,14 @@
 export const runtime = "nodejs";
 
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-import { getAuthenticatedUserId } from "@/lib/utils/auth";
-import { parseRequestNumber, parseRequestString } from "@/lib/utils/numbers";
 import cartService from "@/lib/services/cart.service";
+import {
+  getErrorMessage,
+  jsonError,
+  jsonSuccess,
+  readJsonBody,
+} from "@/lib/utils/api-response";
+import { getAuthenticatedUserId } from "@/lib/utils/auth";
+import { AddToCartRequestSchema } from "@/lib/validators/cart.validator";
 
 export async function POST(request: Request) {
   try {
@@ -13,18 +18,8 @@ export async function POST(request: Request) {
       return jsonError("Please login first.", 401);
     }
 
-    const body = await request.json();
-    const productId = parseRequestString(body.productId);
-
-    if (!productId) {
-      return jsonError("Product id is required.");
-    }
-
-    const cart = await cartService.addToCart(
-      userId,
-      productId,
-      parseRequestNumber(body.quantity, 1),
-    );
+    const body = AddToCartRequestSchema.parse(await readJsonBody(request));
+    const cart = await cartService.addToCart(userId, body.productId, body.quantity);
 
     return jsonSuccess({ message: "Product added to cart.", cart });
   } catch (error) {

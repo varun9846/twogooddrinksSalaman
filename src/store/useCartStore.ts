@@ -1,6 +1,7 @@
 import { create } from "zustand";
+import { cartApi } from "@/lib/api/cart.api";
 import type { Cart } from "@/types/cart";
-import apiClient from "@/lib/apiClient";
+import type { CartApiResponse } from "@/types/cart.response";
 
 interface CartState {
   cart: Cart | null;
@@ -13,19 +14,21 @@ interface CartState {
   clearLocalCart: () => void;
 }
 
-type CartResponse = {
-  message?: string;
-  cart?: Cart | null;
-};
-
-async function parseResponse(response: { data?: CartResponse }): Promise<CartResponse> {
-  const data = response?.data ?? {};
-
-  if (data.message && !data.cart) {
-    throw new Error(data.message);
+function extractCart(response: CartApiResponse): Cart | null {
+  if (response.error || response.success === false) {
+    throw new Error(response.message || "Cart request failed.");
   }
 
-  return data;
+  return response.cart ?? response.data?.cart ?? null;
+}
+
+function getClientErrorMessage(error: unknown, fallback: string): string {
+  const apiMessage = (error as { response?: { data?: { message?: string } } })
+    ?.response?.data?.message;
+
+  if (apiMessage) return apiMessage;
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
 }
 
 export const useCartStore = create<CartState>((set) => ({
@@ -37,13 +40,12 @@ export const useCartStore = create<CartState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await apiClient.get("/api/cart", { headers: { "Cache-Control": "no-store" } });
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
+      const response = await cartApi.fetchCart();
+      const cart = extractCart(response);
       set({ cart, isLoading: false });
       return cart;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to load cart.";
+      const message = getClientErrorMessage(error, "Unable to load cart.");
       set({ error: message, isLoading: false });
       return null;
     }
@@ -53,15 +55,14 @@ export const useCartStore = create<CartState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await apiClient.post("/api/cart/add", { productId, quantity });
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
+      const response = await cartApi.addToCart({ productId, quantity });
+      const cart = extractCart(response);
       set({ cart, isLoading: false });
       return cart;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to add product.";
+      const message = getClientErrorMessage(error, "Unable to add product.");
       set({ error: message, isLoading: false });
-      throw error;
+      throw new Error(message);
     }
   },
 
@@ -69,15 +70,14 @@ export const useCartStore = create<CartState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await apiClient.patch(`/api/cart/items/${itemId}`, { quantity });
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
+      const response = await cartApi.updateItem(itemId, { quantity });
+      const cart = extractCart(response);
       set({ cart, isLoading: false });
       return cart;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to update item.";
+      const message = getClientErrorMessage(error, "Unable to update item.");
       set({ error: message, isLoading: false });
-      throw error;
+      throw new Error(message);
     }
   },
 
@@ -85,15 +85,14 @@ export const useCartStore = create<CartState>((set) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await apiClient.delete(`/api/cart/items/${itemId}`);
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
+      const response = await cartApi.removeItem(itemId);
+      const cart = extractCart(response);
       set({ cart, isLoading: false });
       return cart;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to remove item.";
+      const message = getClientErrorMessage(error, "Unable to remove item.");
       set({ error: message, isLoading: false });
-      throw error;
+      throw new Error(message);
     }
   },
 

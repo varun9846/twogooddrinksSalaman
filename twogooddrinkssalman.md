@@ -88,7 +88,10 @@ src/components/providers/AuthProvider.tsx
 src/components/shop/ProductActions.tsx
 src/components/shop/ProductCard.tsx
 src/components/shop/ShopPageClient.tsx
+src/lib/api/cart.api.ts
+src/lib/api/products.api.ts
 src/lib/apiClient.ts
+src/lib/dto/api-response.dto.ts
 src/lib/mappers/cart.mapper.ts
 src/lib/mappers/product.mapper.ts
 src/lib/prisma.ts
@@ -102,6 +105,8 @@ src/lib/site-content.ts
 src/lib/utils/api-response.ts
 src/lib/utils/auth.ts
 src/lib/utils/numbers.ts
+src/lib/validators/cart.validator.ts
+src/lib/validators/product.validator.ts
 src/lib/validators/user.validator.ts
 src/middleware.ts
 src/store/useCartStore.ts
@@ -109,9 +114,16 @@ src/store/useUiStore.ts
 src/store/useWishlistStore.ts
 src/styles/globals.css
 src/types/aos.d.ts
+src/types/api.ts
+src/types/cart.request.ts
+src/types/cart.response.ts
 src/types/cart.ts
 src/types/next-auth.d.ts
+src/types/product.request.ts
+src/types/product.response.ts
 src/types/product.ts
+src/types/user.request.ts
+src/types/user.response.ts
 tsconfig.json
 ```
 
@@ -220,25 +232,6 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 export const runtime = "nodejs";
 import { handlers } from "@/auth";
 export const { GET, POST } = handlers;
-````
-
-## File: src/app/api/products/menu/route.ts
-````typescript
-export const runtime = "nodejs";
-import productService from "@/lib/services/product.service";
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-export async function POST() {
-  try {
-    const menu = await productService.getProductMenu();
-    return jsonSuccess({
-      success: true,
-      menu,
-    });
-  } catch (error) {
-    console.error("PRODUCTS_MENU_POST_ERROR", error);
-    return jsonError(getErrorMessage(error, "Failed to fetch product menu"), 500);
-  }
-}
 ````
 
 ## File: src/components/common/Breadcrumb.tsx
@@ -511,323 +504,70 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 }
 ````
 
-## File: src/components/shop/ShopPageClient.tsx
+## File: src/lib/api/cart.api.ts
 ````typescript
-"use client";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import Breadcrumb from "@/components/common/Breadcrumb";
-import ProductCard from "@/components/shop/ProductCard";
-import { productsService } from "@/lib/services/productsService";
-import type { ProductDto } from "@/types/product";
-const SHOP_CATEGORIES = [
-  "Packaged Drinking Water",
-  "Healthy Drinks",
-  "Herbal Infusions",
-  "Natural Drinking Water",
-  "Jeera Drink",
-  "Healthy Snacks",
-];
-function getPriceNumber(price: string) {
-  return Number(price.replace(/[^0-9.]/g, "")) || 0;
-}
-export default function ShopPageClient() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const categoryFromUrl = searchParams.get("category");
-  const queryFromUrl = searchParams.get("q") || "";
-  const [searchQuery, setSearchQuery] = useState(queryFromUrl);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryFromUrl);
-  const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState("latest");
-  const [productsState, setProductsState] = useState<ProductDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    setSelectedCategory(categoryFromUrl);
-    setSearchQuery(queryFromUrl);
-  }, [categoryFromUrl, queryFromUrl]);
-  useEffect(() => {
-    let cancelled = false;
-    async function loadProducts() {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await productsService.getAllProducts(categoryFromUrl || undefined);
-        if (cancelled) return;
-        if (data?.success && Array.isArray(data.products)) {
-          setProductsState(data.products);
-        } else {
-          setProductsState([]);
-          setError("Failed to load products");
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error("Failed to load products", error);
-          setProductsState([]);
-          setError("Failed to load products");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    loadProducts();
-    return () => {
-      cancelled = true;
-    };
-  }, [categoryFromUrl]);
-  const handleCategoryClick = (category: string) => {
-    if (selectedCategory === category) {
-      router.push("/shop");
-      return;
-    }
-    router.push(`/shop?category=${encodeURIComponent(category)}`);
-  };
-  const handlePriceChange = (range: string) => {
-    setSelectedPrices((prev) =>
-      prev.includes(range) ? prev.filter((item) => item !== range) : [...prev, range],
+import apiClient from "@/lib/apiClient";
+import type { AddToCartRequestDto, UpdateCartItemRequestDto } from "@/types/cart.request";
+import type { CartApiResponse } from "@/types/cart.response";
+export const cartApi = {
+  fetchCart: async () => {
+    const response = await apiClient.get<CartApiResponse>("/api/cart", {
+      headers: { "Cache-Control": "no-store" },
+    });
+    return response.data;
+  },
+  addToCart: async (payload: AddToCartRequestDto) => {
+    const response = await apiClient.post<CartApiResponse>("/api/cart/add", payload);
+    return response.data;
+  },
+  updateItem: async (itemId: string, payload: UpdateCartItemRequestDto) => {
+    const response = await apiClient.patch<CartApiResponse>(
+      `/api/cart/items/${itemId}`,
+      payload,
     );
-  };
-  const handleTagClick = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag],
+    return response.data;
+  },
+  removeItem: async (itemId: string) => {
+    const response = await apiClient.delete<CartApiResponse>(
+      `/api/cart/items/${itemId}`,
     );
-  };
-  const clearAllFilters = () => {
-    setSearchQuery("");
-    setSelectedPrices([]);
-    setSelectedTags([]);
-    setSortBy("latest");
-    router.push("/shop");
-  };
-  const productTags = useMemo(() => {
-    return Array.from(new Set(productsState.map((product) => product.Tag).filter(Boolean)));
-  }, [productsState]);
-  const filteredAndSortedProducts = useMemo(() => {
-    let result = [...productsState];
-    if (searchQuery.trim()) {
-      const query = searchQuery.trim().toLowerCase();
-      result = result.filter((product) =>
-        [
-          product.product_name,
-          product.product_description,
-          product.product_category,
-          product.Tag,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(query),
-      );
-    }
-    if (selectedTags.length > 0) {
-      result = result.filter((product) => selectedTags.includes(product.Tag));
-    }
-    if (selectedPrices.length > 0) {
-      result = result.filter((product) => {
-        const price = getPriceNumber(product.price);
-        return selectedPrices.some((range) => {
-          if (range === "Under 15") return price < 15;
-          if (range === "15 - 30") return price >= 15 && price <= 30;
-          if (range === "Above 30") return price > 30;
-          return true;
-        });
-      });
-    }
-    if (sortBy === "price-low") {
-      result.sort((a, b) => getPriceNumber(a.price) - getPriceNumber(b.price));
-    }
-    if (sortBy === "price-high") {
-      result.sort((a, b) => getPriceNumber(b.price) - getPriceNumber(a.price));
-    }
-    if (sortBy === "name") {
-      result.sort((a, b) => a.product_name.localeCompare(b.product_name));
-    }
-    return result;
-  }, [productsState, searchQuery, selectedPrices, selectedTags, sortBy]);
-  const hasActiveFilters =
-    Boolean(searchQuery) ||
-    Boolean(selectedCategory) ||
-    selectedPrices.length > 0 ||
-    selectedTags.length > 0;
-  return (
-    <main>
-      <Breadcrumb title={selectedCategory || "Shop"} current={selectedCategory || "Shop"} />
-      <section className="section-category py-[35px]">
-        <div className="bb-container">
-          <div className="grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-4">
-            {SHOP_CATEGORIES.slice(0, 4).map((category, index) => (
-              <button
-                type="button"
-                key={category}
-                onClick={() => handleCategoryClick(category)}
-                className={`rounded-[18px] border p-[20px] text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
-                  selectedCategory === category
-                    ? "border-[#0f766e] bg-[#f0fdfa]"
-                    : "border-[#eee] bg-white"
-                }`}
-                data-aos="fade-up"
-                data-aos-delay={index * 80}
-              >
-                <i className="ri-drop-line mb-[12px] block text-[28px] text-[#0f766e]" />
-                <span className="font-quicksand text-[18px] font-bold text-[#3d4750]">
-                  {category}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="section-shop overflow-x-hidden pb-[60px] max-[767px]:pb-[40px]">
-        <div className="bb-container">
-          <div className="mb-[35px] text-center" data-aos="fade-up">
-            <p className="mb-[8px] font-Poppins text-[14px] font-medium uppercase tracking-[0.18rem] text-[#0f766e]">
-              Hydrate • Heal • Feel Good
-            </p>
-            <h1 className="mb-[10px] font-quicksand text-[34px] font-bold text-[#3d4750] max-[767px]:text-[28px]">
-              {selectedCategory || "Shop Wellness Products"}
-            </h1>
-            <p className="mx-auto max-w-[650px] font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-              Explore packaged drinking water, healthy drinks, herbal infusions, and everyday hydration products.
-            </p>
-          </div>
-          <div className="flex flex-wrap mx-[-12px]">
-            <aside className="order-2 w-full px-[12px] max-[991px]:order-1 max-[991px]:mb-[35px] min-[992px]:w-[25%]">
-              <div className="bb-shop-sidebar sticky top-[150px] space-y-[24px]">
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Search
-                  </h4>
-                  <input
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search products..."
-                    className="bb-input"
-                  />
-                </div>
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="80">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Categories
-                  </h4>
-                  <ul className="space-y-[12px]">
-                    {SHOP_CATEGORIES.map((category) => (
-                      <li key={category}>
-                        <button
-                          type="button"
-                          onClick={() => handleCategoryClick(category)}
-                          className={`flex w-full items-center justify-between rounded-[10px] px-[10px] py-[8px] text-left font-Poppins text-[14px] transition ${
-                            selectedCategory === category
-                              ? "bg-[#f0fdfa] text-[#0f766e]"
-                              : "text-[#777] hover:bg-[#f8f8fb] hover:text-[#0f766e]"
-                          }`}
-                        >
-                          <span>{category}</span>
-                          <i className="ri-arrow-right-s-line" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="120">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Price Range
-                  </h4>
-                  <div className="space-y-[13px]">
-                    {["Under 15", "15 - 30", "Above 30"].map((range) => (
-                      <label key={range} className="bb-sidebar-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={selectedPrices.includes(range)}
-                          onChange={() => handlePriceChange(range)}
-                        />
-                        {range}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                {productTags.length > 0 ? (
-                  <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="200">
-                    <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                      Tags
-                    </h4>
-                    <div className="flex flex-wrap gap-[8px]">
-                      {productTags.map((tag) => {
-                        const selected = selectedTags.includes(tag);
-                        return (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() => handleTagClick(tag)}
-                            className={`rounded-full px-[12px] py-[6px] font-Poppins text-[12px] transition ${
-                              selected
-                                ? "bg-[#0f766e] text-white"
-                                : "bg-[#f8f8fb] text-[#686e7d] hover:bg-[#0f766e] hover:text-white"
-                            }`}
-                          >
-                            {tag}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : null}
-                {hasActiveFilters ? (
-                  <button
-                    type="button"
-                    onClick={clearAllFilters}
-                    className="w-full rounded-[10px] bg-[#3d4750] px-[18px] py-[12px] font-Poppins text-[14px] font-medium text-white transition hover:bg-[#0f766e]"
-                  >
-                    Clear Filters
-                  </button>
-                ) : null}
-              </div>
-            </aside>
-            <div className="order-1 w-full px-[12px] max-[991px]:order-2 min-[992px]:w-[75%]">
-              <div className="mb-[24px] flex flex-wrap items-center justify-between gap-[16px] rounded-[20px] border border-[#eee] bg-white p-[18px] shadow-sm" data-aos="fade-up">
-                <p className="font-Poppins text-[14px] text-[#686e7d]">
-                  Showing <span className="font-semibold text-[#3d4750]">{filteredAndSortedProducts.length}</span> products
-                </p>
-                <select
-                  value={sortBy}
-                  onChange={(event) => setSortBy(event.target.value)}
-                  className="rounded-[10px] border border-[#eee] bg-white px-[14px] py-[10px] font-Poppins text-[14px] text-[#686e7d] outline-none focus:border-[#0f766e]"
-                >
-                  <option value="latest">Sort by latest</option>
-                  <option value="name">Sort by name</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                </select>
-              </div>
-              {loading ? (
-                <div className="flex justify-center rounded-[20px] border border-[#eee] bg-white py-[70px]">
-                  <span className="bb-loader-ring" />
-                </div>
-              ) : error ? (
-                <div className="rounded-[20px] border border-red-100 bg-red-50 py-[60px] text-center">
-                  <p className="font-Poppins text-[16px] text-red-600">{error}</p>
-                </div>
-              ) : filteredAndSortedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 gap-[24px] min-[576px]:grid-cols-2 min-[1200px]:grid-cols-3">
-                  {filteredAndSortedProducts.map((product, index) => (
-                    <div key={product.id} data-aos="fade-up" data-aos-delay={(index % 3) * 80}>
-                      <ProductCard product={product} />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-[20px] border border-[#eee] bg-white py-[60px] text-center">
-                  <p className="font-Poppins text-[16px] text-[#686e7d]">
-                    No products match your search criteria.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
-}
+    return response.data;
+  },
+};
+export default cartApi;
+````
+
+## File: src/lib/api/products.api.ts
+````typescript
+import apiClient from "@/lib/apiClient";
+import type {
+  ProductMenuApiResponse,
+  ProductMenuCategory,
+  ProductsApiResponse,
+} from "@/types/product.response";
+export type { ProductMenuCategory, ProductsApiResponse };
+export const productsApi = {
+  getAllProducts: async (category?: string) => {
+    const response = await apiClient.post<ProductsApiResponse>("/api/products", {
+      category,
+    });
+    return response.data;
+  },
+  getProductById: async (productId: string) => {
+    const response = await apiClient.post<ProductsApiResponse>("/api/products", {
+      productId,
+    });
+    return response.data;
+  },
+  getProductMenu: async () => {
+    const response = await apiClient.post<ProductMenuApiResponse>(
+      "/api/products/menu",
+      {},
+    );
+    return response.data;
+  },
+};
+export default productsApi;
 ````
 
 ## File: src/lib/apiClient.ts
@@ -845,51 +585,66 @@ export const apiClient = axios.create({
 export default apiClient;
 ````
 
-## File: src/lib/mappers/cart.mapper.ts
+## File: src/lib/dto/api-response.dto.ts
 ````typescript
-import type { OrderItem, Product } from "@prisma/client";
-import type { Cart, CartItem } from "@/types/cart";
-import { getLineTotal } from "@/lib/mappers/product.mapper";
-import { roundCurrency, toNumber } from "@/lib/utils/numbers";
-type OrderItemWithProduct = OrderItem & { product: Product };
-export function mapOrderItemsToCart(
-  orderId: string | null,
-  items: OrderItemWithProduct[],
-  orderTotal?: number,
-): Cart {
-  const cartItems: CartItem[] = items.map((item) => ({
-    id: item.id,
-    order_id: item.orderId,
-    product_id: item.productId,
-    quantity: item.quantity,
-    line_total: getLineTotal(item.quantity, item.product.price),
-    product: {
-      id: item.product.id,
-      product_name: item.product.productName,
-      product_description: item.product.productDescription,
-      product_subdescription: item.product.productSubDescription,
-      product_details: item.product.productDetails,
-      product_category: item.product.productCategory,
-      price: toNumber(item.product.price),
-      stock: item.product.stock,
-      image: item.product.image,
-      badge: item.product.badge,
-      tag: item.product.tag,
-    },
-  }));
-  const calculatedTotal =
-    orderTotal ??
-    cartItems.reduce((sum, item) => sum + item.line_total, 0);
-  return {
-    order_id: orderId,
-    total: roundCurrency(calculatedTotal),
-    item_count: cartItems.reduce((sum, item) => sum + item.quantity, 0),
-    items: cartItems,
-  };
+import { ZodError } from "zod";
+import type { ApiResponse } from "@/types/api";
+function resolveStatusCode(error: unknown, fallbackStatus = 500): number {
+  const maybeStatus = (error as { status?: unknown; statusCode?: unknown })?.status ??
+    (error as { statusCode?: unknown })?.statusCode;
+  if (typeof maybeStatus === "number" && maybeStatus >= 400 && maybeStatus <= 599) {
+    return maybeStatus;
+  }
+  if (error instanceof ZodError) return 400;
+  return fallbackStatus;
 }
-export function emptyCart(): Cart {
-  return mapOrderItemsToCart(null, [], 0);
+function resolveErrorMessage(error: unknown, fallbackMessage = "Something went wrong."): string {
+  if (error instanceof ZodError) {
+    return error.issues.map((issue) => issue.message).join(" ") || fallbackMessage;
+  }
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+  return fallbackMessage;
 }
+export default class ApiResponseDto<TData = unknown> implements ApiResponse<TData> {
+  success = true;
+  statusCode = 200;
+  message = "Successful";
+  error = false;
+  data: TData | null = null;
+  constructor(statusCode = 200, message = "Successful") {
+    this.statusCode = statusCode;
+    this.message = message;
+  }
+  setData(data: TData, message = this.message, statusCode = this.statusCode) {
+    this.success = true;
+    this.error = false;
+    this.statusCode = statusCode;
+    this.message = message;
+    this.data = data;
+  }
+  handleError(error: unknown, fallbackMessage = "Something went wrong.", fallbackStatus = 500) {
+    this.success = false;
+    this.error = true;
+    this.statusCode = resolveStatusCode(error, fallbackStatus);
+    this.message = resolveErrorMessage(error, fallbackMessage);
+    this.data = null;
+  }
+  toJSON(): ApiResponse<TData> {
+    return {
+      success: this.success,
+      statusCode: this.statusCode,
+      message: this.message,
+      error: this.error,
+      data: this.data,
+    };
+  }
+}
+export { resolveErrorMessage, resolveStatusCode };
 ````
 
 ## File: src/lib/prisma.ts
@@ -907,192 +662,6 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 export default prisma;
-````
-
-## File: src/lib/services/cart.service.ts
-````typescript
-import { OrderStatus, type Prisma } from "@prisma/client";
-import { emptyCart, mapOrderItemsToCart } from "@/lib/mappers/cart.mapper";
-import { prisma } from "@/lib/prisma";
-import { clampQuantity, roundCurrency, toNumber } from "@/lib/utils/numbers";
-import type { Cart } from "@/types/cart";
-type TransactionClient = Prisma.TransactionClient;
-async function getPendingOrder(userId: string) {
-  return prisma.order.findFirst({
-    where: {
-      userId,
-      status: OrderStatus.pending,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-}
-async function recalculateOrderTotal(
-  tx: TransactionClient,
-  orderId: string,
-) {
-  const items = await tx.orderItem.findMany({
-    where: { orderId },
-    include: {
-      product: {
-        select: { price: true },
-      },
-    },
-  });
-  const total = items.reduce(
-    (sum, item) => sum + item.quantity * toNumber(item.product.price),
-    0,
-  );
-  await tx.order.update({
-    where: { id: orderId },
-    data: { total: roundCurrency(total) },
-  });
-}
-async function fetchCartItems(orderId: string) {
-  return prisma.orderItem.findMany({
-    where: { orderId },
-    include: { product: true },
-    orderBy: { createdAt: "desc" },
-  });
-}
-export async function getCart(userId: string): Promise<Cart> {
-  const order = await getPendingOrder(userId);
-  if (!order) {
-    return emptyCart();
-  }
-  const items = await fetchCartItems(order.id);
-  return mapOrderItemsToCart(order.id, items, toNumber(order.total));
-}
-export async function addToCart(
-  userId: string,
-  productId: string,
-  quantity = 1,
-): Promise<Cart> {
-  const safeQuantity = clampQuantity(quantity);
-  await prisma.$transaction(async (tx) => {
-    const product = await tx.product.findUnique({
-      where: { id: productId },
-    });
-    if (!product) {
-      throw new Error("Product not found.");
-    }
-    if (product.stock < safeQuantity) {
-      throw new Error("Not enough stock available.");
-    }
-    let order = await tx.order.findFirst({
-      where: {
-        userId,
-        status: OrderStatus.pending,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    if (!order) {
-      order = await tx.order.create({
-        data: {
-          userId,
-          total: 0,
-          status: OrderStatus.pending,
-        },
-      });
-    }
-    const existingItem = await tx.orderItem.findUnique({
-      where: {
-        orderId_productId: {
-          orderId: order.id,
-          productId,
-        },
-      },
-    });
-    const nextQuantity = (existingItem?.quantity ?? 0) + safeQuantity;
-    if (nextQuantity > product.stock) {
-      throw new Error("Selected quantity exceeds available stock.");
-    }
-    if (existingItem) {
-      await tx.orderItem.update({
-        where: { id: existingItem.id },
-        data: { quantity: nextQuantity },
-      });
-    } else {
-      await tx.orderItem.create({
-        data: {
-          orderId: order.id,
-          productId,
-          quantity: safeQuantity,
-        },
-      });
-    }
-    await recalculateOrderTotal(tx, order.id);
-  });
-  return getCart(userId);
-}
-export async function updateCartItem(
-  userId: string,
-  itemId: string,
-  quantity: number,
-): Promise<Cart> {
-  const safeQuantity = Number(quantity || 0);
-  const order = await getPendingOrder(userId);
-  if (!order) {
-    throw new Error("Cart not found.");
-  }
-  const item = await prisma.orderItem.findFirst({
-    where: {
-      id: itemId,
-      orderId: order.id,
-    },
-    include: {
-      product: {
-        select: { stock: true },
-      },
-    },
-  });
-  if (!item) {
-    throw new Error("Cart item not found.");
-  }
-  if (safeQuantity <= 0) {
-    await prisma.orderItem.delete({
-      where: { id: itemId },
-    });
-    await recalculateOrderTotal(prisma, order.id);
-    return getCart(userId);
-  }
-  if (safeQuantity > item.product.stock) {
-    throw new Error("Selected quantity exceeds available stock.");
-  }
-  await prisma.orderItem.update({
-    where: { id: itemId },
-    data: { quantity: safeQuantity },
-  });
-  await recalculateOrderTotal(prisma, order.id);
-  return getCart(userId);
-}
-export async function removeCartItem(
-  userId: string,
-  itemId: string,
-): Promise<Cart> {
-  const order = await getPendingOrder(userId);
-  if (!order) {
-    return getCart(userId);
-  }
-  await prisma.orderItem.deleteMany({
-    where: {
-      id: itemId,
-      orderId: order.id,
-    },
-  });
-  await recalculateOrderTotal(prisma, order.id);
-  return getCart(userId);
-}
-export const cartService = {
-  getCart,
-  addToCart,
-  updateCartItem,
-  removeCartItem,
-};
-export default cartService;
 ````
 
 ## File: src/lib/services/user.service.ts
@@ -1145,23 +714,6 @@ export const userService = {
 export default userService;
 ````
 
-## File: src/lib/utils/api-response.ts
-````typescript
-import { NextResponse } from "next/server";
-export function jsonSuccess<T extends Record<string, unknown>>(
-  data: T,
-  status = 200,
-) {
-  return NextResponse.json(data, { status });
-}
-export function jsonError(message: string, status = 400) {
-  return NextResponse.json({ message }, { status });
-}
-export function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
-}
-````
-
 ## File: src/lib/utils/auth.ts
 ````typescript
 import { auth } from "@/auth";
@@ -1178,36 +730,51 @@ export async function requireAuthenticatedUserId(): Promise<string> {
 }
 ````
 
-## File: src/lib/validators/user.validator.ts
+## File: src/lib/validators/cart.validator.ts
 ````typescript
-export interface RegisterUserInput {
-  name: string;
-  email: string;
-  password: string;
-  phone_number?: string;
-  address?: string;
-}
-export interface SafeRegisterUserInput {
-  name: string;
-  email: string;
-  password: string;
-  phoneNumber: string | null;
-  address: string | null;
-}
-export function validateRegisterInput(input: RegisterUserInput): SafeRegisterUserInput {
-  const name = input.name.trim();
-  const email = input.email.trim().toLowerCase();
-  const password = input.password;
-  const phoneNumber = input.phone_number?.trim() || null;
-  const address = input.address?.trim() || null;
-  if (!name || !email || !password) {
-    throw new Error("Name, email and password are required.");
-  }
-  if (password.length < 6) {
-    throw new Error("Password must be at least 6 characters.");
-  }
-  return { name, email, password, phoneNumber, address };
-}
+import { z } from "zod";
+export const AddToCartRequestSchema = z.object({
+  productId: z.string().trim().min(1, "Product id is required."),
+  quantity: z.coerce
+    .number()
+    .int("Quantity must be a whole number.")
+    .min(1, "Quantity must be at least 1.")
+    .max(99, "Quantity cannot be more than 99.")
+    .default(1),
+});
+export const UpdateCartItemRequestSchema = z.object({
+  quantity: z.coerce
+    .number()
+    .int("Quantity must be a whole number.")
+    .min(0, "Quantity cannot be negative.")
+    .max(99, "Quantity cannot be more than 99."),
+});
+export const CartItemParamsSchema = z.object({
+  itemId: z.string().trim().min(1, "Cart item id is required."),
+});
+````
+
+## File: src/lib/validators/product.validator.ts
+````typescript
+import { z } from "zod";
+const optionalTrimmedString = z.preprocess(
+  (value) => {
+    if (typeof value !== "string") return value;
+    const cleanValue = value.trim();
+    return cleanValue.length ? cleanValue : undefined;
+  },
+  z.string().optional(),
+);
+export const ProductsRequestSchema = z
+  .object({
+    category: optionalTrimmedString,
+    productId: optionalTrimmedString,
+  })
+  .default({});
+export const ProductDetailRequestSchema = z.object({
+  productId: z.string().trim().min(1, "Product id is required."),
+});
+export const ProductMenuRequestSchema = z.object({}).default({});
 ````
 
 ## File: src/middleware.ts
@@ -1285,35 +852,48 @@ declare module "aos" {
 }
 ````
 
-## File: src/types/cart.ts
+## File: src/types/api.ts
 ````typescript
-export interface CartProduct {
-  id: string;
-  product_name: string;
-  product_description: string;
-  product_subdescription: string;
-  product_details: string;
-  product_category: string;
-  price: number;
-  stock: number;
-  image: string;
-  badge: string | null;
-  tag: string | null;
+export interface ApiResponse<TData = unknown> {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  error: boolean;
+  data: TData | null;
 }
-export interface CartItem {
-  id: string;
-  order_id: string;
-  product_id: string;
-  quantity: number;
-  line_total: number;
-  product: CartProduct;
-}
-export interface Cart {
-  order_id: string | null;
-  total: number;
-  item_count: number;
-  items: CartItem[];
-}
+export type ApiSuccessResponse<TData> = ApiResponse<TData> & {
+  success: true;
+  error: false;
+  data: TData;
+};
+export type ApiErrorResponse = ApiResponse<null> & {
+  success: false;
+  error: true;
+  data: null;
+};
+````
+
+## File: src/types/cart.request.ts
+````typescript
+import type { z } from "zod";
+import type {
+  AddToCartRequestSchema,
+  CartItemParamsSchema,
+  UpdateCartItemRequestSchema,
+} from "@/lib/validators/cart.validator";
+export type AddToCartRequestDto = z.infer<typeof AddToCartRequestSchema>;
+export type UpdateCartItemRequestDto = z.infer<typeof UpdateCartItemRequestSchema>;
+export type CartItemParamsDto = z.infer<typeof CartItemParamsSchema>;
+````
+
+## File: src/types/cart.response.ts
+````typescript
+import type { ApiResponse } from "@/types/api";
+import type { Cart } from "@/types/cart";
+export type CartPayload = {
+  cart: Cart | null;
+};
+export type CartApiResponse = ApiResponse<CartPayload> & CartPayload;
 ````
 
 ## File: src/types/next-auth.d.ts
@@ -1340,6 +920,71 @@ declare module "next-auth/jwt" {
     address?: string | null;
   }
 }
+````
+
+## File: src/types/product.request.ts
+````typescript
+import type { z } from "zod";
+import type {
+  ProductDetailRequestSchema,
+  ProductsRequestSchema,
+} from "@/lib/validators/product.validator";
+export type ProductsRequestDto = z.infer<typeof ProductsRequestSchema>;
+export type ProductDetailRequestDto = z.infer<typeof ProductDetailRequestSchema>;
+````
+
+## File: src/types/product.response.ts
+````typescript
+import type { ApiResponse } from "@/types/api";
+import type { ProductDto } from "@/types/product";
+export type ProductApiResponse = ProductDto;
+export interface ProductMenuItem {
+  id: string;
+  name: string;
+  href: string;
+}
+export interface ProductMenuCategory {
+  category: string;
+  href: string;
+  products: ProductMenuItem[];
+}
+export type ProductsPayload = {
+  success: true;
+  product: ProductDto | null;
+  products: ProductDto[];
+};
+export type ProductsApiResponse = ApiResponse<ProductsPayload> & ProductsPayload;
+export type ProductMenuPayload = {
+  success: true;
+  menu: ProductMenuCategory[];
+};
+export type ProductMenuApiResponse = ApiResponse<ProductMenuPayload> & ProductMenuPayload;
+````
+
+## File: src/types/user.request.ts
+````typescript
+import type { z } from "zod";
+import type { RegisterUserSchema } from "@/lib/validators/user.validator";
+export type RegisterUserRequestDto = z.input<typeof RegisterUserSchema>;
+````
+
+## File: src/types/user.response.ts
+````typescript
+import type { ApiResponse } from "@/types/api";
+export interface UserResponseDto {
+  id: string;
+  name: string;
+  email: string;
+  phoneNumber: string | null;
+  address: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export type RegisterUserPayload = {
+  user: UserResponseDto;
+};
+export type RegisterUserResponse = ApiResponse<RegisterUserPayload> &
+  RegisterUserPayload;
 ````
 
 ## File: tsconfig.json
@@ -2478,122 +2123,21 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 ````
 
-## File: src/app/api/cart/add/route.ts
+## File: src/app/api/products/menu/route.ts
 ````typescript
 export const runtime = "nodejs";
+import productService from "@/lib/services/product.service";
 import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-import { getAuthenticatedUserId } from "@/lib/utils/auth";
-import { parseRequestNumber, parseRequestString } from "@/lib/utils/numbers";
-import cartService from "@/lib/services/cart.service";
-export async function POST(request: Request) {
+export async function POST() {
   try {
-    const userId = await getAuthenticatedUserId();
-    if (!userId) {
-      return jsonError("Please login first.", 401);
-    }
-    const body = await request.json();
-    const productId = parseRequestString(body.productId);
-    if (!productId) {
-      return jsonError("Product id is required.");
-    }
-    const cart = await cartService.addToCart(
-      userId,
-      productId,
-      parseRequestNumber(body.quantity, 1),
-    );
-    return jsonSuccess({ message: "Product added to cart.", cart });
-  } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to add product to cart."));
-  }
-}
-````
-
-## File: src/app/api/cart/items/[itemId]/route.ts
-````typescript
-export const runtime = "nodejs";
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-import { getAuthenticatedUserId } from "@/lib/utils/auth";
-import { parseRequestNumber } from "@/lib/utils/numbers";
-import cartService from "@/lib/services/cart.service";
-interface RouteContext {
-  params: Promise<{
-    itemId: string;
-  }>;
-}
-export async function PATCH(request: Request, context: RouteContext) {
-  try {
-    const userId = await getAuthenticatedUserId();
-    if (!userId) {
-      return jsonError("Unauthorized", 401);
-    }
-    const { itemId } = await context.params;
-    const body = await request.json();
-    const cart = await cartService.updateCartItem(
-      userId,
-      itemId,
-      parseRequestNumber(body.quantity, 0),
-    );
-    return jsonSuccess({ message: "Cart updated.", cart });
-  } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to update cart item."));
-  }
-}
-export async function DELETE(_request: Request, context: RouteContext) {
-  try {
-    const userId = await getAuthenticatedUserId();
-    if (!userId) {
-      return jsonError("Unauthorized", 401);
-    }
-    const { itemId } = await context.params;
-    const cart = await cartService.removeCartItem(userId, itemId);
-    return jsonSuccess({ message: "Item removed from cart.", cart });
-  } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to remove cart item."));
-  }
-}
-````
-
-## File: src/app/api/cart/route.ts
-````typescript
-export const runtime = "nodejs";
-import { jsonError, jsonSuccess } from "@/lib/utils/api-response";
-import { getAuthenticatedUserId } from "@/lib/utils/auth";
-import cartService from "@/lib/services/cart.service";
-export async function GET() {
-  const userId = await getAuthenticatedUserId();
-  if (!userId) {
-    return jsonError("Unauthorized", 401);
-  }
-  const cart = await cartService.getCart(userId);
-  return jsonSuccess({ cart });
-}
-````
-
-## File: src/app/api/register/route.ts
-````typescript
-export const runtime = "nodejs";
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-import { parseRequestString } from "@/lib/utils/numbers";
-import userService from "@/lib/services/user.service";
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const user = await userService.createUser({
-      name: parseRequestString(body.name),
-      email: parseRequestString(body.email),
-      password: parseRequestString(body.password),
-      phone_number: body.phone_number ? parseRequestString(body.phone_number) : undefined,
-      address: body.address ? parseRequestString(body.address) : undefined,
+    const menu = await productService.getProductMenu();
+    return jsonSuccess({
+      success: true,
+      menu,
     });
-    return jsonSuccess(
-      {
-        message: "Account created successfully.",
-        user,
-      },
-      201,
-    );
   } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to create account."));
+    console.error("PRODUCTS_MENU_POST_ERROR", error);
+    return jsonError(getErrorMessage(error, "Failed to fetch product menu."), 500);
   }
 }
 ````
@@ -2820,81 +2364,688 @@ export default function MyCartClient() {
 }
 ````
 
-## File: src/lib/mappers/product.mapper.ts
+## File: src/components/shop/ShopPageClient.tsx
 ````typescript
-import type { Product } from "@prisma/client";
+"use client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import Breadcrumb from "@/components/common/Breadcrumb";
+import ProductCard from "@/components/shop/ProductCard";
+import { productsService } from "@/lib/services/productsService";
 import type { ProductDto } from "@/types/product";
-import { formatPrice, toNumber } from "@/lib/utils/numbers";
-export function toProductDto(product: Product): ProductDto {
-  return {
-    id: product.id,
-    product_name: product.productName,
-    product_packsize: product.productPacksize,
-    product_description: product.productDescription,
-    product_subdescription: product.productSubDescription,
-    product_details: product.productDetails,
-    product_category: product.productCategory,
-    price: formatPrice(product.price),
-    Stock: product.stock,
-    image: product.image,
-    Badge: product.badge ?? undefined,
-    Tag: product.tag ?? "",
-    isActive: true,
+const MIN_PRICE = 0;
+const MAX_PRICE = 300;
+type SortOption = "latest" | "name-asc" | "name-desc" | "price-low" | "price-high";
+function getPriceNumber(price: string) {
+  return Number(price.replace(/[^0-9.]/g, "")) || 0;
+}
+function getUniqueValues(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort(
+    (a, b) => a.localeCompare(b),
+  );
+}
+export default function ShopPageClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get("category");
+  const queryFromUrl = searchParams.get("q") || "";
+  const [searchQuery, setSearchQuery] = useState(queryFromUrl);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryFromUrl);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<SortOption>("latest");
+  const [priceRange, setPriceRange] = useState({ min: MIN_PRICE, max: MAX_PRICE });
+  const [productsState, setProductsState] = useState<ProductDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    setSelectedCategory(categoryFromUrl);
+    setSearchQuery(queryFromUrl);
+  }, [categoryFromUrl, queryFromUrl]);
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProducts() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await productsService.getAllProducts();
+        if (cancelled) return;
+        if (data?.success && Array.isArray(data.products)) {
+          setProductsState(data.products);
+        } else {
+          setProductsState([]);
+          setError("Failed to load products");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Failed to load products", error);
+          setProductsState([]);
+          setError("Failed to load products");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadProducts();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const productCategories = useMemo(() => {
+    return getUniqueValues(productsState.map((product) => product.product_category));
+  }, [productsState]);
+  const productTags = useMemo(() => {
+    return getUniqueValues(productsState.map((product) => product.Tag));
+  }, [productsState]);
+  const handleCategoryClick = (category: string) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (selectedCategory === category) {
+      nextParams.delete("category");
+    } else {
+      nextParams.set("category", category);
+    }
+    const queryString = nextParams.toString();
+    router.push(queryString ? `/shop?${queryString}` : "/shop");
   };
-}
-export function toProductDtoList(products: Product[]): ProductDto[] {
-  return products.map(toProductDto);
-}
-export function getLineTotal(quantity: number, price: Product["price"]): number {
-  return toNumber(price) * quantity;
+  const handleTagClick = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag],
+    );
+  };
+  const handleMinPriceChange = (value: number) => {
+    setPriceRange((prev) => ({
+      min: Math.min(value, prev.max),
+      max: prev.max,
+    }));
+  };
+  const handleMaxPriceChange = (value: number) => {
+    setPriceRange((prev) => ({
+      min: prev.min,
+      max: Math.max(value, prev.min),
+    }));
+  };
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedTags([]);
+    setSortBy("latest");
+    setPriceRange({ min: MIN_PRICE, max: MAX_PRICE });
+    router.push("/shop");
+  };
+  const filteredAndSortedProducts = useMemo(() => {
+    let result = [...productsState];
+    if (selectedCategory) {
+      result = result.filter(
+        (product) => product.product_category.toLowerCase() === selectedCategory.toLowerCase(),
+      );
+    }
+    if (searchQuery.trim()) {
+      const query = searchQuery.trim().toLowerCase();
+      result = result.filter((product) =>
+        [
+          product.product_name,
+          product.product_description,
+          product.product_subdescription,
+          product.product_category,
+          product.Tag,
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(query),
+      );
+    }
+    result = result.filter((product) => {
+      const price = getPriceNumber(product.price);
+      return price >= priceRange.min && price <= priceRange.max;
+    });
+    if (selectedTags.length > 0) {
+      result = result.filter((product) => selectedTags.includes(product.Tag));
+    }
+    if (sortBy === "price-low") {
+      result.sort((a, b) => getPriceNumber(a.price) - getPriceNumber(b.price));
+    }
+    if (sortBy === "price-high") {
+      result.sort((a, b) => getPriceNumber(b.price) - getPriceNumber(a.price));
+    }
+    if (sortBy === "name-asc") {
+      result.sort((a, b) => a.product_name.localeCompare(b.product_name));
+    }
+    if (sortBy === "name-desc") {
+      result.sort((a, b) => b.product_name.localeCompare(a.product_name));
+    }
+    return result;
+  }, [productsState, searchQuery, selectedCategory, selectedTags, priceRange, sortBy]);
+  const hasActiveFilters =
+    Boolean(searchQuery) ||
+    Boolean(selectedCategory) ||
+    selectedTags.length > 0 ||
+    priceRange.min !== MIN_PRICE ||
+    priceRange.max !== MAX_PRICE;
+  return (
+    <main>
+      <Breadcrumb title={selectedCategory || "Shop"} current={selectedCategory || "Shop"} />
+      <section className="section-shop overflow-x-hidden py-[50px] max-[767px]:py-[35px]">
+        <div className="bb-container">
+          <div className="mb-[35px] text-center" data-aos="fade-up">
+            <p className="mb-[8px] font-Poppins text-[14px] font-medium uppercase tracking-[0.18rem] text-[#0f766e]">
+              Hydrate • Heal • Feel Good
+            </p>
+            <h1 className="mb-[10px] font-quicksand text-[34px] font-bold text-[#3d4750] max-[767px]:text-[28px]">
+              {selectedCategory || "Shop Wellness Products"}
+            </h1>
+            <p className="mx-auto max-w-[650px] font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
+              Explore packaged drinking water, healthy drinks, herbal infusions, and everyday hydration products.
+            </p>
+          </div>
+          <div className="flex flex-wrap mx-[-12px]">
+            <aside className="w-full px-[12px] max-[991px]:mb-[35px] min-[992px]:w-[25%]">
+              <div className="bb-shop-sidebar sticky top-[150px] overflow-hidden rounded-[20px] border border-[#eee] bg-white shadow-sm">
+                <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right">
+                  <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                    <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                      Search
+                    </h4>
+                    <i className="ri-search-line text-[20px] text-[#0f766e]" />
+                  </div>
+                  <div className="relative">
+                    <input
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search products..."
+                      className="bb-input pr-[42px]"
+                    />
+                    <i className="ri-search-2-line absolute right-[14px] top-1/2 -translate-y-1/2 text-[18px] text-[#9ca3af]" />
+                  </div>
+                </div>
+                <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right" data-aos-delay="80">
+                  <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                    <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                      Categories
+                    </h4>
+                    <i className="ri-list-check-2 text-[20px] text-[#0f766e]" />
+                  </div>
+                  {productCategories.length > 0 ? (
+                    <ul className="space-y-[12px]">
+                      {productCategories.map((category) => {
+                        const isSelected = selectedCategory === category;
+                        const count = productsState.filter(
+                          (product) => product.product_category === category,
+                        ).length;
+                        return (
+                          <li key={category}>
+                            <button
+                              type="button"
+                              onClick={() => handleCategoryClick(category)}
+                              className={`group flex w-full items-center justify-between rounded-[10px] px-[10px] py-[8px] text-left font-Poppins text-[14px] transition ${
+                                isSelected
+                                  ? "bg-[#f0fdfa] text-[#0f766e]"
+                                  : "text-[#777] hover:bg-[#f8f8fb] hover:text-[#0f766e]"
+                              }`}
+                            >
+                              <span className="flex items-center gap-[10px]">
+                                <span
+                                  className={`h-[18px] w-[18px] rounded-[5px] border transition ${
+                                    isSelected
+                                      ? "border-[#0f766e] bg-[#0f766e]"
+                                      : "border-[#eee] bg-white group-hover:border-[#0f766e]"
+                                  }`}
+                                >
+                                  {isSelected ? (
+                                    <i className="ri-check-line block text-center text-[14px] leading-[18px] text-white" />
+                                  ) : null}
+                                </span>
+                                {category}
+                              </span>
+                              <span className="rounded-full bg-[#f8f8fb] px-[8px] py-[2px] text-[12px] text-[#686e7d]">
+                                {count}
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p className="font-Poppins text-[14px] text-[#686e7d]">No categories found.</p>
+                  )}
+                </div>
+                <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right" data-aos-delay="120">
+                  <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                    <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                      Price Range
+                    </h4>
+                    <i className="ri-money-rupee-circle-line text-[20px] text-[#0f766e]" />
+                  </div>
+                  <div className="mb-[16px] rounded-[10px] border border-[#eee] bg-white p-[10px] text-center font-Poppins text-[15px] font-medium text-[#3d4750]">
+                    ₹{priceRange.min} — ₹{priceRange.max}
+                  </div>
+                  <div className="space-y-[14px]">
+                    <div>
+                      <div className="mb-[7px] flex justify-between font-Poppins text-[12px] text-[#686e7d]">
+                        <span>Min</span>
+                        <span>₹{priceRange.min}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={MIN_PRICE}
+                        max={MAX_PRICE}
+                        step={10}
+                        value={priceRange.min}
+                        onChange={(event) => handleMinPriceChange(Number(event.target.value))}
+                        className="w-full accent-[#0f766e]"
+                      />
+                    </div>
+                    <div>
+                      <div className="mb-[7px] flex justify-between font-Poppins text-[12px] text-[#686e7d]">
+                        <span>Max</span>
+                        <span>₹{priceRange.max}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={MIN_PRICE}
+                        max={MAX_PRICE}
+                        step={10}
+                        value={priceRange.max}
+                        onChange={(event) => handleMaxPriceChange(Number(event.target.value))}
+                        className="w-full accent-[#0f766e]"
+                      />
+                    </div>
+                  </div>
+                </div>
+                {productTags.length > 0 ? (
+                  <div className="bb-sidebar-block p-[20px]" data-aos="fade-right" data-aos-delay="200">
+                    <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                      <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                        Tags
+                      </h4>
+                      <i className="ri-price-tag-3-line text-[20px] text-[#0f766e]" />
+                    </div>
+                    <div className="flex flex-wrap gap-[8px]">
+                      {productTags.map((tag) => {
+                        const selected = selectedTags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => handleTagClick(tag)}
+                            className={`rounded-[10px] border px-[14px] py-[6px] font-Poppins text-[13px] capitalize leading-[24px] transition ${
+                              selected
+                                ? "border-[#0f766e] bg-[#0f766e] text-white"
+                                : "border-[#eee] bg-white text-[#686e7d] hover:border-[#0f766e] hover:bg-[#0f766e] hover:text-white"
+                            }`}
+                          >
+                            {tag}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="mt-[18px] w-full rounded-[10px] bg-[#3d4750] px-[18px] py-[12px] font-Poppins text-[14px] font-medium text-white transition hover:bg-[#0f766e]"
+                >
+                  Clear Filters
+                </button>
+              ) : null}
+            </aside>
+            <div className="w-full px-[12px] min-[992px]:w-[75%]">
+              <div className="mb-[24px] flex flex-wrap items-center justify-between gap-[16px] rounded-[20px] border border-[#eee] bg-white p-[15px] shadow-sm" data-aos="fade-up">
+                <div className="flex items-center gap-[8px]">
+                  <button
+                    type="button"
+                    aria-label="Grid view"
+                    className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] border border-[#eee] bg-[#3d4750] text-white transition hover:bg-[#0f766e]"
+                  >
+                    <i className="ri-layout-grid-line text-[18px]" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="List view"
+                    className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] border border-[#eee] bg-white text-[#686e7d] transition hover:bg-[#0f766e] hover:text-white"
+                  >
+                    <i className="ri-list-check text-[18px]" />
+                  </button>
+                  <p className="ml-[6px] font-Poppins text-[14px] text-[#686e7d] max-[575px]:w-full max-[575px]:ml-0 max-[575px]:mt-[8px]">
+                    Showing <span className="font-semibold text-[#3d4750]">{filteredAndSortedProducts.length}</span> products
+                  </p>
+                </div>
+                <label className="flex items-center gap-[10px] rounded-[10px] border border-[#eee] bg-[#f8f8fb] px-[12px] py-[8px] font-Poppins text-[14px] text-[#686e7d]">
+                  <i className="ri-sort-desc text-[18px] text-[#0f766e]" />
+                  <span>Sort by</span>
+                  <select
+                    value={sortBy}
+                    onChange={(event) => setSortBy(event.target.value as SortOption)}
+                    className="bg-transparent font-Poppins text-[14px] text-[#3d4750] outline-none"
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="name-asc">Name, A to Z</option>
+                    <option value="name-desc">Name, Z to A</option>
+                    <option value="price-low">Price, low to high</option>
+                    <option value="price-high">Price, high to low</option>
+                  </select>
+                </label>
+              </div>
+              {loading ? (
+                <div className="flex justify-center rounded-[20px] border border-[#eee] bg-white py-[70px]">
+                  <span className="bb-loader-ring" />
+                </div>
+              ) : error ? (
+                <div className="rounded-[20px] border border-red-100 bg-red-50 py-[60px] text-center">
+                  <p className="font-Poppins text-[16px] text-red-600">{error}</p>
+                </div>
+              ) : filteredAndSortedProducts.length > 0 ? (
+                <div className="grid grid-cols-1 gap-[24px] min-[576px]:grid-cols-2 min-[1200px]:grid-cols-3">
+                  {filteredAndSortedProducts.map((product, index) => (
+                    <div key={product.id} data-aos="fade-up" data-aos-delay={(index % 3) * 80}>
+                      <ProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-[20px] border border-[#eee] bg-white py-[60px] text-center">
+                  <i className="ri-inbox-2-line mb-[12px] block text-[40px] text-[#0f766e]" />
+                  <p className="font-Poppins text-[16px] text-[#686e7d]">
+                    No products match your search criteria.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
 }
 ````
 
-## File: src/lib/services/productsService.ts
+## File: src/lib/mappers/cart.mapper.ts
 ````typescript
-import apiClient from "@/lib/apiClient";
-import type { ProductDto } from "@/types/product";
-export type ProductApiResponse = ProductDto;
-export interface ProductMenuItem {
-  id: string;
-  name: string;
-  href: string;
+import type { OrderItem, Product } from "@prisma/client";
+import type { Cart, CartItem } from "@/types/cart";
+import { getLineTotal } from "@/lib/mappers/product.mapper";
+import { roundCurrency, toNumber } from "@/lib/utils/numbers";
+type OrderItemWithProduct = OrderItem & { product: Product };
+export function mapOrderItemsToCart(
+  orderId: string | null,
+  items: OrderItemWithProduct[],
+  orderTotal?: number,
+): Cart {
+  const cartItems: CartItem[] = items.map((item) => ({
+    id: item.id,
+    order_id: item.orderId,
+    product_id: item.productId,
+    quantity: item.quantity,
+    line_total: getLineTotal(item.quantity, item.product.price),
+    product: {
+      id: item.product.id,
+      product_name: item.product.productName,
+      product_description: item.product.productDescription,
+      product_subdescription: item.product.productSubDescription,
+      product_details: item.product.productDetails,
+      product_category: item.product.productCategory,
+      price: toNumber(item.product.price),
+      stock: item.product.stock,
+      image: item.product.image,
+      badge: item.product.badge,
+      tag: item.product.tag,
+    },
+  }));
+  const calculatedTotal =
+    orderTotal ??
+    cartItems.reduce((sum, item) => sum + item.line_total, 0);
+  return {
+    order_id: orderId,
+    total: roundCurrency(calculatedTotal),
+    item_count: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+    items: cartItems,
+  };
 }
-export interface ProductMenuCategory {
-  category: string;
-  href: string;
-  products: ProductMenuItem[];
+export function emptyCart(): Cart {
+  return mapOrderItemsToCart(null, [], 0);
 }
-export const productsService = {
-  getAllProducts: async (category?: string) => {
-    const response = await apiClient.post<{
-      success: boolean;
-      product: ProductApiResponse | null;
-      products: ProductApiResponse[];
-    }>("/api/products", {
-      category,
+````
+
+## File: src/lib/services/cart.service.ts
+````typescript
+import { OrderStatus, type Prisma } from "@prisma/client";
+import { emptyCart, mapOrderItemsToCart } from "@/lib/mappers/cart.mapper";
+import { prisma } from "@/lib/prisma";
+import { clampQuantity, roundCurrency, toNumber } from "@/lib/utils/numbers";
+import type { Cart } from "@/types/cart";
+type TransactionClient = Prisma.TransactionClient;
+async function getPendingOrder(userId: string) {
+  return prisma.order.findFirst({
+    where: {
+      userId,
+      status: OrderStatus.pending,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+async function recalculateOrderTotal(
+  tx: TransactionClient,
+  orderId: string,
+) {
+  const items = await tx.orderItem.findMany({
+    where: { orderId },
+    include: {
+      product: {
+        select: { price: true },
+      },
+    },
+  });
+  const total = items.reduce(
+    (sum, item) => sum + item.quantity * toNumber(item.product.price),
+    0,
+  );
+  await tx.order.update({
+    where: { id: orderId },
+    data: { total: roundCurrency(total) },
+  });
+}
+async function fetchCartItems(orderId: string) {
+  return prisma.orderItem.findMany({
+    where: { orderId },
+    include: { product: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+export async function getCart(userId: string): Promise<Cart> {
+  const order = await getPendingOrder(userId);
+  if (!order) {
+    return emptyCart();
+  }
+  const items = await fetchCartItems(order.id);
+  return mapOrderItemsToCart(order.id, items, toNumber(order.total));
+}
+export async function addToCart(
+  userId: string,
+  productId: string,
+  quantity = 1,
+): Promise<Cart> {
+  const safeQuantity = clampQuantity(quantity);
+  await prisma.$transaction(async (tx) => {
+    const product = await tx.product.findFirst({
+      where: {
+        id: productId,
+        isActive: true,
+      },
     });
-    return response.data;
-  },
-  getProductById: async (productId: string) => {
-    const response = await apiClient.post<{
-      success: boolean;
-      product: ProductApiResponse | null;
-      products: ProductApiResponse[];
-    }>("/api/products", {
-      productId,
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+    if (product.stock < safeQuantity) {
+      throw new Error("Not enough stock available.");
+    }
+    let order = await tx.order.findFirst({
+      where: {
+        userId,
+        status: OrderStatus.pending,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
-    return response.data;
-  },
-  getProductMenu: async () => {
-    const response = await apiClient.post<{
-      success: boolean;
-      menu: ProductMenuCategory[];
-    }>("/api/products/menu", {});
-    return response.data;
-  },
+    if (!order) {
+      order = await tx.order.create({
+        data: {
+          userId,
+          total: 0,
+          status: OrderStatus.pending,
+        },
+      });
+    }
+    const existingItem = await tx.orderItem.findUnique({
+      where: {
+        orderId_productId: {
+          orderId: order.id,
+          productId,
+        },
+      },
+    });
+    const nextQuantity = (existingItem?.quantity ?? 0) + safeQuantity;
+    if (nextQuantity > product.stock) {
+      throw new Error("Selected quantity exceeds available stock.");
+    }
+    if (existingItem) {
+      await tx.orderItem.update({
+        where: { id: existingItem.id },
+        data: { quantity: nextQuantity },
+      });
+    } else {
+      await tx.orderItem.create({
+        data: {
+          orderId: order.id,
+          productId,
+          quantity: safeQuantity,
+        },
+      });
+    }
+    await recalculateOrderTotal(tx, order.id);
+  });
+  return getCart(userId);
+}
+export async function updateCartItem(
+  userId: string,
+  itemId: string,
+  quantity: number,
+): Promise<Cart> {
+  const safeQuantity = Number(quantity || 0);
+  const order = await getPendingOrder(userId);
+  if (!order) {
+    throw new Error("Cart not found.");
+  }
+  await prisma.$transaction(async (tx) => {
+    const item = await tx.orderItem.findFirst({
+      where: {
+        id: itemId,
+        orderId: order.id,
+      },
+      include: {
+        product: {
+          select: { stock: true },
+        },
+      },
+    });
+    if (!item) {
+      throw new Error("Cart item not found.");
+    }
+    if (safeQuantity <= 0) {
+      await tx.orderItem.delete({
+        where: { id: itemId },
+      });
+      await recalculateOrderTotal(tx, order.id);
+      return;
+    }
+    if (safeQuantity > item.product.stock) {
+      throw new Error("Selected quantity exceeds available stock.");
+    }
+    await tx.orderItem.update({
+      where: { id: itemId },
+      data: { quantity: safeQuantity },
+    });
+    await recalculateOrderTotal(tx, order.id);
+  });
+  return getCart(userId);
+}
+export async function removeCartItem(
+  userId: string,
+  itemId: string,
+): Promise<Cart> {
+  const order = await getPendingOrder(userId);
+  if (!order) {
+    return getCart(userId);
+  }
+  await prisma.$transaction(async (tx) => {
+    await tx.orderItem.deleteMany({
+      where: {
+        id: itemId,
+        orderId: order.id,
+      },
+    });
+    await recalculateOrderTotal(tx, order.id);
+  });
+  return getCart(userId);
+}
+export const cartService = {
+  getCart,
+  addToCart,
+  updateCartItem,
+  removeCartItem,
 };
-export default productsService;
+export default cartService;
+````
+
+## File: src/lib/utils/api-response.ts
+````typescript
+import { NextResponse } from "next/server";
+import ApiResponseDto, {
+  resolveErrorMessage,
+  resolveStatusCode,
+} from "@/lib/dto/api-response.dto";
+export async function readJsonBody<T = unknown>(request: Request): Promise<T> {
+  try {
+    return (await request.json()) as T;
+  } catch {
+    return {} as T;
+  }
+}
+export function jsonSuccess<T extends Record<string, unknown>>(
+  payload: T,
+  status = 200,
+  message?: string,
+) {
+  const response = new ApiResponseDto<T>(
+    status,
+    message ?? (typeof payload.message === "string" ? payload.message : "Successful"),
+  );
+  response.setData(payload, response.message, status);
+  return NextResponse.json(
+    {
+      ...response.toJSON(),
+      ...payload,
+      success: true,
+      error: false,
+      statusCode: status,
+      message: response.message,
+      data: payload,
+    },
+    { status },
+  );
+}
+export function jsonError(error: unknown, status = 400, fallback = "Request failed.") {
+  const statusCode = resolveStatusCode(error, status);
+  const message = resolveErrorMessage(error, fallback);
+  const response = new ApiResponseDto<null>();
+  response.handleError(message, message, statusCode);
+  return NextResponse.json(response.toJSON(), { status: response.statusCode });
+}
+export function getErrorMessage(error: unknown, fallback: string): string {
+  return resolveErrorMessage(error, fallback);
+}
 ````
 
 ## File: src/lib/utils/numbers.ts
@@ -2925,168 +3076,86 @@ export function parseRequestNumber(value: unknown, fallback = 0): number {
 }
 ````
 
-## File: prisma/schema.prisma
-````prisma
-generator client {
-  provider = "prisma-client-js"
+## File: src/lib/validators/user.validator.ts
+````typescript
+import { z } from "zod";
+const optionalNullableString = (maxLength: number, fieldName: string) =>
+  z.preprocess(
+    (value) => {
+      if (typeof value !== "string") return value;
+      const cleanValue = value.trim();
+      return cleanValue.length ? cleanValue : undefined;
+    },
+    z.string().trim().max(maxLength, `${fieldName} is too long.`).optional(),
+  );
+export const RegisterUserSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required.")
+    .max(150, "Name is too long."),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Please enter a valid email address.")
+    .max(255, "Email is too long."),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters.")
+    .max(100, "Password is too long."),
+  phone_number: optionalNullableString(50, "Phone number"),
+  address: optionalNullableString(500, "Address"),
+});
+export type RegisterUserInput = z.input<typeof RegisterUserSchema>;
+export interface SafeRegisterUserInput {
+  name: string;
+  email: string;
+  password: string;
+  phoneNumber: string | null;
+  address: string | null;
 }
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
-
-enum OrderStatus {
-  paid
-  pending
-  failed
-}
-
-model User {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String   @db.VarChar(150)
-  email       String   @unique @db.VarChar(255)
-  password    String
-  phoneNumber String?  @map("phone_number") @db.VarChar(50)
-  address     String?
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  orders      Order[]
-
-  @@map("users")
-}
-
-model Product {
-  id                    String      @id
-  productName           String      @map("product_name") @db.VarChar(255)
-  productDescription    String      @map("product_description")
-  productSubDescription String      @map("product_subdescription")
-  productDetails        String      @map("product_details")
-  productCategory       String      @map("product_category") @db.VarChar(150)
-  price                 Decimal     @db.Decimal(10, 2)
-  stock                 Int         @default(0)
-  image                 String
-  badge                 String?     @db.VarChar(80)
-  tag                   String?     @db.VarChar(100)
-  createdAt             DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt             DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  orderItems            OrderItem[]
-  isActive              Boolean     @default(true) @map("is_active")
-  productPacksize       Int         @default(12) @map("product_packsize")
-
-  @@map("products")
-}
-
-model Order {
-  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String      @map("user_id") @db.Uuid
-  total     Decimal     @default(0) @db.Decimal(10, 2)
-  status    OrderStatus @default(pending)
-  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     OrderItem[]
-
-  @@index([userId, status])
-  @@map("orders")
-}
-
-model OrderItem {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId   String   @map("order_id") @db.Uuid
-  productId String   @map("product_id")
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-
-  @@unique([orderId, productId])
-  @@index([orderId])
-  @@index([productId])
-  @@map("order_items")
+export function validateRegisterInput(input: RegisterUserInput): SafeRegisterUserInput {
+  const data = RegisterUserSchema.parse(input);
+  return {
+    name: data.name,
+    email: data.email,
+    password: data.password,
+    phoneNumber: data.phone_number ?? null,
+    address: data.address ?? null,
+  };
 }
 ````
 
-## File: sql/01_schema.sql
-````sql
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(150) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  password TEXT NOT NULL,
-  phone_number VARCHAR(50),
-  address TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE TABLE IF NOT EXISTS products (
-  id VARCHAR(255) PRIMARY KEY,
-  product_name VARCHAR(255) NOT NULL,
-  product_description TEXT NOT NULL,
-  product_subdescription TEXT NOT NULL,
-  product_details TEXT NOT NULL,
-  product_category VARCHAR(150) NOT NULL,
-  product_packsize INTEGER NOT NULL DEFAULT 1 CHECK (product_packsize > 0),
-  is_active BOOLEAN NOT NULL DEFAULT TRUE,
-  price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
-  stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
-  image TEXT NOT NULL,
-  badge VARCHAR(80),
-  tag VARCHAR(100),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE TABLE IF NOT EXISTS orders (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  total NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (total >= 0),
-  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('paid', 'pending', 'failed')),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE TABLE IF NOT EXISTS order_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE(order_id, product_id)
-);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(LOWER(email));
-CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status);
-CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
-CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
-CREATE OR REPLACE FUNCTION set_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS users_set_updated_at ON users;
-CREATE TRIGGER users_set_updated_at
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
-DROP TRIGGER IF EXISTS products_set_updated_at ON products;
-CREATE TRIGGER products_set_updated_at
-BEFORE UPDATE ON products
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
-DROP TRIGGER IF EXISTS orders_set_updated_at ON orders;
-CREATE TRIGGER orders_set_updated_at
-BEFORE UPDATE ON orders
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
-DROP TRIGGER IF EXISTS order_items_set_updated_at ON order_items;
-CREATE TRIGGER order_items_set_updated_at
-BEFORE UPDATE ON order_items
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
+## File: src/types/cart.ts
+````typescript
+export interface CartProduct {
+  id: string;
+  product_name: string;
+  product_description: string;
+  product_subdescription: string;
+  product_details: string;
+  product_category: string;
+  price: number;
+  stock: number;
+  image: string;
+  badge: string | null;
+  tag: string | null;
+}
+export interface CartItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  line_total: number;
+  product: CartProduct;
+}
+export interface Cart {
+  order_id: string | null;
+  total: number;
+  item_count: number;
+  items: CartItem[];
+}
 ````
 
 ## File: src/app/(auth)/login/page.tsx
@@ -3188,44 +3257,127 @@ export default function LoginPage() {
 }
 ````
 
-## File: src/app/api/products/route.ts
+## File: src/app/api/cart/add/route.ts
 ````typescript
 export const runtime = "nodejs";
-import productService from "@/lib/services/product.service";
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-interface ProductsRequestBody {
-  category?: string;
-  productId?: string;
-}
-async function safeReadBody(request: Request): Promise<ProductsRequestBody> {
-  try {
-    return (await request.json()) as ProductsRequestBody;
-  } catch {
-    return {};
-  }
-}
+import cartService from "@/lib/services/cart.service";
+import {
+  getErrorMessage,
+  jsonError,
+  jsonSuccess,
+  readJsonBody,
+} from "@/lib/utils/api-response";
+import { getAuthenticatedUserId } from "@/lib/utils/auth";
+import { AddToCartRequestSchema } from "@/lib/validators/cart.validator";
 export async function POST(request: Request) {
   try {
-    const body = await safeReadBody(request);
-    const productId = body.productId?.trim();
-    const category = body.category?.trim();
-    if (productId) {
-      const product = await productService.getProductById(productId);
-      return jsonSuccess({
-        success: true,
-        product,
-        products: product ? [product] : [],
-      });
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return jsonError("Please login first.", 401);
     }
-    const products = await productService.getAllProducts(category || undefined);
-    return jsonSuccess({
-      success: true,
-      product: null,
-      products,
-    });
+    const body = AddToCartRequestSchema.parse(await readJsonBody(request));
+    const cart = await cartService.addToCart(userId, body.productId, body.quantity);
+    return jsonSuccess({ message: "Product added to cart.", cart });
   } catch (error) {
-    console.error("PRODUCTS_POST_ERROR", error);
-    return jsonError(getErrorMessage(error, "Failed to fetch products"), 500);
+    return jsonError(getErrorMessage(error, "Unable to add product to cart."));
+  }
+}
+````
+
+## File: src/app/api/cart/items/[itemId]/route.ts
+````typescript
+export const runtime = "nodejs";
+import cartService from "@/lib/services/cart.service";
+import {
+  getErrorMessage,
+  jsonError,
+  jsonSuccess,
+  readJsonBody,
+} from "@/lib/utils/api-response";
+import { getAuthenticatedUserId } from "@/lib/utils/auth";
+import {
+  CartItemParamsSchema,
+  UpdateCartItemRequestSchema,
+} from "@/lib/validators/cart.validator";
+interface RouteContext {
+  params: Promise<{
+    itemId: string;
+  }>;
+}
+export async function PATCH(request: Request, context: RouteContext) {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return jsonError("Unauthorized", 401);
+    }
+    const params = CartItemParamsSchema.parse(await context.params);
+    const body = UpdateCartItemRequestSchema.parse(await readJsonBody(request));
+    const cart = await cartService.updateCartItem(userId, params.itemId, body.quantity);
+    return jsonSuccess({ message: "Cart updated.", cart });
+  } catch (error) {
+    return jsonError(getErrorMessage(error, "Unable to update cart item."));
+  }
+}
+export async function DELETE(_request: Request, context: RouteContext) {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return jsonError("Unauthorized", 401);
+    }
+    const params = CartItemParamsSchema.parse(await context.params);
+    const cart = await cartService.removeCartItem(userId, params.itemId);
+    return jsonSuccess({ message: "Item removed from cart.", cart });
+  } catch (error) {
+    return jsonError(getErrorMessage(error, "Unable to remove cart item."));
+  }
+}
+````
+
+## File: src/app/api/cart/route.ts
+````typescript
+export const runtime = "nodejs";
+import cartService from "@/lib/services/cart.service";
+import { jsonError, jsonSuccess } from "@/lib/utils/api-response";
+import { getAuthenticatedUserId } from "@/lib/utils/auth";
+export async function GET() {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return jsonError("Unauthorized", 401);
+    }
+    const cart = await cartService.getCart(userId);
+    return jsonSuccess({ cart });
+  } catch (error) {
+    console.error("CART_GET_ERROR", error);
+    return jsonError(error, 500, "Unable to load cart.");
+  }
+}
+````
+
+## File: src/app/api/register/route.ts
+````typescript
+export const runtime = "nodejs";
+import userService from "@/lib/services/user.service";
+import {
+  getErrorMessage,
+  jsonError,
+  jsonSuccess,
+  readJsonBody,
+} from "@/lib/utils/api-response";
+import { RegisterUserSchema } from "@/lib/validators/user.validator";
+export async function POST(request: Request) {
+  try {
+    const body = RegisterUserSchema.parse(await readJsonBody(request));
+    const user = await userService.createUser(body);
+    return jsonSuccess(
+      {
+        message: "Account created successfully.",
+        user,
+      },
+      201,
+    );
+  } catch (error) {
+    return jsonError(getErrorMessage(error, "Unable to create account."));
   }
 }
 ````
@@ -3531,204 +3683,252 @@ export const productCategories = Array.from(new Set(products.map((product) => pr
 export const productTags = Array.from(new Set(products.map((product) => product.Tag)));
 ````
 
-## File: src/lib/services/product.service.ts
-````typescript
-import { Prisma } from "@prisma/client";
-import { toProductDto, toProductDtoList } from "@/lib/mappers/product.mapper";
-import { prisma } from "@/lib/prisma";
-import type { ProductDto } from "@/types/product";
-export const PRODUCT_MENU_CATEGORIES = [
-  "Healthy Drinks",
-  "Packaged Drinking Water",
-  "Herbal Infusions",
-] as const;
-export type ProductMenuCategoryName =
-  (typeof PRODUCT_MENU_CATEGORIES)[number];
-export interface ProductMenuItem {
-  id: string;
-  name: string;
-  href: string;
+## File: prisma/schema.prisma
+````prisma
+generator client {
+  provider = "prisma-client-js"
 }
-export interface ProductMenuCategory {
-  category: ProductMenuCategoryName;
-  href: string;
-  products: ProductMenuItem[];
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
-export async function getAllProducts(category?: string): Promise<ProductDto[]> {
-  const where: Prisma.ProductWhereInput = {};
-  if (category) {
-    where.productCategory = {
-      equals: category,
-      mode: "insensitive",
-    };
-  }
-  const products = await prisma.product.findMany({
-    where :{isActive: true},
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-  return toProductDtoList(products);
+
+enum OrderStatus {
+  paid
+  pending
+  failed
 }
-export async function getProductById(
-  productId: string,
-): Promise<ProductDto | null> {
-  const product = await prisma.product.findUnique({
-    where: {
-      isActive: true,
-      id: productId,
-    },
-  });
-  return product ? toProductDto(product) : null;
+
+model User {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(150)
+  email       String   @unique @db.VarChar(255)
+  password    String
+  phoneNumber String?  @map("phone_number") @db.VarChar(50)
+  address     String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  orders      Order[]
+
+  @@map("users")
 }
-export async function getProductMenu(): Promise<ProductMenuCategory[]> {
-  const products = await prisma.product.findMany({
-    where: {
-      isActive: true,
-      productCategory: {
-        in: [...PRODUCT_MENU_CATEGORIES],
-      },
-    },
-    select: {id: true,productName: true,productCategory: true,},
-    orderBy: [{productCategory: "desc",},{productName: "desc",},],
-  });
-  return PRODUCT_MENU_CATEGORIES.map((category) => ({
-    category,
-    href: `/shop?category=${encodeURIComponent(category)}`,
-    products: products
-      .filter((product) => product.productCategory === category)
-      .map((product) => ({
-        id: product.id,
-        name: product.productName,
-        href: `/shop/${product.id}`,
-      })),
-  }));
+
+model Product {
+  id                    String      @id
+  productName           String      @map("product_name") @db.VarChar(255)
+  productDescription    String      @map("product_description")
+  productSubDescription String      @map("product_subdescription")
+  productDetails        String      @map("product_details")
+  productCategory       String      @map("product_category") @db.VarChar(150)
+  price                 Decimal     @db.Decimal(10, 2)
+  stock                 Int         @default(0)
+  image                 String
+  badge                 String?     @db.VarChar(80)
+  tag                   String?     @db.VarChar(100)
+  createdAt             DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  orderItems            OrderItem[]
+  isActive              Boolean     @default(true) @map("is_active")
+  productPacksize       Int         @default(12) @map("product_packsize")
+
+  @@map("products")
 }
-export const productService = {
-  getAllProducts,
-  getProductById,
-  getProductMenu,
-};
-export default productService;
+
+model Order {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  total     Decimal     @default(0) @db.Decimal(10, 2)
+  status    OrderStatus @default(pending)
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     OrderItem[]
+
+  @@index([userId, status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId   String   @map("order_id") @db.Uuid
+  productId String   @map("product_id")
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, productId])
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
 ````
 
-## File: src/store/useCartStore.ts
-````typescript
-import { create } from "zustand";
-import type { Cart } from "@/types/cart";
-import apiClient from "@/lib/apiClient";
-interface CartState {
-  cart: Cart | null;
-  isLoading: boolean;
-  error: string | null;
-  fetchCart: () => Promise<Cart | null>;
-  addToCart: (productId: string, quantity?: number) => Promise<Cart | null>;
-  updateItem: (itemId: string, quantity: number) => Promise<Cart | null>;
-  removeItem: (itemId: string) => Promise<Cart | null>;
-  clearLocalCart: () => void;
-}
-type CartResponse = {
-  message?: string;
-  cart?: Cart | null;
-};
-async function parseResponse(response: { data?: CartResponse }): Promise<CartResponse> {
-  const data = response?.data ?? {};
-  if (data.message && !data.cart) {
-    throw new Error(data.message);
-  }
-  return data;
-}
-export const useCartStore = create<CartState>((set) => ({
-  cart: null,
-  isLoading: false,
-  error: null,
-  fetchCart: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await apiClient.get("/api/cart", { headers: { "Cache-Control": "no-store" } });
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
-      set({ cart, isLoading: false });
-      return cart;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to load cart.";
-      set({ error: message, isLoading: false });
-      return null;
-    }
-  },
-  addToCart: async (productId, quantity = 1) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await apiClient.post("/api/cart/add", { productId, quantity });
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
-      set({ cart, isLoading: false });
-      return cart;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to add product.";
-      set({ error: message, isLoading: false });
-      throw error;
-    }
-  },
-  updateItem: async (itemId, quantity) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await apiClient.patch(`/api/cart/items/${itemId}`, { quantity });
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
-      set({ cart, isLoading: false });
-      return cart;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to update item.";
-      set({ error: message, isLoading: false });
-      throw error;
-    }
-  },
-  removeItem: async (itemId) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await apiClient.delete(`/api/cart/items/${itemId}`);
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
-      set({ cart, isLoading: false });
-      return cart;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to remove item.";
-      set({ error: message, isLoading: false });
-      throw error;
-    }
-  },
-  clearLocalCart: () => set({ cart: null, error: null, isLoading: false }),
-}));
-````
-
-## File: src/types/product.ts
-````typescript
-export interface ProductDto {
-  id: string;
-  product_name: string;
-  product_description: string;
-  product_subdescription: string;
-  product_details: string;
-  product_category: string;
-  price: string;
-  Stock: number;
-  image: string;
-  Badge?: string | null;
-  Tag: string;
-  isActive?: boolean;
-  product_packsize?: number | null;
-}
-export interface ProductsListResponse {
-  success: boolean;
-  products: ProductDto[];
-  product?: ProductDto | null;
-}
-export interface ProductDetailResponse {
-  success: boolean;
-  product: ProductDto | null;
-  products: ProductDto[];
-}
+## File: sql/01_schema.sql
+````sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(150) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  phone_number VARCHAR(50),
+  address TEXT,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS products (
+  id VARCHAR(255) PRIMARY KEY,
+  product_name VARCHAR(255) NOT NULL,
+  product_description TEXT NOT NULL,
+  product_subdescription TEXT NOT NULL,
+  product_details TEXT NOT NULL,
+  product_category VARCHAR(150) NOT NULL,
+  product_packsize INTEGER NOT NULL DEFAULT 1 CHECK (product_packsize > 0),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+  stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
+  image TEXT NOT NULL,
+  badge VARCHAR(80),
+  tag VARCHAR(100),
+  is_active boolean NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  total NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (total >= 0),
+  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('paid', 'pending', 'failed')),
+  is_active boolean NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS order_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+  is_active boolean NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(order_id, product_id)
+);
+CREATE TABLE IF NOT EXISTS badges
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    name character varying(80) COLLATE pg_catalog."default" NOT NULL,
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT badges_pkey PRIMARY KEY (id),
+    CONSTRAINT badges_name_key UNIQUE (name)
+)
+CREATE TABLE IF NOT EXISTS categories
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    name character varying(150) COLLATE pg_catalog."default" NOT NULL,
+    parent_id uuid,
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT categories_pkey PRIMARY KEY (id),
+    CONSTRAINT categories_name_key UNIQUE (name),
+    CONSTRAINT categories_parent_id_fkey FOREIGN KEY (parent_id)
+        REFERENCES categories (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
+)
+CREATE TABLE IF NOT EXISTS stocks
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    product_id uuid NOT NULL,
+    stock_in integer NOT NULL DEFAULT 0,
+    stock_out integer NOT NULL DEFAULT 0,
+    price numeric(10,2) NOT NULL DEFAULT 0,
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT stocks_pkey PRIMARY KEY (id),
+    CONSTRAINT stocks_product_id_unique UNIQUE (product_id),
+    CONSTRAINT stocks_product_id_fkey FOREIGN KEY (product_id)
+        REFERENCES products (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT stocks_price_check CHECK (price >= 0::numeric),
+    CONSTRAINT stocks_stock_in_check CHECK (stock_in >= 0),
+    CONSTRAINT stocks_stock_out_check CHECK (stock_out >= 0),
+    CONSTRAINT stocks_valid_movement_check CHECK (stock_in > 0 OR stock_out > 0)
+)
+CREATE TABLE IF NOT EXISTS tags
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    name character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT tags_pkey PRIMARY KEY (id),
+    CONSTRAINT tags_name_key UNIQUE (name)
+)
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(LOWER(email));
+CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_categories_parent_id ON categories(parent_id);
+CREATE INDEX IF NOT EXISTS idx_stocks_product_id ON stocks(product_id);
+CREATE INDEX IF NOT EXISTS idx_badges_name_lower ON badges(LOWER(name));
+CREATE INDEX IF NOT EXISTS idx_tags_name_lower ON tags(LOWER(name));
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS users_set_updated_at ON users;
+CREATE TRIGGER users_set_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS products_set_updated_at ON products;
+CREATE TRIGGER products_set_updated_at
+BEFORE UPDATE ON products
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS orders_set_updated_at ON orders;
+CREATE TRIGGER orders_set_updated_at
+BEFORE UPDATE ON orders
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS order_items_set_updated_at ON order_items;
+CREATE TRIGGER order_items_set_updated_at
+BEFORE UPDATE ON order_items
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS badges_set_updated_at ON badges;
+CREATE TRIGGER badges_set_updated_at
+    BEFORE UPDATE ON badges
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS categories_set_updated_at ON categories;
+CREATE TRIGGER categories_set_updated_at
+    BEFORE UPDATE ON categories
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS stocks_set_updated_at ON stocks;
+CREATE TRIGGER stocks_set_updated_at
+    BEFORE UPDATE ON stocks
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS tags_set_updated_at ON tags;
+CREATE TRIGGER tags_set_updated_at
+    BEFORE UPDATE ON tags
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
 ````
 
 ## File: src/app/(auth)/register/page.tsx
@@ -4007,6 +4207,42 @@ export default function AboutPage() {
       </section>
     </main>
   );
+}
+````
+
+## File: src/app/api/products/route.ts
+````typescript
+export const runtime = "nodejs";
+import productService from "@/lib/services/product.service";
+import {
+  getErrorMessage,
+  jsonError,
+  jsonSuccess,
+  readJsonBody,
+} from "@/lib/utils/api-response";
+import { ProductsRequestSchema } from "@/lib/validators/product.validator";
+export async function POST(request: Request) {
+  try {
+    const body = ProductsRequestSchema.parse(await readJsonBody(request));
+    const { productId, category } = body;
+    if (productId) {
+      const product = await productService.getProductById(productId);
+      return jsonSuccess({
+        success: true,
+        product,
+        products: product ? [product] : [],
+      });
+    }
+    const products = await productService.getAllProducts(category);
+    return jsonSuccess({
+      success: true,
+      product: null,
+      products,
+    });
+  } catch (error) {
+    console.error("PRODUCTS_POST_ERROR", error);
+    return jsonError(getErrorMessage(error, "Failed to fetch products."), 400);
+  }
 }
 ````
 
@@ -4497,6 +4733,325 @@ export default function CartSidebar() {
 }
 ````
 
+## File: src/components/shop/ProductActions.tsx
+````typescript
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useCartStore } from "@/store/useCartStore";
+import { useUiStore } from "@/store/useUiStore";
+interface ProductActionsProps {
+  productId: string;
+  compact?: boolean;
+}
+export default function ProductActions({ productId, compact = false }: ProductActionsProps) {
+  const router = useRouter();
+  const { status } = useSession();
+  const addToCart = useCartStore((state) => state.addToCart);
+  const isLoading = useCartStore((state) => state.isLoading);
+  const toggleCart = useUiStore((state) => state.toggleCart);
+  const [message, setMessage] = useState<string | null>(null);
+  const redirectToLogin = (callbackUrl: string) => {
+    alert("Please login first to continue.");
+    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  };
+  const handleAddToCart = async () => {
+    setMessage(null);
+    if (status !== "authenticated") {
+      redirectToLogin("/shop");
+      return;
+    }
+    try {
+      await addToCart(productId, 1);
+      setMessage("Added to cart");
+      toggleCart();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to add product.");
+    }
+  };
+  const handleBuyNow = async () => {
+    setMessage(null);
+    if (status !== "authenticated") {
+      redirectToLogin(`/my-cart?buyNow=${productId}`);
+      return;
+    }
+    try {
+      await addToCart(productId, 1);
+      router.push("/my-cart");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to continue.");
+    }
+  };
+  return (
+    <div className={compact ? "mt-[16px]" : "mt-[24px]"}>
+      <div className={compact ? "flex flex-col gap-[10px]" : "flex flex-wrap gap-[12px]"}>
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={isLoading || status === "loading"}
+          className="flex-1 rounded-[10px] border border-[#0f766e] bg-white px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-[#0f766e] transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <i className="ri-shopping-cart-line mr-[6px]" />
+          Add To Cart
+        </button>
+        <button
+          type="button"
+          onClick={handleBuyNow}
+          disabled={isLoading || status === "loading"}
+          className="flex-1 rounded-[10px] bg-[#0f766e] px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5f59] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Buy Now
+        </button>
+      </div>
+      {message ? (
+        <p className="mt-[10px] text-center font-Poppins text-[12px] text-[#0f766e]">
+          {message}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+````
+
+## File: src/lib/mappers/product.mapper.ts
+````typescript
+import type { Product } from "@prisma/client";
+import { formatPrice, roundCurrency, toNumber } from "@/lib/utils/numbers";
+import type { ProductDto } from "@/types/product";
+export function toProductDto(product: Product): ProductDto {
+  return {
+    id: product.id,
+    product_name: product.productName,
+    product_packsize: product.productPacksize,
+    product_description: product.productDescription,
+    product_subdescription: product.productSubDescription,
+    product_details: product.productDetails,
+    product_category: product.productCategory,
+    price: formatPrice(product.price),
+    Stock: product.stock,
+    image: product.image,
+    Badge: product.badge ?? undefined,
+    Tag: product.tag ?? "",
+    isActive: product.isActive,
+  };
+}
+export function toProductDtoList(products: Product[]): ProductDto[] {
+  return products.map(toProductDto);
+}
+export function getLineTotal(quantity: number, price: Product["price"]): number {
+  return roundCurrency(toNumber(price) * quantity);
+}
+````
+
+## File: src/lib/services/productsService.ts
+````typescript
+export { productsApi as productsService } from "@/lib/api/products.api";
+export { default } from "@/lib/api/products.api";
+export type {
+  ProductApiResponse,
+  ProductMenuApiResponse,
+  ProductMenuCategory,
+  ProductMenuItem,
+  ProductsApiResponse,
+} from "@/types/product.response";
+````
+
+## File: src/store/useCartStore.ts
+````typescript
+import { create } from "zustand";
+import { cartApi } from "@/lib/api/cart.api";
+import type { Cart } from "@/types/cart";
+import type { CartApiResponse } from "@/types/cart.response";
+interface CartState {
+  cart: Cart | null;
+  isLoading: boolean;
+  error: string | null;
+  fetchCart: () => Promise<Cart | null>;
+  addToCart: (productId: string, quantity?: number) => Promise<Cart | null>;
+  updateItem: (itemId: string, quantity: number) => Promise<Cart | null>;
+  removeItem: (itemId: string) => Promise<Cart | null>;
+  clearLocalCart: () => void;
+}
+function extractCart(response: CartApiResponse): Cart | null {
+  if (response.error || response.success === false) {
+    throw new Error(response.message || "Cart request failed.");
+  }
+  return response.cart ?? response.data?.cart ?? null;
+}
+function getClientErrorMessage(error: unknown, fallback: string): string {
+  const apiMessage = (error as { response?: { data?: { message?: string } } })
+    ?.response?.data?.message;
+  if (apiMessage) return apiMessage;
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+}
+export const useCartStore = create<CartState>((set) => ({
+  cart: null,
+  isLoading: false,
+  error: null,
+  fetchCart: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await cartApi.fetchCart();
+      const cart = extractCart(response);
+      set({ cart, isLoading: false });
+      return cart;
+    } catch (error) {
+      const message = getClientErrorMessage(error, "Unable to load cart.");
+      set({ error: message, isLoading: false });
+      return null;
+    }
+  },
+  addToCart: async (productId, quantity = 1) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await cartApi.addToCart({ productId, quantity });
+      const cart = extractCart(response);
+      set({ cart, isLoading: false });
+      return cart;
+    } catch (error) {
+      const message = getClientErrorMessage(error, "Unable to add product.");
+      set({ error: message, isLoading: false });
+      throw new Error(message);
+    }
+  },
+  updateItem: async (itemId, quantity) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await cartApi.updateItem(itemId, { quantity });
+      const cart = extractCart(response);
+      set({ cart, isLoading: false });
+      return cart;
+    } catch (error) {
+      const message = getClientErrorMessage(error, "Unable to update item.");
+      set({ error: message, isLoading: false });
+      throw new Error(message);
+    }
+  },
+  removeItem: async (itemId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await cartApi.removeItem(itemId);
+      const cart = extractCart(response);
+      set({ cart, isLoading: false });
+      return cart;
+    } catch (error) {
+      const message = getClientErrorMessage(error, "Unable to remove item.");
+      set({ error: message, isLoading: false });
+      throw new Error(message);
+    }
+  },
+  clearLocalCart: () => set({ cart: null, error: null, isLoading: false }),
+}));
+````
+
+## File: src/types/product.ts
+````typescript
+export interface ProductDto {
+  id: string;
+  product_name: string;
+  product_description: string;
+  product_subdescription: string;
+  product_details: string;
+  product_category: string;
+  price: string;
+  Stock: number;
+  image: string;
+  Badge?: string | null;
+  Tag: string;
+  isActive?: boolean;
+  product_packsize?: number | null;
+}
+export interface ProductsListResponse {
+  success: boolean;
+  products: ProductDto[];
+  product?: ProductDto | null;
+}
+export interface ProductDetailResponse {
+  success: boolean;
+  product: ProductDto | null;
+  products: ProductDto[];
+}
+````
+
+## File: src/components/common/AboutSection.tsx
+````typescript
+"use client";
+import Link from "next/link";
+import { aboutContent } from "@/lib/site-content";
+type AboutSectionProps = {
+  variant?: "home" | "page";
+};
+export default function AboutSection({ variant = "page" }: AboutSectionProps) {
+  const isHome = variant === "home";
+  return (
+    <section className={isHome ? "mx-auto max-w-7xl px-4 py-16 md:px-6" : ""}>
+      <div className="rounded-[32px] bg-white p-8 shadow-sm md:p-12 lg:p-16">
+        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          <div>
+            <p className="mb-4 text-xl font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+              {aboutContent.eyebrow}
+            </p>
+            <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+              {isHome ? aboutContent.homeTitle : aboutContent.heroTitle}
+            </h2>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
+              {isHome ? aboutContent.homeDescription : aboutContent.heroDescription}
+            </p>
+            {!isHome ? (
+              <div className="mt-8 space-y-5 text-sm leading-7 text-slate-600 md:text-base md:leading-8">
+                {aboutContent.storyParagraphs.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            ) : null}
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/shop"
+                className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold !text-white transition hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
+              >
+                Order Water
+              </Link>
+              <Link
+                href="/contact-us"
+                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#0f766e] hover:text-[#0f766e]"
+              >
+                Contact Us
+              </Link>
+            </div>
+          </div>
+          <div className="rounded-[28px] bg-[#f8fafc] p-8">
+            <h3 className="text-2xl font-semibold text-slate-900">
+              What makes us reliable?
+            </h3>
+            <ul className="mt-6 space-y-5 text-slate-600">
+              {aboutContent.highlights.map((highlight) => (
+                <li key={highlight} className="flex gap-3">
+                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
+                    ✓
+                  </span>
+                  <span>{highlight}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 rounded-[24px] bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0f766e]">
+                Our promise
+              </p>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                Tested, trusted, and delivered fresh — every bottle is handled
+                with the care your family deserves.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+````
+
 ## File: src/components/home/HomePageClient.tsx
 ````typescript
 "use client";
@@ -4901,8 +5456,6 @@ export default function HomePageClient() {
           </div>
         </div>
       </section>
-{
-}
       <section className="section-testimonials py-[50px] max-[1199px]:py-[35px]">
         <div className="bb-container">
           <SectionHeading
@@ -4948,167 +5501,101 @@ export default function HomePageClient() {
 }
 ````
 
-## File: src/components/shop/ProductActions.tsx
-````typescript
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useCartStore } from "@/store/useCartStore";
-import { useUiStore } from "@/store/useUiStore";
-interface ProductActionsProps {
-  productId: string;
-  compact?: boolean;
-}
-export default function ProductActions({ productId, compact = false }: ProductActionsProps) {
-  const router = useRouter();
-  const { status } = useSession();
-  const addToCart = useCartStore((state) => state.addToCart);
-  const isLoading = useCartStore((state) => state.isLoading);
-  const toggleCart = useUiStore((state) => state.toggleCart);
-  const [message, setMessage] = useState<string | null>(null);
-  const redirectToLogin = (callbackUrl: string) => {
-    alert("Please login first to continue.");
-    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  };
-  const handleAddToCart = async () => {
-    setMessage(null);
-    if (status !== "authenticated") {
-      redirectToLogin("/shop");
-      return;
-    }
-    try {
-      await addToCart(productId, 1);
-      setMessage("Added to cart");
-      toggleCart();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to add product.");
-    }
-  };
-  const handleBuyNow = async () => {
-    setMessage(null);
-    if (status !== "authenticated") {
-      redirectToLogin(`/my-cart?buyNow=${productId}`);
-      return;
-    }
-    try {
-      await addToCart(productId, 1);
-      router.push("/my-cart");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to continue.");
-    }
-  };
-  return (
-    <div className={compact ? "mt-[16px]" : "mt-[24px]"}>
-      <div className={compact ? "flex flex-col gap-[10px]" : "flex flex-wrap gap-[12px]"}>
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          disabled={isLoading || status === "loading"}
-          className="flex-1 rounded-[10px] border border-[#0f766e] bg-white px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-[#0f766e] transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <i className="ri-shopping-cart-line mr-[6px]" />
-          Add To Cart
-        </button>
-        <button
-          type="button"
-          onClick={handleBuyNow}
-          disabled={isLoading || status === "loading"}
-          className="flex-1 rounded-[10px] bg-[#0f766e] px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5f59] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          Buy Now
-        </button>
-      </div>
-      {message ? (
-        <p className="mt-[10px] text-center font-Poppins text-[12px] text-[#0f766e]">
-          {message}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-````
-
 ## File: src/lib/products.ts
 ````typescript
 
 ````
 
-## File: src/components/common/AboutSection.tsx
+## File: src/lib/services/product.service.ts
 ````typescript
-"use client";
-import Link from "next/link";
-import { aboutContent } from "@/lib/site-content";
-type AboutSectionProps = {
-  variant?: "home" | "page";
-};
-export default function AboutSection({ variant = "page" }: AboutSectionProps) {
-  const isHome = variant === "home";
-  return (
-    <section className={isHome ? "mx-auto max-w-7xl px-4 py-16 md:px-6" : ""}>
-      <div className="rounded-[32px] bg-white p-8 shadow-sm md:p-12 lg:p-16">
-        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-          <div>
-            <p className="mb-4 text-xl font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
-              {aboutContent.eyebrow}
-            </p>
-            <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              {isHome ? aboutContent.homeTitle : aboutContent.heroTitle}
-            </h2>
-            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-              {isHome ? aboutContent.homeDescription : aboutContent.heroDescription}
-            </p>
-            {!isHome ? (
-              <div className="mt-8 space-y-5 text-sm leading-7 text-slate-600 md:text-base md:leading-8">
-                {aboutContent.storyParagraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
-            ) : null}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/shop"
-                className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold !text-white transition hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
-              >
-                Order Water
-              </Link>
-              <Link
-                href="/contact-us"
-                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#0f766e] hover:text-[#0f766e]"
-              >
-                Contact Us
-              </Link>
-            </div>
-          </div>
-          <div className="rounded-[28px] bg-[#f8fafc] p-8">
-            <h3 className="text-2xl font-semibold text-slate-900">
-              What makes us reliable?
-            </h3>
-            <ul className="mt-6 space-y-5 text-slate-600">
-              {aboutContent.highlights.map((highlight) => (
-                <li key={highlight} className="flex gap-3">
-                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
-                    ✓
-                  </span>
-                  <span>{highlight}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-8 rounded-[24px] bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0f766e]">
-                Our promise
-              </p>
-              <p className="mt-3 text-sm leading-7 text-slate-600">
-                Tested, trusted, and delivered fresh — every bottle is handled
-                with the care your family deserves.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+import type { Prisma } from "@prisma/client";
+import { toProductDto, toProductDtoList } from "@/lib/mappers/product.mapper";
+import { prisma } from "@/lib/prisma";
+import type { ProductDto } from "@/types/product";
+import type {
+  ProductMenuCategory,
+  ProductMenuItem,
+} from "@/types/product.response";
+function normalizeCategory(category: string) {
+  return category.trim();
 }
+export async function getAllProducts(category?: string): Promise<ProductDto[]> {
+  const where: Prisma.ProductWhereInput = {
+    isActive: true,
+  };
+  const cleanCategory = category?.trim();
+  if (cleanCategory) {
+    where.productCategory = {
+      equals: cleanCategory,
+      mode: "insensitive",
+    };
+  }
+  const products = await prisma.product.findMany({
+    where,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  return toProductDtoList(products);
+}
+export async function getProductById(
+  productId: string,
+): Promise<ProductDto | null> {
+  const cleanProductId = productId.trim();
+  if (!cleanProductId) return null;
+  const product = await prisma.product.findFirst({
+    where: {
+      id: cleanProductId,
+      isActive: true,
+    },
+  });
+  return product ? toProductDto(product) : null;
+}
+export async function getProductMenu(): Promise<ProductMenuCategory[]> {
+  const products = await prisma.product.findMany({
+    where: {
+      isActive: true,
+    },
+    select: {
+      id: true,
+      productName: true,
+      productCategory: true,
+    },
+    orderBy: [
+      {
+        productCategory: "asc",
+      },
+      {
+        productName: "asc",
+      },
+    ],
+  });
+  const menuMap = new Map<string, ProductMenuItem[]>();
+  products.forEach((product) => {
+    const category = normalizeCategory(product.productCategory);
+    if (!category) return;
+    const currentProducts = menuMap.get(category) ?? [];
+    currentProducts.push({
+      id: product.id,
+      name: product.productName,
+      href: `/shop/${product.id}`,
+    });
+    menuMap.set(category, currentProducts);
+  });
+  return Array.from(menuMap.entries())
+    .sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB))
+    .map(([category, products]) => ({
+      category,
+      href: `/shop?category=${encodeURIComponent(category)}`,
+      products,
+    }));
+}
+export const productService = {
+  getAllProducts,
+  getProductById,
+  getProductMenu,
+};
+export default productService;
 ````
 
 ## File: src/app/contact-us/page.tsx
@@ -5420,54 +5907,6 @@ export const contactContent = {
   mapQuery:
     "Plot No. 24, DIC Industrial Sate Raniya, Kanpur Dehat 209304 Uttar Pradesh",
 };
-````
-
-## File: package.json
-````json
-{
-  "name": "twogooddrinks",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "jumpstart": "next build && next start",
-    "lint": "eslint",
-    "postinstall": "prisma generate",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio"
-  },
-  "dependencies": {
-    "@prisma/client": "^5.22.0",
-    "animate.css": "^4.1.1",
-    "aos": "^2.3.4",
-    "axios": "^1.17.0",
-    "bcryptjs": "^3.0.2",
-    "lucide-react": "^1.17.0",
-    "next": "16.2.7",
-    "next-auth": "^5.0.0-beta.29",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "remixicon": "^4.9.1",
-    "sass": "^1.101.0",
-    "slick-carousel": "^1.8.1",
-    "swiper": "^12.2.0",
-    "zustand": "^5.0.14"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.7",
-    "prisma": "^5.22.0",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
-}
 ````
 
 ## File: src/styles/globals.css
@@ -5814,6 +6253,55 @@ img {
 }
 ````
 
+## File: package.json
+````json
+{
+  "name": "twogooddrinks",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "jumpstart": "next build && next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "animate.css": "^4.1.1",
+    "aos": "^2.3.4",
+    "axios": "^1.17.0",
+    "bcryptjs": "^3.0.2",
+    "lucide-react": "^1.17.0",
+    "next": "16.2.7",
+    "next-auth": "^5.0.0-beta.29",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "remixicon": "^4.9.1",
+    "sass": "^1.101.0",
+    "slick-carousel": "^1.8.1",
+    "swiper": "^12.2.0",
+    "zustand": "^5.0.14",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.7",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+````
+
 ## File: src/app/shop/[productId]/page.tsx
 ````typescript
 import Link from "next/link";
@@ -5834,6 +6322,13 @@ const productHighlights = [
   { icon: "ri-truck-line", label: "Fast delivery" },
   { icon: "ri-customer-service-2-line", label: "Bulk support" },
 ];
+function splitProductDetails(details?: string | null) {
+  if (!details) return [];
+  return details
+    .split(/\r?\n|•|,|;/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 export default async function ProductDetailsPage({ params }: ProductDetailsPageProps) {
   const { productId } = await params;
   const product = await getProductById(productId);
@@ -5845,6 +6340,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
     .filter((item) => item.id !== product.id)
     .slice(0, 4);
   const packSize = product.product_packsize ? `${product.product_packsize} ml` : "Standard pack";
+  const productDetails = splitProductDetails(product.product_details);
   return (
     <main>
       <Breadcrumb
@@ -5873,8 +6369,15 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
               </div>
               <div className="mt-[16px] grid grid-cols-3 gap-[12px]">
                 {[product.image, product.image, product.image].map((image, index) => (
-                  <div key={`${image}-${index}`} className="rounded-[16px] border border-[#eee] bg-[#f8f8fb] p-[10px]">
-                    <img src={image} alt={`${product.product_name} ${index + 1}`} className="h-[95px] w-full object-contain" />
+                  <div
+                    key={`${image}-${index}`}
+                    className="rounded-[16px] border border-[#eee] bg-[#f8f8fb] p-[10px]"
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.product_name} ${index + 1}`}
+                      className="h-[95px] w-full object-contain"
+                    />
                   </div>
                 ))}
               </div>
@@ -5896,7 +6399,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
                 <span className="font-Poppins text-[13px] text-[#686e7d]">Fresh stock available</span>
               </div>
               <p className="mt-[18px] font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-                {product.product_description}
+                {product.product_subdescription || product.product_description}
               </p>
               <div className="mt-[22px] flex flex-wrap items-center gap-[14px]">
                 <span className="font-quicksand text-[30px] font-bold text-[#3d4750]">
@@ -5917,7 +6420,10 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
               <ProductActions productId={product.id} />
               <div className="mt-[28px] grid gap-[12px] sm:grid-cols-3">
                 {productHighlights.map((item) => (
-                  <div key={item.label} className="rounded-[14px] border border-[#eee] bg-[#f8f8fb] p-[14px] text-center">
+                  <div
+                    key={item.label}
+                    className="rounded-[14px] border border-[#eee] bg-[#f8f8fb] p-[14px] text-center"
+                  >
                     <i className={`${item.icon} mb-[6px] block text-[24px] text-[#0f766e]`} />
                     <p className="font-Poppins text-[13px] text-[#4b5563]">{item.label}</p>
                   </div>
@@ -5930,7 +6436,10 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
                 <p className="font-Poppins text-[14px] font-light leading-[25px] text-[#686e7d]">
                   Bulk order rates are negotiable based on quantity requirements. Contact us for a custom quotation.
                 </p>
-                <Link href="/contact-us" className="mt-[14px] inline-flex font-Poppins text-[14px] font-semibold text-[#0f766e] hover:text-[#3d4750]">
+                <Link
+                  href="/contact-us"
+                  className="mt-[14px] inline-flex font-Poppins text-[14px] font-semibold text-[#0f766e] hover:text-[#3d4750]"
+                >
                   Contact for bulk orders <i className="ri-arrow-right-line ml-[5px]" />
                 </Link>
               </div>
@@ -5940,14 +6449,48 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
       </section>
       <section className="section-product-description pb-[50px] max-[767px]:pb-[35px]">
         <div className="bb-container">
-          <div className="rounded-[24px] border border-[#eee] bg-white p-[28px] shadow-sm" data-aos="fade-up">
-            <h2 className="mb-[12px] font-quicksand text-[24px] font-bold text-[#3d4750]">
-              Description
-            </h2>
-            <p className="font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-              {product.product_description} This product is suitable for daily hydration, office use, retail supply,
-              event requirements, and bulk order planning based on your quantity needs.
-            </p>
+          <div className="rounded-[24px] border border-[#eee] bg-white shadow-sm" data-aos="fade-up">
+            <div className="flex flex-wrap border-b border-[#eee]">
+              <div className="border-r border-[#eee] px-[24px] py-[16px]">
+                <span className="font-quicksand text-[17px] font-bold text-[#0f766e]">
+                  Description
+                </span>
+              </div>
+              <div className="px-[24px] py-[16px]">
+                <span className="font-quicksand text-[17px] font-bold text-[#3d4750]">
+                  Product Details
+                </span>
+              </div>
+            </div>
+            <div className="grid gap-[30px] p-[28px] lg:grid-cols-2">
+              <div>
+                <h2 className="mb-[12px] font-quicksand text-[24px] font-bold text-[#3d4750]">
+                  Product Description
+                </h2>
+                <p className="font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
+                  {product.product_description}
+                </p>
+              </div>
+              <div>
+                <h2 className="mb-[12px] font-quicksand text-[24px] font-bold text-[#3d4750]">
+                  Product Details
+                </h2>
+                {productDetails.length > 0 ? (
+                  <ul className="space-y-[12px]">
+                    {productDetails.map((detail) => (
+                      <li key={detail} className="flex gap-[10px] font-Poppins text-[15px] font-light leading-[26px] text-[#686e7d]">
+                        <i className="ri-check-double-line mt-[4px] text-[18px] text-[#0f766e]" />
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="font-Poppins text-[15px] font-light leading-[28px] text-[#686e7d]">
+                    Product details will be updated soon.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -6348,7 +6891,7 @@ export default function Header() {
   };
   const closeMobile = () => setMobileOpen(false);
   return (
-    <header className="bb-header  border-b border-[#eee] bg-white/95 font-Poppins shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_12px_35px_rgba(15,23,42,0.08)]">
+    <header className="bb-header relative z-[1000] border-b border-[#eee] bg-white/95 font-Poppins shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_12px_35px_rgba(15,23,42,0.08)]">
       <div className="top-header bg-[#3d4750] py-[6px] max-[991px]:hidden">
         <div className="bb-container flex items-center justify-between">
           <Link
@@ -6556,7 +7099,7 @@ export default function Header() {
                           >
                             <Link
                               href={category.href}
-                              className="flex items-center justify-between px-[24px] py-[10px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                              className="flex items-center justify-between px-[24px] py-[10px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:translate-x-[4px] hover:bg-[#f0fdfa] hover:text-[#0f766e]"
                             >
                               {category.category}
                               {category.products?.length ? (
@@ -6571,7 +7114,7 @@ export default function Header() {
                                     <li key={product.id}>
                                       <Link
                                         href={product.href}
-                                        className="block px-[24px] py-[9px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                                        className="block px-[24px] py-[9px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:translate-x-[4px] hover:bg-[#f0fdfa] hover:text-[#0f766e]"
                                       >
                                         {product.name}
                                       </Link>
@@ -6620,70 +7163,68 @@ export default function Header() {
           </Link>
         </div>
       </nav>
-      <div
-        className={`fixed inset-0 z-[60] bg-black/45 transition-opacity duration-300 lg:hidden ${
-          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-        onClick={closeMobile}
-      />
-      <aside
-        className={`fixed left-0 top-0 z-[61] h-full w-[320px] max-w-[88vw] bg-white shadow-2xl transition-transform duration-300 lg:hidden ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between border-b border-[#eee] p-[20px]">
-          <Image
-            src="/assets/img/logo/logo-icon2.png"
-            alt="2good Plus"
-            width={105}
-            height={54}
+      {mobileOpen ? (
+        <div className="fixed inset-0 z-[9999] bg-black/50 max-[991px]:block min-[992px]:hidden">
+          <button
+            type="button"
+            aria-label="Close mobile menu"
+            className="absolute inset-0 h-full w-full cursor-default"
+            onClick={closeMobile}
           />
-          <button type="button" onClick={closeMobile} aria-label="Close menu">
-            <i className="ri-close-line text-[26px] text-[#3d4750]" />
-          </button>
-        </div>
-        <div className="p-[20px]">
-          <form onSubmit={handleSearch} className="relative mb-[20px]">
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search products..."
-              className="bb-input pr-[44px]"
-            />
-            <button
-              type="submit"
-              className="absolute right-[12px] top-[11px] text-[#0f766e]"
-              aria-label="Search"
-            >
-              <i className="ri-search-line text-[18px]" />
-            </button>
-          </form>
-          <nav className="space-y-[8px]">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={closeMobile}
-                className="block rounded-[10px] border border-[#eee] px-[14px] py-[12px] font-Poppins text-[15px] font-medium text-[#686e7d] transition-all duration-300 hover:border-[#0f766e] hover:bg-[#f0fdfa] hover:text-[#0f766e]"
-              >
-                {link.label}
+          <aside className="relative z-[10000] h-dvh w-[320px] max-w-[86vw] overflow-y-auto bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#eee] px-5 py-4">
+              <Link href="/" onClick={closeMobile}>
+                <Image
+                  src="/assets/img/logo/logo-icon2.png"
+                  alt="2good Plus"
+                  width={120}
+                  height={60}
+                  className="h-auto w-[110px]"
+                />
               </Link>
-            ))}
-          </nav>
-          <div className="mt-[22px] rounded-[14px] bg-[#f8f8fb] p-[16px]">
-            <p className="mb-[8px] font-quicksand text-[16px] font-bold text-[#3d4750]">
-              Contact
-            </p>
-            <Link
-              href="tel:+919967399880"
-              className="font-Poppins text-[14px] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
-            >
-              <i className="ri-phone-line mr-[6px] text-[#0f766e]" />
-              +91 99673 99880
-            </Link>
-          </div>
+              <button
+                type="button"
+                onClick={closeMobile}
+                aria-label="Close menu"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[#3d4750]"
+              >
+                <i className="ri-close-line text-[26px]" />
+              </button>
+            </div>
+            <form onSubmit={handleSearch} className="px-5 py-5">
+              <div className="flex h-[46px] items-center rounded-[12px] border border-[#eee] bg-white px-4">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search products..."
+                  className="w-full bg-transparent text-[14px] outline-none"
+                />
+                <button type="submit" aria-label="Search">
+                  <i className="ri-search-line text-[22px] text-[#0f766e]" />
+                </button>
+              </div>
+            </form>
+            <nav className="px-5 pb-6">
+              <div className="space-y-3">
+                {navLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeMobile}
+                    className={`block rounded-[10px] border border-[#eee] px-4 py-3 text-[15px] font-medium ${
+                      pathname === item.href
+                        ? "bg-[#f0fdfa] text-[#0f766e]"
+                        : "text-[#3d4750]"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          </aside>
         </div>
-      </aside>
+      ) : null}
     </header>
   );
 }

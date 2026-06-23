@@ -1,65 +1,66 @@
 "use client";
-
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import ProductCard from "@/components/shop/ProductCard";
 import { productsService } from "@/lib/services/productsService";
-import type { ProductDto } from "@/types/product";
-
+import type { ProductDto, ProductLookupDto } from "@/types/product";
 const MIN_PRICE = 0;
 const MAX_PRICE = 300;
-
 type SortOption = "latest" | "name-asc" | "name-desc" | "price-low" | "price-high";
-
 function getPriceNumber(price: string) {
   return Number(price.replace(/[^0-9.]/g, "")) || 0;
 }
-
 function getUniqueValues(values: string[]) {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort(
     (a, b) => a.localeCompare(b),
   );
 }
-
 export default function ShopPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const categoryFromUrl = searchParams.get("category");
   const queryFromUrl = searchParams.get("q") || "";
-
   const [searchQuery, setSearchQuery] = useState(queryFromUrl);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryFromUrl);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>("latest");
   const [priceRange, setPriceRange] = useState({ min: MIN_PRICE, max: MAX_PRICE });
   const [productsState, setProductsState] = useState<ProductDto[]>([]);
+  const [categoriesState, setCategoriesState] = useState<ProductLookupDto[]>([]);
+  const [tagsState, setTagsState] = useState<ProductLookupDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     setSelectedCategory(categoryFromUrl);
     setSearchQuery(queryFromUrl);
   }, [categoryFromUrl, queryFromUrl]);
-
   useEffect(() => {
     let cancelled = false;
-
     async function loadProducts() {
       setLoading(true);
       setError(null);
-
       try {
-        const data = await productsService.getAllProducts();
-
+        const [productsData, categoriesData, tagsData] = await Promise.all([
+          productsService.getAllProducts(),
+          productsService.getCategories(),
+          productsService.getTags(),
+        ]);
         if (cancelled) return;
-
-        if (data?.success && Array.isArray(data.products)) {
-          setProductsState(data.products);
+        if (productsData?.success && Array.isArray(productsData.products)) {
+          setProductsState(productsData.products);
         } else {
           setProductsState([]);
           setError("Failed to load products");
         }
+        setCategoriesState(
+          categoriesData?.success && Array.isArray(categoriesData.items)
+            ? categoriesData.items
+            : [],
+        );
+        setTagsState(
+          tagsData?.success && Array.isArray(tagsData.items) ? tagsData.items : [],
+        );
       } catch (error) {
         if (!cancelled) {
           console.error("Failed to load products", error);
@@ -70,55 +71,48 @@ export default function ShopPageClient() {
         if (!cancelled) setLoading(false);
       }
     }
-
     loadProducts();
-
     return () => {
       cancelled = true;
     };
   }, []);
-
   const productCategories = useMemo(() => {
+    const categoryNames = categoriesState.map((category) => category.name);
+    if (categoryNames.length > 0) return getUniqueValues(categoryNames);
     return getUniqueValues(productsState.map((product) => product.product_category));
-  }, [productsState]);
-
+  }, [categoriesState, productsState]);
   const productTags = useMemo(() => {
+    const tagNames = tagsState.map((tag) => tag.name);
+    if (tagNames.length > 0) return getUniqueValues(tagNames);
     return getUniqueValues(productsState.map((product) => product.Tag));
-  }, [productsState]);
-
+  }, [tagsState, productsState]);
   const handleCategoryClick = (category: string) => {
     const nextParams = new URLSearchParams(searchParams.toString());
-
     if (selectedCategory === category) {
       nextParams.delete("category");
     } else {
       nextParams.set("category", category);
     }
-
     const queryString = nextParams.toString();
     router.push(queryString ? `/shop?${queryString}` : "/shop");
   };
-
   const handleTagClick = (tag: string) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag],
     );
   };
-
   const handleMinPriceChange = (value: number) => {
     setPriceRange((prev) => ({
       min: Math.min(value, prev.max),
       max: prev.max,
     }));
   };
-
   const handleMaxPriceChange = (value: number) => {
     setPriceRange((prev) => ({
       min: prev.min,
       max: Math.max(value, prev.min),
     }));
   };
-
   const clearAllFilters = () => {
     setSearchQuery("");
     setSelectedTags([]);
@@ -126,19 +120,15 @@ export default function ShopPageClient() {
     setPriceRange({ min: MIN_PRICE, max: MAX_PRICE });
     router.push("/shop");
   };
-
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...productsState];
-
     if (selectedCategory) {
       result = result.filter(
         (product) => product.product_category.toLowerCase() === selectedCategory.toLowerCase(),
       );
     }
-
     if (searchQuery.trim()) {
       const query = searchQuery.trim().toLowerCase();
-
       result = result.filter((product) =>
         [
           product.product_name,
@@ -152,46 +142,36 @@ export default function ShopPageClient() {
           .includes(query),
       );
     }
-
     result = result.filter((product) => {
       const price = getPriceNumber(product.price);
       return price >= priceRange.min && price <= priceRange.max;
     });
-
     if (selectedTags.length > 0) {
       result = result.filter((product) => selectedTags.includes(product.Tag));
     }
-
     if (sortBy === "price-low") {
       result.sort((a, b) => getPriceNumber(a.price) - getPriceNumber(b.price));
     }
-
     if (sortBy === "price-high") {
       result.sort((a, b) => getPriceNumber(b.price) - getPriceNumber(a.price));
     }
-
     if (sortBy === "name-asc") {
       result.sort((a, b) => a.product_name.localeCompare(b.product_name));
     }
-
     if (sortBy === "name-desc") {
       result.sort((a, b) => b.product_name.localeCompare(a.product_name));
     }
-
     return result;
   }, [productsState, searchQuery, selectedCategory, selectedTags, priceRange, sortBy]);
-
   const hasActiveFilters =
     Boolean(searchQuery) ||
     Boolean(selectedCategory) ||
     selectedTags.length > 0 ||
     priceRange.min !== MIN_PRICE ||
     priceRange.max !== MAX_PRICE;
-
   return (
     <main>
       <Breadcrumb title={selectedCategory || "Shop"} current={selectedCategory || "Shop"} />
-
       <section className="section-shop overflow-x-hidden py-[50px] max-[767px]:py-[35px]">
         <div className="bb-container">
           <div className="mb-[35px] text-center" data-aos="fade-up">
@@ -205,7 +185,6 @@ export default function ShopPageClient() {
               Explore packaged drinking water, healthy drinks, herbal infusions, and everyday hydration products.
             </p>
           </div>
-
           <div className="flex flex-wrap mx-[-12px]">
             <aside className="w-full px-[12px] max-[991px]:mb-[35px] min-[992px]:w-[25%]">
               <div className="bb-shop-sidebar sticky top-[150px] overflow-hidden rounded-[20px] border border-[#eee] bg-white shadow-sm">
@@ -226,7 +205,6 @@ export default function ShopPageClient() {
                     <i className="ri-search-2-line absolute right-[14px] top-1/2 -translate-y-1/2 text-[18px] text-[#9ca3af]" />
                   </div>
                 </div>
-
                 <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right" data-aos-delay="80">
                   <div className="mb-[18px] flex items-center justify-between gap-[12px]">
                     <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
@@ -234,7 +212,6 @@ export default function ShopPageClient() {
                     </h4>
                     <i className="ri-list-check-2 text-[20px] text-[#0f766e]" />
                   </div>
-
                   {productCategories.length > 0 ? (
                     <ul className="space-y-[12px]">
                       {productCategories.map((category) => {
@@ -242,7 +219,6 @@ export default function ShopPageClient() {
                         const count = productsState.filter(
                           (product) => product.product_category === category,
                         ).length;
-
                         return (
                           <li key={category}>
                             <button
@@ -280,7 +256,6 @@ export default function ShopPageClient() {
                     <p className="font-Poppins text-[14px] text-[#686e7d]">No categories found.</p>
                   )}
                 </div>
-
                 <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right" data-aos-delay="120">
                   <div className="mb-[18px] flex items-center justify-between gap-[12px]">
                     <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
@@ -288,11 +263,9 @@ export default function ShopPageClient() {
                     </h4>
                     <i className="ri-money-rupee-circle-line text-[20px] text-[#0f766e]" />
                   </div>
-
                   <div className="mb-[16px] rounded-[10px] border border-[#eee] bg-white p-[10px] text-center font-Poppins text-[15px] font-medium text-[#3d4750]">
                     ₹{priceRange.min} — ₹{priceRange.max}
                   </div>
-
                   <div className="space-y-[14px]">
                     <div>
                       <div className="mb-[7px] flex justify-between font-Poppins text-[12px] text-[#686e7d]">
@@ -309,7 +282,6 @@ export default function ShopPageClient() {
                         className="w-full accent-[#0f766e]"
                       />
                     </div>
-
                     <div>
                       <div className="mb-[7px] flex justify-between font-Poppins text-[12px] text-[#686e7d]">
                         <span>Max</span>
@@ -327,7 +299,6 @@ export default function ShopPageClient() {
                     </div>
                   </div>
                 </div>
-
                 {productTags.length > 0 ? (
                   <div className="bb-sidebar-block p-[20px]" data-aos="fade-right" data-aos-delay="200">
                     <div className="mb-[18px] flex items-center justify-between gap-[12px]">
@@ -336,11 +307,9 @@ export default function ShopPageClient() {
                       </h4>
                       <i className="ri-price-tag-3-line text-[20px] text-[#0f766e]" />
                     </div>
-
                     <div className="flex flex-wrap gap-[8px]">
                       {productTags.map((tag) => {
                         const selected = selectedTags.includes(tag);
-
                         return (
                           <button
                             key={tag}
@@ -360,7 +329,6 @@ export default function ShopPageClient() {
                   </div>
                 ) : null}
               </div>
-
               {hasActiveFilters ? (
                 <button
                   type="button"
@@ -371,7 +339,6 @@ export default function ShopPageClient() {
                 </button>
               ) : null}
             </aside>
-
             <div className="w-full px-[12px] min-[992px]:w-[75%]">
               <div className="mb-[24px] flex flex-wrap items-center justify-between gap-[16px] rounded-[20px] border border-[#eee] bg-white p-[15px] shadow-sm" data-aos="fade-up">
                 <div className="flex items-center gap-[8px]">
@@ -393,7 +360,6 @@ export default function ShopPageClient() {
                     Showing <span className="font-semibold text-[#3d4750]">{filteredAndSortedProducts.length}</span> products
                   </p>
                 </div>
-
                 <label className="flex items-center gap-[10px] rounded-[10px] border border-[#eee] bg-[#f8f8fb] px-[12px] py-[8px] font-Poppins text-[14px] text-[#686e7d]">
                   <i className="ri-sort-desc text-[18px] text-[#0f766e]" />
                   <span>Sort by</span>
@@ -410,7 +376,6 @@ export default function ShopPageClient() {
                   </select>
                 </label>
               </div>
-
               {loading ? (
                 <div className="flex justify-center rounded-[20px] border border-[#eee] bg-white py-[70px]">
                   <span className="bb-loader-ring" />
