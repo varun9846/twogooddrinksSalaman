@@ -88,7 +88,10 @@ src/components/providers/AuthProvider.tsx
 src/components/shop/ProductActions.tsx
 src/components/shop/ProductCard.tsx
 src/components/shop/ShopPageClient.tsx
+src/lib/api/cart.api.ts
+src/lib/api/products.api.ts
 src/lib/apiClient.ts
+src/lib/dto/api-response.dto.ts
 src/lib/mappers/cart.mapper.ts
 src/lib/mappers/product.mapper.ts
 src/lib/prisma.ts
@@ -102,6 +105,8 @@ src/lib/site-content.ts
 src/lib/utils/api-response.ts
 src/lib/utils/auth.ts
 src/lib/utils/numbers.ts
+src/lib/validators/cart.validator.ts
+src/lib/validators/product.validator.ts
 src/lib/validators/user.validator.ts
 src/middleware.ts
 src/store/useCartStore.ts
@@ -109,9 +114,16 @@ src/store/useUiStore.ts
 src/store/useWishlistStore.ts
 src/styles/globals.css
 src/types/aos.d.ts
+src/types/api.ts
+src/types/cart.request.ts
+src/types/cart.response.ts
 src/types/cart.ts
 src/types/next-auth.d.ts
+src/types/product.request.ts
+src/types/product.response.ts
 src/types/product.ts
+src/types/user.request.ts
+src/types/user.response.ts
 tsconfig.json
 ```
 
@@ -220,25 +232,6 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 export const runtime = "nodejs";
 import { handlers } from "@/auth";
 export const { GET, POST } = handlers;
-````
-
-## File: src/app/api/products/menu/route.ts
-````typescript
-export const runtime = "nodejs";
-import productService from "@/lib/services/product.service";
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-export async function POST() {
-  try {
-    const menu = await productService.getProductMenu();
-    return jsonSuccess({
-      success: true,
-      menu,
-    });
-  } catch (error) {
-    console.error("PRODUCTS_MENU_POST_ERROR", error);
-    return jsonError(getErrorMessage(error, "Failed to fetch product menu"), 500);
-  }
-}
 ````
 
 ## File: src/components/common/Breadcrumb.tsx
@@ -511,6 +504,72 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 }
 ````
 
+## File: src/lib/api/cart.api.ts
+````typescript
+import apiClient from "@/lib/apiClient";
+import type { AddToCartRequestDto, UpdateCartItemRequestDto } from "@/types/cart.request";
+import type { CartApiResponse } from "@/types/cart.response";
+export const cartApi = {
+  fetchCart: async () => {
+    const response = await apiClient.get<CartApiResponse>("/api/cart", {
+      headers: { "Cache-Control": "no-store" },
+    });
+    return response.data;
+  },
+  addToCart: async (payload: AddToCartRequestDto) => {
+    const response = await apiClient.post<CartApiResponse>("/api/cart/add", payload);
+    return response.data;
+  },
+  updateItem: async (itemId: string, payload: UpdateCartItemRequestDto) => {
+    const response = await apiClient.patch<CartApiResponse>(
+      `/api/cart/items/${itemId}`,
+      payload,
+    );
+    return response.data;
+  },
+  removeItem: async (itemId: string) => {
+    const response = await apiClient.delete<CartApiResponse>(
+      `/api/cart/items/${itemId}`,
+    );
+    return response.data;
+  },
+};
+export default cartApi;
+````
+
+## File: src/lib/api/products.api.ts
+````typescript
+import apiClient from "@/lib/apiClient";
+import type {
+  ProductMenuApiResponse,
+  ProductMenuCategory,
+  ProductsApiResponse,
+} from "@/types/product.response";
+export type { ProductMenuCategory, ProductsApiResponse };
+export const productsApi = {
+  getAllProducts: async (category?: string) => {
+    const response = await apiClient.post<ProductsApiResponse>("/api/products", {
+      category,
+    });
+    return response.data;
+  },
+  getProductById: async (productId: string) => {
+    const response = await apiClient.post<ProductsApiResponse>("/api/products", {
+      productId,
+    });
+    return response.data;
+  },
+  getProductMenu: async () => {
+    const response = await apiClient.post<ProductMenuApiResponse>(
+      "/api/products/menu",
+      {},
+    );
+    return response.data;
+  },
+};
+export default productsApi;
+````
+
 ## File: src/lib/apiClient.ts
 ````typescript
 import axios from "axios";
@@ -524,6 +583,68 @@ export const apiClient = axios.create({
   },
 });
 export default apiClient;
+````
+
+## File: src/lib/dto/api-response.dto.ts
+````typescript
+import { ZodError } from "zod";
+import type { ApiResponse } from "@/types/api";
+function resolveStatusCode(error: unknown, fallbackStatus = 500): number {
+  const maybeStatus = (error as { status?: unknown; statusCode?: unknown })?.status ??
+    (error as { statusCode?: unknown })?.statusCode;
+  if (typeof maybeStatus === "number" && maybeStatus >= 400 && maybeStatus <= 599) {
+    return maybeStatus;
+  }
+  if (error instanceof ZodError) return 400;
+  return fallbackStatus;
+}
+function resolveErrorMessage(error: unknown, fallbackMessage = "Something went wrong."): string {
+  if (error instanceof ZodError) {
+    return error.issues.map((issue) => issue.message).join(" ") || fallbackMessage;
+  }
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+  return fallbackMessage;
+}
+export default class ApiResponseDto<TData = unknown> implements ApiResponse<TData> {
+  success = true;
+  statusCode = 200;
+  message = "Successful";
+  error = false;
+  data: TData | null = null;
+  constructor(statusCode = 200, message = "Successful") {
+    this.statusCode = statusCode;
+    this.message = message;
+  }
+  setData(data: TData, message = this.message, statusCode = this.statusCode) {
+    this.success = true;
+    this.error = false;
+    this.statusCode = statusCode;
+    this.message = message;
+    this.data = data;
+  }
+  handleError(error: unknown, fallbackMessage = "Something went wrong.", fallbackStatus = 500) {
+    this.success = false;
+    this.error = true;
+    this.statusCode = resolveStatusCode(error, fallbackStatus);
+    this.message = resolveErrorMessage(error, fallbackMessage);
+    this.data = null;
+  }
+  toJSON(): ApiResponse<TData> {
+    return {
+      success: this.success,
+      statusCode: this.statusCode,
+      message: this.message,
+      error: this.error,
+      data: this.data,
+    };
+  }
+}
+export { resolveErrorMessage, resolveStatusCode };
 ````
 
 ## File: src/lib/prisma.ts
@@ -541,192 +662,6 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 export default prisma;
-````
-
-## File: src/lib/services/cart.service.ts
-````typescript
-import { OrderStatus, type Prisma } from "@prisma/client";
-import { emptyCart, mapOrderItemsToCart } from "@/lib/mappers/cart.mapper";
-import { prisma } from "@/lib/prisma";
-import { clampQuantity, roundCurrency, toNumber } from "@/lib/utils/numbers";
-import type { Cart } from "@/types/cart";
-type TransactionClient = Prisma.TransactionClient;
-async function getPendingOrder(userId: string) {
-  return prisma.order.findFirst({
-    where: {
-      userId,
-      status: OrderStatus.pending,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-}
-async function recalculateOrderTotal(
-  tx: TransactionClient,
-  orderId: string,
-) {
-  const items = await tx.orderItem.findMany({
-    where: { orderId },
-    include: {
-      product: {
-        select: { price: true },
-      },
-    },
-  });
-  const total = items.reduce(
-    (sum, item) => sum + item.quantity * toNumber(item.product.price),
-    0,
-  );
-  await tx.order.update({
-    where: { id: orderId },
-    data: { total: roundCurrency(total) },
-  });
-}
-async function fetchCartItems(orderId: string) {
-  return prisma.orderItem.findMany({
-    where: { orderId },
-    include: { product: true },
-    orderBy: { createdAt: "desc" },
-  });
-}
-export async function getCart(userId: string): Promise<Cart> {
-  const order = await getPendingOrder(userId);
-  if (!order) {
-    return emptyCart();
-  }
-  const items = await fetchCartItems(order.id);
-  return mapOrderItemsToCart(order.id, items, toNumber(order.total));
-}
-export async function addToCart(
-  userId: string,
-  productId: string,
-  quantity = 1,
-): Promise<Cart> {
-  const safeQuantity = clampQuantity(quantity);
-  await prisma.$transaction(async (tx) => {
-    const product = await tx.product.findUnique({
-      where: { id: productId },
-    });
-    if (!product) {
-      throw new Error("Product not found.");
-    }
-    if (product.stock < safeQuantity) {
-      throw new Error("Not enough stock available.");
-    }
-    let order = await tx.order.findFirst({
-      where: {
-        userId,
-        status: OrderStatus.pending,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    if (!order) {
-      order = await tx.order.create({
-        data: {
-          userId,
-          total: 0,
-          status: OrderStatus.pending,
-        },
-      });
-    }
-    const existingItem = await tx.orderItem.findUnique({
-      where: {
-        orderId_productId: {
-          orderId: order.id,
-          productId,
-        },
-      },
-    });
-    const nextQuantity = (existingItem?.quantity ?? 0) + safeQuantity;
-    if (nextQuantity > product.stock) {
-      throw new Error("Selected quantity exceeds available stock.");
-    }
-    if (existingItem) {
-      await tx.orderItem.update({
-        where: { id: existingItem.id },
-        data: { quantity: nextQuantity },
-      });
-    } else {
-      await tx.orderItem.create({
-        data: {
-          orderId: order.id,
-          productId,
-          quantity: safeQuantity,
-        },
-      });
-    }
-    await recalculateOrderTotal(tx, order.id);
-  });
-  return getCart(userId);
-}
-export async function updateCartItem(
-  userId: string,
-  itemId: string,
-  quantity: number,
-): Promise<Cart> {
-  const safeQuantity = Number(quantity || 0);
-  const order = await getPendingOrder(userId);
-  if (!order) {
-    throw new Error("Cart not found.");
-  }
-  const item = await prisma.orderItem.findFirst({
-    where: {
-      id: itemId,
-      orderId: order.id,
-    },
-    include: {
-      product: {
-        select: { stock: true },
-      },
-    },
-  });
-  if (!item) {
-    throw new Error("Cart item not found.");
-  }
-  if (safeQuantity <= 0) {
-    await prisma.orderItem.delete({
-      where: { id: itemId },
-    });
-    await recalculateOrderTotal(prisma, order.id);
-    return getCart(userId);
-  }
-  if (safeQuantity > item.product.stock) {
-    throw new Error("Selected quantity exceeds available stock.");
-  }
-  await prisma.orderItem.update({
-    where: { id: itemId },
-    data: { quantity: safeQuantity },
-  });
-  await recalculateOrderTotal(prisma, order.id);
-  return getCart(userId);
-}
-export async function removeCartItem(
-  userId: string,
-  itemId: string,
-): Promise<Cart> {
-  const order = await getPendingOrder(userId);
-  if (!order) {
-    return getCart(userId);
-  }
-  await prisma.orderItem.deleteMany({
-    where: {
-      id: itemId,
-      orderId: order.id,
-    },
-  });
-  await recalculateOrderTotal(prisma, order.id);
-  return getCart(userId);
-}
-export const cartService = {
-  getCart,
-  addToCart,
-  updateCartItem,
-  removeCartItem,
-};
-export default cartService;
 ````
 
 ## File: src/lib/services/user.service.ts
@@ -779,23 +714,6 @@ export const userService = {
 export default userService;
 ````
 
-## File: src/lib/utils/api-response.ts
-````typescript
-import { NextResponse } from "next/server";
-export function jsonSuccess<T extends Record<string, unknown>>(
-  data: T,
-  status = 200,
-) {
-  return NextResponse.json(data, { status });
-}
-export function jsonError(message: string, status = 400) {
-  return NextResponse.json({ message }, { status });
-}
-export function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
-}
-````
-
 ## File: src/lib/utils/auth.ts
 ````typescript
 import { auth } from "@/auth";
@@ -812,36 +730,51 @@ export async function requireAuthenticatedUserId(): Promise<string> {
 }
 ````
 
-## File: src/lib/validators/user.validator.ts
+## File: src/lib/validators/cart.validator.ts
 ````typescript
-export interface RegisterUserInput {
-  name: string;
-  email: string;
-  password: string;
-  phone_number?: string;
-  address?: string;
-}
-export interface SafeRegisterUserInput {
-  name: string;
-  email: string;
-  password: string;
-  phoneNumber: string | null;
-  address: string | null;
-}
-export function validateRegisterInput(input: RegisterUserInput): SafeRegisterUserInput {
-  const name = input.name.trim();
-  const email = input.email.trim().toLowerCase();
-  const password = input.password;
-  const phoneNumber = input.phone_number?.trim() || null;
-  const address = input.address?.trim() || null;
-  if (!name || !email || !password) {
-    throw new Error("Name, email and password are required.");
-  }
-  if (password.length < 6) {
-    throw new Error("Password must be at least 6 characters.");
-  }
-  return { name, email, password, phoneNumber, address };
-}
+import { z } from "zod";
+export const AddToCartRequestSchema = z.object({
+  productId: z.string().trim().min(1, "Product id is required."),
+  quantity: z.coerce
+    .number()
+    .int("Quantity must be a whole number.")
+    .min(1, "Quantity must be at least 1.")
+    .max(99, "Quantity cannot be more than 99.")
+    .default(1),
+});
+export const UpdateCartItemRequestSchema = z.object({
+  quantity: z.coerce
+    .number()
+    .int("Quantity must be a whole number.")
+    .min(0, "Quantity cannot be negative.")
+    .max(99, "Quantity cannot be more than 99."),
+});
+export const CartItemParamsSchema = z.object({
+  itemId: z.string().trim().min(1, "Cart item id is required."),
+});
+````
+
+## File: src/lib/validators/product.validator.ts
+````typescript
+import { z } from "zod";
+const optionalTrimmedString = z.preprocess(
+  (value) => {
+    if (typeof value !== "string") return value;
+    const cleanValue = value.trim();
+    return cleanValue.length ? cleanValue : undefined;
+  },
+  z.string().optional(),
+);
+export const ProductsRequestSchema = z
+  .object({
+    category: optionalTrimmedString,
+    productId: optionalTrimmedString,
+  })
+  .default({});
+export const ProductDetailRequestSchema = z.object({
+  productId: z.string().trim().min(1, "Product id is required."),
+});
+export const ProductMenuRequestSchema = z.object({}).default({});
 ````
 
 ## File: src/middleware.ts
@@ -919,6 +852,50 @@ declare module "aos" {
 }
 ````
 
+## File: src/types/api.ts
+````typescript
+export interface ApiResponse<TData = unknown> {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  error: boolean;
+  data: TData | null;
+}
+export type ApiSuccessResponse<TData> = ApiResponse<TData> & {
+  success: true;
+  error: false;
+  data: TData;
+};
+export type ApiErrorResponse = ApiResponse<null> & {
+  success: false;
+  error: true;
+  data: null;
+};
+````
+
+## File: src/types/cart.request.ts
+````typescript
+import type { z } from "zod";
+import type {
+  AddToCartRequestSchema,
+  CartItemParamsSchema,
+  UpdateCartItemRequestSchema,
+} from "@/lib/validators/cart.validator";
+export type AddToCartRequestDto = z.infer<typeof AddToCartRequestSchema>;
+export type UpdateCartItemRequestDto = z.infer<typeof UpdateCartItemRequestSchema>;
+export type CartItemParamsDto = z.infer<typeof CartItemParamsSchema>;
+````
+
+## File: src/types/cart.response.ts
+````typescript
+import type { ApiResponse } from "@/types/api";
+import type { Cart } from "@/types/cart";
+export type CartPayload = {
+  cart: Cart | null;
+};
+export type CartApiResponse = ApiResponse<CartPayload> & CartPayload;
+````
+
 ## File: src/types/next-auth.d.ts
 ````typescript
 import type { DefaultSession } from "next-auth";
@@ -943,6 +920,71 @@ declare module "next-auth/jwt" {
     address?: string | null;
   }
 }
+````
+
+## File: src/types/product.request.ts
+````typescript
+import type { z } from "zod";
+import type {
+  ProductDetailRequestSchema,
+  ProductsRequestSchema,
+} from "@/lib/validators/product.validator";
+export type ProductsRequestDto = z.infer<typeof ProductsRequestSchema>;
+export type ProductDetailRequestDto = z.infer<typeof ProductDetailRequestSchema>;
+````
+
+## File: src/types/product.response.ts
+````typescript
+import type { ApiResponse } from "@/types/api";
+import type { ProductDto } from "@/types/product";
+export type ProductApiResponse = ProductDto;
+export interface ProductMenuItem {
+  id: string;
+  name: string;
+  href: string;
+}
+export interface ProductMenuCategory {
+  category: string;
+  href: string;
+  products: ProductMenuItem[];
+}
+export type ProductsPayload = {
+  success: true;
+  product: ProductDto | null;
+  products: ProductDto[];
+};
+export type ProductsApiResponse = ApiResponse<ProductsPayload> & ProductsPayload;
+export type ProductMenuPayload = {
+  success: true;
+  menu: ProductMenuCategory[];
+};
+export type ProductMenuApiResponse = ApiResponse<ProductMenuPayload> & ProductMenuPayload;
+````
+
+## File: src/types/user.request.ts
+````typescript
+import type { z } from "zod";
+import type { RegisterUserSchema } from "@/lib/validators/user.validator";
+export type RegisterUserRequestDto = z.input<typeof RegisterUserSchema>;
+````
+
+## File: src/types/user.response.ts
+````typescript
+import type { ApiResponse } from "@/types/api";
+export interface UserResponseDto {
+  id: string;
+  name: string;
+  email: string;
+  phoneNumber: string | null;
+  address: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export type RegisterUserPayload = {
+  user: UserResponseDto;
+};
+export type RegisterUserResponse = ApiResponse<RegisterUserPayload> &
+  RegisterUserPayload;
 ````
 
 ## File: tsconfig.json
@@ -2081,122 +2123,21 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 ````
 
-## File: src/app/api/cart/add/route.ts
+## File: src/app/api/products/menu/route.ts
 ````typescript
 export const runtime = "nodejs";
+import productService from "@/lib/services/product.service";
 import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-import { getAuthenticatedUserId } from "@/lib/utils/auth";
-import { parseRequestNumber, parseRequestString } from "@/lib/utils/numbers";
-import cartService from "@/lib/services/cart.service";
-export async function POST(request: Request) {
+export async function POST() {
   try {
-    const userId = await getAuthenticatedUserId();
-    if (!userId) {
-      return jsonError("Please login first.", 401);
-    }
-    const body = await request.json();
-    const productId = parseRequestString(body.productId);
-    if (!productId) {
-      return jsonError("Product id is required.");
-    }
-    const cart = await cartService.addToCart(
-      userId,
-      productId,
-      parseRequestNumber(body.quantity, 1),
-    );
-    return jsonSuccess({ message: "Product added to cart.", cart });
-  } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to add product to cart."));
-  }
-}
-````
-
-## File: src/app/api/cart/items/[itemId]/route.ts
-````typescript
-export const runtime = "nodejs";
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-import { getAuthenticatedUserId } from "@/lib/utils/auth";
-import { parseRequestNumber } from "@/lib/utils/numbers";
-import cartService from "@/lib/services/cart.service";
-interface RouteContext {
-  params: Promise<{
-    itemId: string;
-  }>;
-}
-export async function PATCH(request: Request, context: RouteContext) {
-  try {
-    const userId = await getAuthenticatedUserId();
-    if (!userId) {
-      return jsonError("Unauthorized", 401);
-    }
-    const { itemId } = await context.params;
-    const body = await request.json();
-    const cart = await cartService.updateCartItem(
-      userId,
-      itemId,
-      parseRequestNumber(body.quantity, 0),
-    );
-    return jsonSuccess({ message: "Cart updated.", cart });
-  } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to update cart item."));
-  }
-}
-export async function DELETE(_request: Request, context: RouteContext) {
-  try {
-    const userId = await getAuthenticatedUserId();
-    if (!userId) {
-      return jsonError("Unauthorized", 401);
-    }
-    const { itemId } = await context.params;
-    const cart = await cartService.removeCartItem(userId, itemId);
-    return jsonSuccess({ message: "Item removed from cart.", cart });
-  } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to remove cart item."));
-  }
-}
-````
-
-## File: src/app/api/cart/route.ts
-````typescript
-export const runtime = "nodejs";
-import { jsonError, jsonSuccess } from "@/lib/utils/api-response";
-import { getAuthenticatedUserId } from "@/lib/utils/auth";
-import cartService from "@/lib/services/cart.service";
-export async function GET() {
-  const userId = await getAuthenticatedUserId();
-  if (!userId) {
-    return jsonError("Unauthorized", 401);
-  }
-  const cart = await cartService.getCart(userId);
-  return jsonSuccess({ cart });
-}
-````
-
-## File: src/app/api/register/route.ts
-````typescript
-export const runtime = "nodejs";
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-import { parseRequestString } from "@/lib/utils/numbers";
-import userService from "@/lib/services/user.service";
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const user = await userService.createUser({
-      name: parseRequestString(body.name),
-      email: parseRequestString(body.email),
-      password: parseRequestString(body.password),
-      phone_number: body.phone_number ? parseRequestString(body.phone_number) : undefined,
-      address: body.address ? parseRequestString(body.address) : undefined,
+    const menu = await productService.getProductMenu();
+    return jsonSuccess({
+      success: true,
+      menu,
     });
-    return jsonSuccess(
-      {
-        message: "Account created successfully.",
-        user,
-      },
-      201,
-    );
   } catch (error) {
-    return jsonError(getErrorMessage(error, "Unable to create account."));
+    console.error("PRODUCTS_MENU_POST_ERROR", error);
+    return jsonError(getErrorMessage(error, "Failed to fetch product menu."), 500);
   }
 }
 ````
@@ -2865,6 +2806,248 @@ export function emptyCart(): Cart {
 }
 ````
 
+## File: src/lib/services/cart.service.ts
+````typescript
+import { OrderStatus, type Prisma } from "@prisma/client";
+import { emptyCart, mapOrderItemsToCart } from "@/lib/mappers/cart.mapper";
+import { prisma } from "@/lib/prisma";
+import { clampQuantity, roundCurrency, toNumber } from "@/lib/utils/numbers";
+import type { Cart } from "@/types/cart";
+type TransactionClient = Prisma.TransactionClient;
+async function getPendingOrder(userId: string) {
+  return prisma.order.findFirst({
+    where: {
+      userId,
+      status: OrderStatus.pending,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+async function recalculateOrderTotal(
+  tx: TransactionClient,
+  orderId: string,
+) {
+  const items = await tx.orderItem.findMany({
+    where: { orderId },
+    include: {
+      product: {
+        select: { price: true },
+      },
+    },
+  });
+  const total = items.reduce(
+    (sum, item) => sum + item.quantity * toNumber(item.product.price),
+    0,
+  );
+  await tx.order.update({
+    where: { id: orderId },
+    data: { total: roundCurrency(total) },
+  });
+}
+async function fetchCartItems(orderId: string) {
+  return prisma.orderItem.findMany({
+    where: { orderId },
+    include: { product: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+export async function getCart(userId: string): Promise<Cart> {
+  const order = await getPendingOrder(userId);
+  if (!order) {
+    return emptyCart();
+  }
+  const items = await fetchCartItems(order.id);
+  return mapOrderItemsToCart(order.id, items, toNumber(order.total));
+}
+export async function addToCart(
+  userId: string,
+  productId: string,
+  quantity = 1,
+): Promise<Cart> {
+  const safeQuantity = clampQuantity(quantity);
+  await prisma.$transaction(async (tx) => {
+    const product = await tx.product.findFirst({
+      where: {
+        id: productId,
+        isActive: true,
+      },
+    });
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+    if (product.stock < safeQuantity) {
+      throw new Error("Not enough stock available.");
+    }
+    let order = await tx.order.findFirst({
+      where: {
+        userId,
+        status: OrderStatus.pending,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    if (!order) {
+      order = await tx.order.create({
+        data: {
+          userId,
+          total: 0,
+          status: OrderStatus.pending,
+        },
+      });
+    }
+    const existingItem = await tx.orderItem.findUnique({
+      where: {
+        orderId_productId: {
+          orderId: order.id,
+          productId,
+        },
+      },
+    });
+    const nextQuantity = (existingItem?.quantity ?? 0) + safeQuantity;
+    if (nextQuantity > product.stock) {
+      throw new Error("Selected quantity exceeds available stock.");
+    }
+    if (existingItem) {
+      await tx.orderItem.update({
+        where: { id: existingItem.id },
+        data: { quantity: nextQuantity },
+      });
+    } else {
+      await tx.orderItem.create({
+        data: {
+          orderId: order.id,
+          productId,
+          quantity: safeQuantity,
+        },
+      });
+    }
+    await recalculateOrderTotal(tx, order.id);
+  });
+  return getCart(userId);
+}
+export async function updateCartItem(
+  userId: string,
+  itemId: string,
+  quantity: number,
+): Promise<Cart> {
+  const safeQuantity = Number(quantity || 0);
+  const order = await getPendingOrder(userId);
+  if (!order) {
+    throw new Error("Cart not found.");
+  }
+  await prisma.$transaction(async (tx) => {
+    const item = await tx.orderItem.findFirst({
+      where: {
+        id: itemId,
+        orderId: order.id,
+      },
+      include: {
+        product: {
+          select: { stock: true },
+        },
+      },
+    });
+    if (!item) {
+      throw new Error("Cart item not found.");
+    }
+    if (safeQuantity <= 0) {
+      await tx.orderItem.delete({
+        where: { id: itemId },
+      });
+      await recalculateOrderTotal(tx, order.id);
+      return;
+    }
+    if (safeQuantity > item.product.stock) {
+      throw new Error("Selected quantity exceeds available stock.");
+    }
+    await tx.orderItem.update({
+      where: { id: itemId },
+      data: { quantity: safeQuantity },
+    });
+    await recalculateOrderTotal(tx, order.id);
+  });
+  return getCart(userId);
+}
+export async function removeCartItem(
+  userId: string,
+  itemId: string,
+): Promise<Cart> {
+  const order = await getPendingOrder(userId);
+  if (!order) {
+    return getCart(userId);
+  }
+  await prisma.$transaction(async (tx) => {
+    await tx.orderItem.deleteMany({
+      where: {
+        id: itemId,
+        orderId: order.id,
+      },
+    });
+    await recalculateOrderTotal(tx, order.id);
+  });
+  return getCart(userId);
+}
+export const cartService = {
+  getCart,
+  addToCart,
+  updateCartItem,
+  removeCartItem,
+};
+export default cartService;
+````
+
+## File: src/lib/utils/api-response.ts
+````typescript
+import { NextResponse } from "next/server";
+import ApiResponseDto, {
+  resolveErrorMessage,
+  resolveStatusCode,
+} from "@/lib/dto/api-response.dto";
+export async function readJsonBody<T = unknown>(request: Request): Promise<T> {
+  try {
+    return (await request.json()) as T;
+  } catch {
+    return {} as T;
+  }
+}
+export function jsonSuccess<T extends Record<string, unknown>>(
+  payload: T,
+  status = 200,
+  message?: string,
+) {
+  const response = new ApiResponseDto<T>(
+    status,
+    message ?? (typeof payload.message === "string" ? payload.message : "Successful"),
+  );
+  response.setData(payload, response.message, status);
+  return NextResponse.json(
+    {
+      ...response.toJSON(),
+      ...payload,
+      success: true,
+      error: false,
+      statusCode: status,
+      message: response.message,
+      data: payload,
+    },
+    { status },
+  );
+}
+export function jsonError(error: unknown, status = 400, fallback = "Request failed.") {
+  const statusCode = resolveStatusCode(error, status);
+  const message = resolveErrorMessage(error, fallback);
+  const response = new ApiResponseDto<null>();
+  response.handleError(message, message, statusCode);
+  return NextResponse.json(response.toJSON(), { status: response.statusCode });
+}
+export function getErrorMessage(error: unknown, fallback: string): string {
+  return resolveErrorMessage(error, fallback);
+}
+````
+
 ## File: src/lib/utils/numbers.ts
 ````typescript
 export function toNumber(value: unknown): number {
@@ -2890,6 +3073,57 @@ export function parseRequestString(value: unknown, fallback = ""): string {
 }
 export function parseRequestNumber(value: unknown, fallback = 0): number {
   return Number(value ?? fallback);
+}
+````
+
+## File: src/lib/validators/user.validator.ts
+````typescript
+import { z } from "zod";
+const optionalNullableString = (maxLength: number, fieldName: string) =>
+  z.preprocess(
+    (value) => {
+      if (typeof value !== "string") return value;
+      const cleanValue = value.trim();
+      return cleanValue.length ? cleanValue : undefined;
+    },
+    z.string().trim().max(maxLength, `${fieldName} is too long.`).optional(),
+  );
+export const RegisterUserSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required.")
+    .max(150, "Name is too long."),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Please enter a valid email address.")
+    .max(255, "Email is too long."),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters.")
+    .max(100, "Password is too long."),
+  phone_number: optionalNullableString(50, "Phone number"),
+  address: optionalNullableString(500, "Address"),
+});
+export type RegisterUserInput = z.input<typeof RegisterUserSchema>;
+export interface SafeRegisterUserInput {
+  name: string;
+  email: string;
+  password: string;
+  phoneNumber: string | null;
+  address: string | null;
+}
+export function validateRegisterInput(input: RegisterUserInput): SafeRegisterUserInput {
+  const data = RegisterUserSchema.parse(input);
+  return {
+    name: data.name,
+    email: data.email,
+    password: data.password,
+    phoneNumber: data.phone_number ?? null,
+    address: data.address ?? null,
+  };
 }
 ````
 
@@ -3023,44 +3257,127 @@ export default function LoginPage() {
 }
 ````
 
-## File: src/app/api/products/route.ts
+## File: src/app/api/cart/add/route.ts
 ````typescript
 export const runtime = "nodejs";
-import productService from "@/lib/services/product.service";
-import { getErrorMessage, jsonError, jsonSuccess } from "@/lib/utils/api-response";
-interface ProductsRequestBody {
-  category?: string;
-  productId?: string;
-}
-async function safeReadBody(request: Request): Promise<ProductsRequestBody> {
-  try {
-    return (await request.json()) as ProductsRequestBody;
-  } catch {
-    return {};
-  }
-}
+import cartService from "@/lib/services/cart.service";
+import {
+  getErrorMessage,
+  jsonError,
+  jsonSuccess,
+  readJsonBody,
+} from "@/lib/utils/api-response";
+import { getAuthenticatedUserId } from "@/lib/utils/auth";
+import { AddToCartRequestSchema } from "@/lib/validators/cart.validator";
 export async function POST(request: Request) {
   try {
-    const body = await safeReadBody(request);
-    const productId = body.productId?.trim();
-    const category = body.category?.trim();
-    if (productId) {
-      const product = await productService.getProductById(productId);
-      return jsonSuccess({
-        success: true,
-        product,
-        products: product ? [product] : [],
-      });
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return jsonError("Please login first.", 401);
     }
-    const products = await productService.getAllProducts(category || undefined);
-    return jsonSuccess({
-      success: true,
-      product: null,
-      products,
-    });
+    const body = AddToCartRequestSchema.parse(await readJsonBody(request));
+    const cart = await cartService.addToCart(userId, body.productId, body.quantity);
+    return jsonSuccess({ message: "Product added to cart.", cart });
   } catch (error) {
-    console.error("PRODUCTS_POST_ERROR", error);
-    return jsonError(getErrorMessage(error, "Failed to fetch products"), 500);
+    return jsonError(getErrorMessage(error, "Unable to add product to cart."));
+  }
+}
+````
+
+## File: src/app/api/cart/items/[itemId]/route.ts
+````typescript
+export const runtime = "nodejs";
+import cartService from "@/lib/services/cart.service";
+import {
+  getErrorMessage,
+  jsonError,
+  jsonSuccess,
+  readJsonBody,
+} from "@/lib/utils/api-response";
+import { getAuthenticatedUserId } from "@/lib/utils/auth";
+import {
+  CartItemParamsSchema,
+  UpdateCartItemRequestSchema,
+} from "@/lib/validators/cart.validator";
+interface RouteContext {
+  params: Promise<{
+    itemId: string;
+  }>;
+}
+export async function PATCH(request: Request, context: RouteContext) {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return jsonError("Unauthorized", 401);
+    }
+    const params = CartItemParamsSchema.parse(await context.params);
+    const body = UpdateCartItemRequestSchema.parse(await readJsonBody(request));
+    const cart = await cartService.updateCartItem(userId, params.itemId, body.quantity);
+    return jsonSuccess({ message: "Cart updated.", cart });
+  } catch (error) {
+    return jsonError(getErrorMessage(error, "Unable to update cart item."));
+  }
+}
+export async function DELETE(_request: Request, context: RouteContext) {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return jsonError("Unauthorized", 401);
+    }
+    const params = CartItemParamsSchema.parse(await context.params);
+    const cart = await cartService.removeCartItem(userId, params.itemId);
+    return jsonSuccess({ message: "Item removed from cart.", cart });
+  } catch (error) {
+    return jsonError(getErrorMessage(error, "Unable to remove cart item."));
+  }
+}
+````
+
+## File: src/app/api/cart/route.ts
+````typescript
+export const runtime = "nodejs";
+import cartService from "@/lib/services/cart.service";
+import { jsonError, jsonSuccess } from "@/lib/utils/api-response";
+import { getAuthenticatedUserId } from "@/lib/utils/auth";
+export async function GET() {
+  try {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      return jsonError("Unauthorized", 401);
+    }
+    const cart = await cartService.getCart(userId);
+    return jsonSuccess({ cart });
+  } catch (error) {
+    console.error("CART_GET_ERROR", error);
+    return jsonError(error, 500, "Unable to load cart.");
+  }
+}
+````
+
+## File: src/app/api/register/route.ts
+````typescript
+export const runtime = "nodejs";
+import userService from "@/lib/services/user.service";
+import {
+  getErrorMessage,
+  jsonError,
+  jsonSuccess,
+  readJsonBody,
+} from "@/lib/utils/api-response";
+import { RegisterUserSchema } from "@/lib/validators/user.validator";
+export async function POST(request: Request) {
+  try {
+    const body = RegisterUserSchema.parse(await readJsonBody(request));
+    const user = await userService.createUser(body);
+    return jsonSuccess(
+      {
+        message: "Account created successfully.",
+        user,
+      },
+      201,
+    );
+  } catch (error) {
+    return jsonError(getErrorMessage(error, "Unable to create account."));
   }
 }
 ````
@@ -3217,36 +3534,6 @@ export default function HerbalBenefitsPage() {
 }
 ````
 
-## File: src/lib/mappers/product.mapper.ts
-````typescript
-import type { Product } from "@prisma/client";
-import type { ProductDto } from "@/types/product";
-import { formatPrice, toNumber } from "@/lib/utils/numbers";
-export function toProductDto(product: Product): ProductDto {
-  return {
-    id: product.id,
-    product_name: product.productName,
-    product_packsize: product.productPacksize,
-    product_description: product.productDescription,
-    product_subdescription: product.productSubDescription,
-    product_details: product.productDetails,
-    product_category: product.productCategory,
-    price: formatPrice(product.price),
-    Stock: product.stock,
-    image: product.image,
-    Badge: product.badge ?? undefined,
-    Tag: product.tag ?? "",
-    isActive: true,
-  };
-}
-export function toProductDtoList(products: Product[]): ProductDto[] {
-  return products.map(toProductDto);
-}
-export function getLineTotal(quantity: number, price: Product["price"]): number {
-  return toNumber(price) * quantity;
-}
-````
-
 ## File: src/lib/products.data.ts
 ````typescript
 import type { ProductDto } from "@/types/product";
@@ -3394,140 +3681,6 @@ export function getRelatedProducts(product: ProductDto) {
 }
 export const productCategories = Array.from(new Set(products.map((product) => product.product_category)));
 export const productTags = Array.from(new Set(products.map((product) => product.Tag)));
-````
-
-## File: src/lib/services/productsService.ts
-````typescript
-import apiClient from "@/lib/apiClient";
-import type { ProductDto } from "@/types/product";
-export type ProductApiResponse = ProductDto;
-export interface ProductsApiResponse {
-  success: boolean;
-  product: ProductApiResponse | null;
-  products: ProductApiResponse[];
-}
-export interface ProductMenuItem {
-  id: string;
-  name: string;
-  href: string;
-}
-export interface ProductMenuCategory {
-  category: string;
-  href: string;
-  products: ProductMenuItem[];
-}
-export const productsService = {
-  getAllProducts: async (category?: string) => {
-    const response = await apiClient.post<ProductsApiResponse>("/api/products", {
-      category,
-    });
-    return response.data;
-  },
-  getProductById: async (productId: string) => {
-    const response = await apiClient.post<ProductsApiResponse>("/api/products", {
-      productId,
-    });
-    return response.data;
-  },
-  getProductMenu: async () => {
-    const response = await apiClient.post<{
-      success: boolean;
-      menu: ProductMenuCategory[];
-    }>("/api/products/menu", {});
-    return response.data;
-  },
-};
-export default productsService;
-````
-
-## File: src/store/useCartStore.ts
-````typescript
-import { create } from "zustand";
-import type { Cart } from "@/types/cart";
-import apiClient from "@/lib/apiClient";
-interface CartState {
-  cart: Cart | null;
-  isLoading: boolean;
-  error: string | null;
-  fetchCart: () => Promise<Cart | null>;
-  addToCart: (productId: string, quantity?: number) => Promise<Cart | null>;
-  updateItem: (itemId: string, quantity: number) => Promise<Cart | null>;
-  removeItem: (itemId: string) => Promise<Cart | null>;
-  clearLocalCart: () => void;
-}
-type CartResponse = {
-  message?: string;
-  cart?: Cart | null;
-};
-async function parseResponse(response: { data?: CartResponse }): Promise<CartResponse> {
-  const data = response?.data ?? {};
-  if (data.message && !data.cart) {
-    throw new Error(data.message);
-  }
-  return data;
-}
-export const useCartStore = create<CartState>((set) => ({
-  cart: null,
-  isLoading: false,
-  error: null,
-  fetchCart: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await apiClient.get("/api/cart", { headers: { "Cache-Control": "no-store" } });
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
-      set({ cart, isLoading: false });
-      return cart;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to load cart.";
-      set({ error: message, isLoading: false });
-      return null;
-    }
-  },
-  addToCart: async (productId, quantity = 1) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await apiClient.post("/api/cart/add", { productId, quantity });
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
-      set({ cart, isLoading: false });
-      return cart;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to add product.";
-      set({ error: message, isLoading: false });
-      throw error;
-    }
-  },
-  updateItem: async (itemId, quantity) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await apiClient.patch(`/api/cart/items/${itemId}`, { quantity });
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
-      set({ cart, isLoading: false });
-      return cart;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to update item.";
-      set({ error: message, isLoading: false });
-      throw error;
-    }
-  },
-  removeItem: async (itemId) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await apiClient.delete(`/api/cart/items/${itemId}`);
-      const data = await parseResponse(response);
-      const cart = data.cart ?? null;
-      set({ cart, isLoading: false });
-      return cart;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to remove item.";
-      set({ error: message, isLoading: false });
-      throw error;
-    }
-  },
-  clearLocalCart: () => set({ cart: null, error: null, isLoading: false }),
-}));
 ````
 
 ## File: prisma/schema.prisma
@@ -3970,6 +4123,42 @@ export default function AboutPage() {
       </section>
     </main>
   );
+}
+````
+
+## File: src/app/api/products/route.ts
+````typescript
+export const runtime = "nodejs";
+import productService from "@/lib/services/product.service";
+import {
+  getErrorMessage,
+  jsonError,
+  jsonSuccess,
+  readJsonBody,
+} from "@/lib/utils/api-response";
+import { ProductsRequestSchema } from "@/lib/validators/product.validator";
+export async function POST(request: Request) {
+  try {
+    const body = ProductsRequestSchema.parse(await readJsonBody(request));
+    const { productId, category } = body;
+    if (productId) {
+      const product = await productService.getProductById(productId);
+      return jsonSuccess({
+        success: true,
+        product,
+        products: product ? [product] : [],
+      });
+    }
+    const products = await productService.getAllProducts(category);
+    return jsonSuccess({
+      success: true,
+      product: null,
+      products,
+    });
+  } catch (error) {
+    console.error("PRODUCTS_POST_ERROR", error);
+    return jsonError(getErrorMessage(error, "Failed to fetch products."), 400);
+  }
 }
 ````
 
@@ -4541,100 +4730,136 @@ export default function ProductActions({ productId, compact = false }: ProductAc
 }
 ````
 
-## File: src/lib/services/product.service.ts
+## File: src/lib/mappers/product.mapper.ts
 ````typescript
-import { Prisma } from "@prisma/client";
-import { toProductDto, toProductDtoList } from "@/lib/mappers/product.mapper";
-import { prisma } from "@/lib/prisma";
+import type { Product } from "@prisma/client";
+import { formatPrice, roundCurrency, toNumber } from "@/lib/utils/numbers";
 import type { ProductDto } from "@/types/product";
-export interface ProductMenuItem {
-  id: string;
-  name: string;
-  href: string;
-}
-export interface ProductMenuCategory {
-  category: string;
-  href: string;
-  products: ProductMenuItem[];
-}
-function normalizeCategory(category: string) {
-  return category.trim();
-}
-export async function getAllProducts(category?: string): Promise<ProductDto[]> {
-  const where: Prisma.ProductWhereInput = {
-    isActive: true,
+export function toProductDto(product: Product): ProductDto {
+  return {
+    id: product.id,
+    product_name: product.productName,
+    product_packsize: product.productPacksize,
+    product_description: product.productDescription,
+    product_subdescription: product.productSubDescription,
+    product_details: product.productDetails,
+    product_category: product.productCategory,
+    price: formatPrice(product.price),
+    Stock: product.stock,
+    image: product.image,
+    Badge: product.badge ?? undefined,
+    Tag: product.tag ?? "",
+    isActive: product.isActive,
   };
-  const cleanCategory = category?.trim();
-  if (cleanCategory) {
-    where.productCategory = {
-      equals: cleanCategory,
-      mode: "insensitive",
-    };
+}
+export function toProductDtoList(products: Product[]): ProductDto[] {
+  return products.map(toProductDto);
+}
+export function getLineTotal(quantity: number, price: Product["price"]): number {
+  return roundCurrency(toNumber(price) * quantity);
+}
+````
+
+## File: src/lib/services/productsService.ts
+````typescript
+export { productsApi as productsService } from "@/lib/api/products.api";
+export { default } from "@/lib/api/products.api";
+export type {
+  ProductApiResponse,
+  ProductMenuApiResponse,
+  ProductMenuCategory,
+  ProductMenuItem,
+  ProductsApiResponse,
+} from "@/types/product.response";
+````
+
+## File: src/store/useCartStore.ts
+````typescript
+import { create } from "zustand";
+import { cartApi } from "@/lib/api/cart.api";
+import type { Cart } from "@/types/cart";
+import type { CartApiResponse } from "@/types/cart.response";
+interface CartState {
+  cart: Cart | null;
+  isLoading: boolean;
+  error: string | null;
+  fetchCart: () => Promise<Cart | null>;
+  addToCart: (productId: string, quantity?: number) => Promise<Cart | null>;
+  updateItem: (itemId: string, quantity: number) => Promise<Cart | null>;
+  removeItem: (itemId: string) => Promise<Cart | null>;
+  clearLocalCart: () => void;
+}
+function extractCart(response: CartApiResponse): Cart | null {
+  if (response.error || response.success === false) {
+    throw new Error(response.message || "Cart request failed.");
   }
-  const products = await prisma.product.findMany({
-    where,
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-  return toProductDtoList(products);
+  return response.cart ?? response.data?.cart ?? null;
 }
-export async function getProductById(
-  productId: string,
-): Promise<ProductDto | null> {
-  const product = await prisma.product.findFirst({
-    where: {
-      id: productId,
-      isActive: true,
-    },
-  });
-  return product ? toProductDto(product) : null;
+function getClientErrorMessage(error: unknown, fallback: string): string {
+  const apiMessage = (error as { response?: { data?: { message?: string } } })
+    ?.response?.data?.message;
+  if (apiMessage) return apiMessage;
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
 }
-export async function getProductMenu(): Promise<ProductMenuCategory[]> {
-  const products = await prisma.product.findMany({
-    where: {
-      isActive: true,
-    },
-    select: {
-      id: true,
-      productName: true,
-      productCategory: true,
-    },
-    orderBy: [
-      {
-        productCategory: "asc",
-      },
-      {
-        productName: "asc",
-      },
-    ],
-  });
-  const menuMap = new Map<string, ProductMenuItem[]>();
-  products.forEach((product) => {
-    const category = normalizeCategory(product.productCategory);
-    if (!category) return;
-    const currentProducts = menuMap.get(category) ?? [];
-    currentProducts.push({
-      id: product.id,
-      name: product.productName,
-      href: `/shop/${product.id}`,
-    });
-    menuMap.set(category, currentProducts);
-  });
-  return Array.from(menuMap.entries())
-    .sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB))
-    .map(([category, products]) => ({
-      category,
-      href: `/shop?category=${encodeURIComponent(category)}`,
-      products,
-    }));
-}
-export const productService = {
-  getAllProducts,
-  getProductById,
-  getProductMenu,
-};
-export default productService;
+export const useCartStore = create<CartState>((set) => ({
+  cart: null,
+  isLoading: false,
+  error: null,
+  fetchCart: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await cartApi.fetchCart();
+      const cart = extractCart(response);
+      set({ cart, isLoading: false });
+      return cart;
+    } catch (error) {
+      const message = getClientErrorMessage(error, "Unable to load cart.");
+      set({ error: message, isLoading: false });
+      return null;
+    }
+  },
+  addToCart: async (productId, quantity = 1) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await cartApi.addToCart({ productId, quantity });
+      const cart = extractCart(response);
+      set({ cart, isLoading: false });
+      return cart;
+    } catch (error) {
+      const message = getClientErrorMessage(error, "Unable to add product.");
+      set({ error: message, isLoading: false });
+      throw new Error(message);
+    }
+  },
+  updateItem: async (itemId, quantity) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await cartApi.updateItem(itemId, { quantity });
+      const cart = extractCart(response);
+      set({ cart, isLoading: false });
+      return cart;
+    } catch (error) {
+      const message = getClientErrorMessage(error, "Unable to update item.");
+      set({ error: message, isLoading: false });
+      throw new Error(message);
+    }
+  },
+  removeItem: async (itemId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await cartApi.removeItem(itemId);
+      const cart = extractCart(response);
+      set({ cart, isLoading: false });
+      return cart;
+    } catch (error) {
+      const message = getClientErrorMessage(error, "Unable to remove item.");
+      set({ error: message, isLoading: false });
+      throw new Error(message);
+    }
+  },
+  clearLocalCart: () => set({ cart: null, error: null, isLoading: false }),
+}));
 ````
 
 ## File: src/types/product.ts
@@ -5197,6 +5422,98 @@ export default function HomePageClient() {
 
 ````
 
+## File: src/lib/services/product.service.ts
+````typescript
+import type { Prisma } from "@prisma/client";
+import { toProductDto, toProductDtoList } from "@/lib/mappers/product.mapper";
+import { prisma } from "@/lib/prisma";
+import type { ProductDto } from "@/types/product";
+import type {
+  ProductMenuCategory,
+  ProductMenuItem,
+} from "@/types/product.response";
+function normalizeCategory(category: string) {
+  return category.trim();
+}
+export async function getAllProducts(category?: string): Promise<ProductDto[]> {
+  const where: Prisma.ProductWhereInput = {
+    isActive: true,
+  };
+  const cleanCategory = category?.trim();
+  if (cleanCategory) {
+    where.productCategory = {
+      equals: cleanCategory,
+      mode: "insensitive",
+    };
+  }
+  const products = await prisma.product.findMany({
+    where,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  return toProductDtoList(products);
+}
+export async function getProductById(
+  productId: string,
+): Promise<ProductDto | null> {
+  const cleanProductId = productId.trim();
+  if (!cleanProductId) return null;
+  const product = await prisma.product.findFirst({
+    where: {
+      id: cleanProductId,
+      isActive: true,
+    },
+  });
+  return product ? toProductDto(product) : null;
+}
+export async function getProductMenu(): Promise<ProductMenuCategory[]> {
+  const products = await prisma.product.findMany({
+    where: {
+      isActive: true,
+    },
+    select: {
+      id: true,
+      productName: true,
+      productCategory: true,
+    },
+    orderBy: [
+      {
+        productCategory: "asc",
+      },
+      {
+        productName: "asc",
+      },
+    ],
+  });
+  const menuMap = new Map<string, ProductMenuItem[]>();
+  products.forEach((product) => {
+    const category = normalizeCategory(product.productCategory);
+    if (!category) return;
+    const currentProducts = menuMap.get(category) ?? [];
+    currentProducts.push({
+      id: product.id,
+      name: product.productName,
+      href: `/shop/${product.id}`,
+    });
+    menuMap.set(category, currentProducts);
+  });
+  return Array.from(menuMap.entries())
+    .sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB))
+    .map(([category, products]) => ({
+      category,
+      href: `/shop?category=${encodeURIComponent(category)}`,
+      products,
+    }));
+}
+export const productService = {
+  getAllProducts,
+  getProductById,
+  getProductMenu,
+};
+export default productService;
+````
+
 ## File: src/app/contact-us/page.tsx
 ````typescript
 import Breadcrumb from "@/components/common/Breadcrumb";
@@ -5506,54 +5823,6 @@ export const contactContent = {
   mapQuery:
     "Plot No. 24, DIC Industrial Sate Raniya, Kanpur Dehat 209304 Uttar Pradesh",
 };
-````
-
-## File: package.json
-````json
-{
-  "name": "twogooddrinks",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "jumpstart": "next build && next start",
-    "lint": "eslint",
-    "postinstall": "prisma generate",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio"
-  },
-  "dependencies": {
-    "@prisma/client": "^5.22.0",
-    "animate.css": "^4.1.1",
-    "aos": "^2.3.4",
-    "axios": "^1.17.0",
-    "bcryptjs": "^3.0.2",
-    "lucide-react": "^1.17.0",
-    "next": "16.2.7",
-    "next-auth": "^5.0.0-beta.29",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "remixicon": "^4.9.1",
-    "sass": "^1.101.0",
-    "slick-carousel": "^1.8.1",
-    "swiper": "^12.2.0",
-    "zustand": "^5.0.14"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.7",
-    "prisma": "^5.22.0",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
-}
 ````
 
 ## File: src/styles/globals.css
@@ -5897,6 +6166,55 @@ img {
 .bb-main-menu-desk a,
 .bb-main-menu-desk button {
   will-change: transform;
+}
+````
+
+## File: package.json
+````json
+{
+  "name": "twogooddrinks",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "jumpstart": "next build && next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "animate.css": "^4.1.1",
+    "aos": "^2.3.4",
+    "axios": "^1.17.0",
+    "bcryptjs": "^3.0.2",
+    "lucide-react": "^1.17.0",
+    "next": "16.2.7",
+    "next-auth": "^5.0.0-beta.29",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "remixicon": "^4.9.1",
+    "sass": "^1.101.0",
+    "slick-carousel": "^1.8.1",
+    "swiper": "^12.2.0",
+    "zustand": "^5.0.14",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.7",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
 }
 ````
 
@@ -6697,7 +7015,7 @@ export default function Header() {
                           >
                             <Link
                               href={category.href}
-                              className="flex items-center justify-between px-[24px] py-[10px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                              className="flex items-center justify-between px-[24px] py-[10px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:translate-x-[4px] hover:bg-[#f0fdfa] hover:text-[#0f766e]"
                             >
                               {category.category}
                               {category.products?.length ? (
@@ -6712,7 +7030,7 @@ export default function Header() {
                                     <li key={product.id}>
                                       <Link
                                         href={product.href}
-                                        className="block px-[24px] py-[9px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
+                                        className="block px-[24px] py-[9px] font-Poppins text-[15px] font-normal leading-[24px] tracking-[0.03rem] text-[#686e7d] transition-all duration-300 hover:translate-x-[4px] hover:bg-[#f0fdfa] hover:text-[#0f766e]"
                                       >
                                         {product.name}
                                       </Link>

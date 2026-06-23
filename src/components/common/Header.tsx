@@ -316,8 +316,6 @@ export default function Header() {
                     </Link>
 
                     <ul className="mega-menu invisible absolute left-0 top-full z-[999] mt-[18px] min-w-[205px] rounded-[10px] border border-[#eee] bg-white py-[10px] text-left opacity-0 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:visible group-hover:mt-[10px] group-hover:opacity-100">
-                    
-
                       {menuLoading ? (
                         <li className="px-[24px] py-[10px] font-Poppins text-[15px] text-[#686e7d]">
                           Loading...
@@ -399,77 +397,74 @@ export default function Header() {
         </div>
       </nav>
 
-      <div
-        className={`fixed inset-0 z-[60] bg-black/45 transition-opacity duration-300 lg:hidden ${
-          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-        onClick={closeMobile}
-      />
+     
 
-      <aside
-        className={`fixed left-0 top-0 z-[61] h-full w-[320px] max-w-[88vw] bg-white shadow-2xl transition-transform duration-300 lg:hidden ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between border-b border-[#eee] p-[20px]">
-          <Image
-            src="/assets/img/logo/logo-icon2.png"
-            alt="2good Plus"
-            width={105}
-            height={54}
+      {mobileOpen ? (
+        <div className="fixed inset-0 z-[9999] bg-black/50 max-[991px]:block min-[992px]:hidden">
+          <button
+            type="button"
+            aria-label="Close mobile menu"
+            className="absolute inset-0 h-full w-full cursor-default"
+            onClick={closeMobile}
           />
 
-          <button type="button" onClick={closeMobile} aria-label="Close menu">
-            <i className="ri-close-line text-[26px] text-[#3d4750]" />
-          </button>
-        </div>
-
-        <div className="p-[20px]">
-          <form onSubmit={handleSearch} className="relative mb-[20px]">
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search products..."
-              className="bb-input pr-[44px]"
-            />
-
-            <button
-              type="submit"
-              className="absolute right-[12px] top-[11px] text-[#0f766e]"
-              aria-label="Search"
-            >
-              <i className="ri-search-line text-[18px]" />
-            </button>
-          </form>
-
-          <nav className="space-y-[8px]">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={closeMobile}
-                className="block rounded-[10px] border border-[#eee] px-[14px] py-[12px] font-Poppins text-[15px] font-medium text-[#686e7d] transition-all duration-300 hover:border-[#0f766e] hover:bg-[#f0fdfa] hover:text-[#0f766e]"
-              >
-                {link.label}
+          <aside className="relative z-[10000] h-dvh w-[320px] max-w-[86vw] overflow-y-auto bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#eee] px-5 py-4">
+              <Link href="/" onClick={closeMobile}>
+                <Image
+                  src="/assets/img/logo/logo-icon2.png"
+                  alt="2good Plus"
+                  width={120}
+                  height={60}
+                  className="h-auto w-[110px]"
+                />
               </Link>
-            ))}
-          </nav>
 
-          <div className="mt-[22px] rounded-[14px] bg-[#f8f8fb] p-[16px]">
-            <p className="mb-[8px] font-quicksand text-[16px] font-bold text-[#3d4750]">
-              Contact
-            </p>
+              <button
+                type="button"
+                onClick={closeMobile}
+                aria-label="Close menu"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[#3d4750]"
+              >
+                <i className="ri-close-line text-[26px]" />
+              </button>
+            </div>
 
-            <Link
-              href="tel:+919967399880"
-              className="font-Poppins text-[14px] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
-            >
-              <i className="ri-phone-line mr-[6px] text-[#0f766e]" />
-              +91 99673 99880
-            </Link>
-          </div>
+            <form onSubmit={handleSearch} className="px-5 py-5">
+              <div className="flex h-[46px] items-center rounded-[12px] border border-[#eee] bg-white px-4">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search products..."
+                  className="w-full bg-transparent text-[14px] outline-none"
+                />
+                <button type="submit" aria-label="Search">
+                  <i className="ri-search-line text-[22px] text-[#0f766e]" />
+                </button>
+              </div>
+            </form>
+
+            <nav className="px-5 pb-6">
+              <div className="space-y-3">
+                {navLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeMobile}
+                    className={`block rounded-[10px] border border-[#eee] px-4 py-3 text-[15px] font-medium ${
+                      pathname === item.href
+                        ? "bg-[#f0fdfa] text-[#0f766e]"
+                        : "text-[#3d4750]"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          </aside>
         </div>
-      </aside>
+      ) : null}
     </header>
   );
 }
