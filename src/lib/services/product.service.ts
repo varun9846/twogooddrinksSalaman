@@ -7,26 +7,55 @@ import type {
   ProductMenuItem,
 } from "@/types/product.response";
 
-function normalizeCategory(category: string) {
-  return category.trim();
+const productInclude = {
+  category: true,
+  badge: true,
+  tag: true,
+} satisfies Prisma.ProductInclude;
+
+function normalizeText(value: string) {
+  return value.trim();
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+}
+
+function buildCategoryFilter(category?: string): Prisma.ProductWhereInput | undefined {
+  const cleanCategory = category?.trim();
+  if (!cleanCategory) return undefined;
+
+  const filters: Prisma.ProductWhereInput[] = [
+    {
+      category: {
+        is: {
+          name: {
+            equals: cleanCategory,
+            mode: "insensitive",
+          },
+        },
+      },
+    },
+  ];
+
+  if (isUuid(cleanCategory)) {
+    filters.push({ productCategory: cleanCategory });
+  }
+
+  return { OR: filters };
 }
 
 export async function getAllProducts(category?: string): Promise<ProductDto[]> {
   const where: Prisma.ProductWhereInput = {
     isActive: true,
+    ...buildCategoryFilter(category),
   };
-
-  const cleanCategory = category?.trim();
-
-  if (cleanCategory) {
-    where.productCategory = {
-      equals: cleanCategory,
-      mode: "insensitive",
-    };
-  }
 
   const products = await prisma.product.findMany({
     where,
+    include: productInclude,
     orderBy: {
       createdAt: "desc",
     },
@@ -39,7 +68,6 @@ export async function getProductById(
   productId: string,
 ): Promise<ProductDto | null> {
   const cleanProductId = productId.trim();
-
   if (!cleanProductId) return null;
 
   const product = await prisma.product.findFirst({
@@ -47,6 +75,7 @@ export async function getProductById(
       id: cleanProductId,
       isActive: true,
     },
+    include: productInclude,
   });
 
   return product ? toProductDto(product) : null;
@@ -56,15 +85,26 @@ export async function getProductMenu(): Promise<ProductMenuCategory[]> {
   const products = await prisma.product.findMany({
     where: {
       isActive: true,
+      category: {
+        is: {
+          isActive: true,
+        },
+      },
     },
     select: {
       id: true,
       productName: true,
-      productCategory: true,
+      category: {
+        select: {
+          name: true,
+        },
+      },
     },
     orderBy: [
       {
-        productCategory: "asc",
+        category: {
+          name: "asc",
+        },
       },
       {
         productName: "asc",
@@ -75,17 +115,15 @@ export async function getProductMenu(): Promise<ProductMenuCategory[]> {
   const menuMap = new Map<string, ProductMenuItem[]>();
 
   products.forEach((product) => {
-    const category = normalizeCategory(product.productCategory);
+    const category = normalizeText(product.category.name);
     if (!category) return;
 
     const currentProducts = menuMap.get(category) ?? [];
-
     currentProducts.push({
       id: product.id,
       name: product.productName,
       href: `/shop/${product.id}`,
     });
-
     menuMap.set(category, currentProducts);
   });
 

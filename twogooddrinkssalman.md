@@ -3777,6 +3777,7 @@ CREATE TABLE IF NOT EXISTS users (
   password TEXT NOT NULL,
   phone_number VARCHAR(50),
   address TEXT,
+  is_active boolean NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -3794,6 +3795,7 @@ CREATE TABLE IF NOT EXISTS products (
   image TEXT NOT NULL,
   badge VARCHAR(80),
   tag VARCHAR(100),
+  is_active boolean NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -3802,6 +3804,7 @@ CREATE TABLE IF NOT EXISTS orders (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   total NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (total >= 0),
   status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('paid', 'pending', 'failed')),
+  is_active boolean NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -3810,14 +3813,75 @@ CREATE TABLE IF NOT EXISTS order_items (
   order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
   quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+  is_active boolean NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(order_id, product_id)
 );
+CREATE TABLE IF NOT EXISTS badges
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    name character varying(80) COLLATE pg_catalog."default" NOT NULL,
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT badges_pkey PRIMARY KEY (id),
+    CONSTRAINT badges_name_key UNIQUE (name)
+)
+CREATE TABLE IF NOT EXISTS categories
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    name character varying(150) COLLATE pg_catalog."default" NOT NULL,
+    parent_id uuid,
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT categories_pkey PRIMARY KEY (id),
+    CONSTRAINT categories_name_key UNIQUE (name),
+    CONSTRAINT categories_parent_id_fkey FOREIGN KEY (parent_id)
+        REFERENCES categories (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
+)
+CREATE TABLE IF NOT EXISTS stocks
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    product_id uuid NOT NULL,
+    stock_in integer NOT NULL DEFAULT 0,
+    stock_out integer NOT NULL DEFAULT 0,
+    price numeric(10,2) NOT NULL DEFAULT 0,
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT stocks_pkey PRIMARY KEY (id),
+    CONSTRAINT stocks_product_id_unique UNIQUE (product_id),
+    CONSTRAINT stocks_product_id_fkey FOREIGN KEY (product_id)
+        REFERENCES products (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT stocks_price_check CHECK (price >= 0::numeric),
+    CONSTRAINT stocks_stock_in_check CHECK (stock_in >= 0),
+    CONSTRAINT stocks_stock_out_check CHECK (stock_out >= 0),
+    CONSTRAINT stocks_valid_movement_check CHECK (stock_in > 0 OR stock_out > 0)
+)
+CREATE TABLE IF NOT EXISTS tags
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    name character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT tags_pkey PRIMARY KEY (id),
+    CONSTRAINT tags_name_key UNIQUE (name)
+)
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(LOWER(email));
 CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status);
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_categories_parent_id ON categories(parent_id);
+CREATE INDEX IF NOT EXISTS idx_stocks_product_id ON stocks(product_id);
+CREATE INDEX IF NOT EXISTS idx_badges_name_lower ON badges(LOWER(name));
+CREATE INDEX IF NOT EXISTS idx_tags_name_lower ON tags(LOWER(name));
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -3845,6 +3909,26 @@ CREATE TRIGGER order_items_set_updated_at
 BEFORE UPDATE ON order_items
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS badges_set_updated_at ON badges;
+CREATE TRIGGER badges_set_updated_at
+    BEFORE UPDATE ON badges
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS categories_set_updated_at ON categories;
+CREATE TRIGGER categories_set_updated_at
+    BEFORE UPDATE ON categories
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS stocks_set_updated_at ON stocks;
+CREATE TRIGGER stocks_set_updated_at
+    BEFORE UPDATE ON stocks
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS tags_set_updated_at ON tags;
+CREATE TRIGGER tags_set_updated_at
+    BEFORE UPDATE ON tags
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
 ````
 
 ## File: src/app/(auth)/register/page.tsx
@@ -7079,70 +7163,68 @@ export default function Header() {
           </Link>
         </div>
       </nav>
-      <div
-        className={`fixed inset-0 z-[60] bg-black/45 transition-opacity duration-300 lg:hidden ${
-          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-        onClick={closeMobile}
-      />
-      <aside
-        className={`fixed left-0 top-0 z-[61] h-full w-[320px] max-w-[88vw] bg-white shadow-2xl transition-transform duration-300 lg:hidden ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between border-b border-[#eee] p-[20px]">
-          <Image
-            src="/assets/img/logo/logo-icon2.png"
-            alt="2good Plus"
-            width={105}
-            height={54}
+      {mobileOpen ? (
+        <div className="fixed inset-0 z-[9999] bg-black/50 max-[991px]:block min-[992px]:hidden">
+          <button
+            type="button"
+            aria-label="Close mobile menu"
+            className="absolute inset-0 h-full w-full cursor-default"
+            onClick={closeMobile}
           />
-          <button type="button" onClick={closeMobile} aria-label="Close menu">
-            <i className="ri-close-line text-[26px] text-[#3d4750]" />
-          </button>
-        </div>
-        <div className="p-[20px]">
-          <form onSubmit={handleSearch} className="relative mb-[20px]">
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search products..."
-              className="bb-input pr-[44px]"
-            />
-            <button
-              type="submit"
-              className="absolute right-[12px] top-[11px] text-[#0f766e]"
-              aria-label="Search"
-            >
-              <i className="ri-search-line text-[18px]" />
-            </button>
-          </form>
-          <nav className="space-y-[8px]">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={closeMobile}
-                className="block rounded-[10px] border border-[#eee] px-[14px] py-[12px] font-Poppins text-[15px] font-medium text-[#686e7d] transition-all duration-300 hover:border-[#0f766e] hover:bg-[#f0fdfa] hover:text-[#0f766e]"
-              >
-                {link.label}
+          <aside className="relative z-[10000] h-dvh w-[320px] max-w-[86vw] overflow-y-auto bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#eee] px-5 py-4">
+              <Link href="/" onClick={closeMobile}>
+                <Image
+                  src="/assets/img/logo/logo-icon2.png"
+                  alt="2good Plus"
+                  width={120}
+                  height={60}
+                  className="h-auto w-[110px]"
+                />
               </Link>
-            ))}
-          </nav>
-          <div className="mt-[22px] rounded-[14px] bg-[#f8f8fb] p-[16px]">
-            <p className="mb-[8px] font-quicksand text-[16px] font-bold text-[#3d4750]">
-              Contact
-            </p>
-            <Link
-              href="tel:+919967399880"
-              className="font-Poppins text-[14px] text-[#686e7d] transition-all duration-300 hover:text-[#0f766e]"
-            >
-              <i className="ri-phone-line mr-[6px] text-[#0f766e]" />
-              +91 99673 99880
-            </Link>
-          </div>
+              <button
+                type="button"
+                onClick={closeMobile}
+                aria-label="Close menu"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[#3d4750]"
+              >
+                <i className="ri-close-line text-[26px]" />
+              </button>
+            </div>
+            <form onSubmit={handleSearch} className="px-5 py-5">
+              <div className="flex h-[46px] items-center rounded-[12px] border border-[#eee] bg-white px-4">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search products..."
+                  className="w-full bg-transparent text-[14px] outline-none"
+                />
+                <button type="submit" aria-label="Search">
+                  <i className="ri-search-line text-[22px] text-[#0f766e]" />
+                </button>
+              </div>
+            </form>
+            <nav className="px-5 pb-6">
+              <div className="space-y-3">
+                {navLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeMobile}
+                    className={`block rounded-[10px] border border-[#eee] px-4 py-3 text-[15px] font-medium ${
+                      pathname === item.href
+                        ? "bg-[#f0fdfa] text-[#0f766e]"
+                        : "text-[#3d4750]"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          </aside>
         </div>
-      </aside>
+      ) : null}
     </header>
   );
 }

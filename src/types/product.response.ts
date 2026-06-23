@@ -1,5 +1,5 @@
 import type { ApiResponse } from "@/types/api";
-import type { ProductDto } from "@/types/product";
+import type { ProductDto, ProductLookupDto } from "@/types/product";
 
 export type ProductApiResponse = ProductDto;
 
@@ -29,3 +29,11 @@ export type ProductMenuPayload = {
 };
 
 export type ProductMenuApiResponse = ApiResponse<ProductMenuPayload> & ProductMenuPayload;
+
+export type ProductLookupPayload = {
+  success: true;
+  items: ProductLookupDto[];
+};
+
+export type ProductLookupApiResponse = ApiResponse<ProductLookupPayload> &
+  ProductLookupPayload;

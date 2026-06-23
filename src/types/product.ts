@@ -5,13 +5,21 @@ export interface ProductDto {
   product_subdescription: string;
   product_details: string;
   product_category: string;
+  product_category_id?: string;
   price: string;
   Stock: number;
   image: string;
   Badge?: string | null;
+  badge_id?: string | null;
   Tag: string;
+  tag_id?: string | null;
   isActive?: boolean;
   product_packsize?: number | null;
+}
+
+export interface ProductLookupDto {
+  id: string;
+  name: string;
 }
 
 export interface ProductsListResponse {

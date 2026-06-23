@@ -1,9 +1,15 @@
-import type { OrderItem, Product } from "@prisma/client";
+import type { Badge, Category, OrderItem, Product, Tag } from "@prisma/client";
 import type { Cart, CartItem } from "@/types/cart";
 import { getLineTotal } from "@/lib/mappers/product.mapper";
 import { roundCurrency, toNumber } from "@/lib/utils/numbers";
 
-type OrderItemWithProduct = OrderItem & { product: Product };
+type OrderItemWithProduct = OrderItem & {
+  product: Product & {
+    category?: Category | null;
+    badge?: Badge | null;
+    tag?: Tag | null;
+  };
+};
 
 export function mapOrderItemsToCart(
   orderId: string | null,
@@ -22,12 +28,12 @@ export function mapOrderItemsToCart(
       product_description: item.product.productDescription,
       product_subdescription: item.product.productSubDescription,
       product_details: item.product.productDetails,
-      product_category: item.product.productCategory,
+      product_category: item.product.category?.name ?? item.product.productCategory,
       price: toNumber(item.product.price),
       stock: item.product.stock,
       image: item.product.image,
-      badge: item.product.badge,
-      tag: item.product.tag,
+      badge: item.product.badge?.name ?? null,
+      tag: item.product.tag?.name ?? null,
     },
   }));
 

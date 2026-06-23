@@ -8,6 +8,7 @@ import FloatingWhatsApp from "@/components/common/FloatingWhatsApp";
 import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
 import PageLoader from "@/components/common/PageLoader";
+import NewsletterModal from "@/components/home/NewsletterModal";
 import "remixicon/fonts/remixicon.css";
 import "aos/dist/aos.css";
 import "swiper/css";
@@ -16,8 +17,6 @@ import "swiper/css/pagination";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "animate.css/animate.min.css";
-
-
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -57,6 +56,7 @@ export default function RootLayout({
           <main className="min-h-screen overflow-x-clip">{children}</main>
           <Footer />
           <FloatingWhatsApp />
+          <NewsletterModal />
         </AuthProvider>
       </body>
     </html>
