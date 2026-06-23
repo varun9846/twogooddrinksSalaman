@@ -69,8 +69,11 @@ export async function addToCart(
   const safeQuantity = clampQuantity(quantity);
 
   await prisma.$transaction(async (tx) => {
-    const product = await tx.product.findUnique({
-      where: { id: productId },
+    const product = await tx.product.findFirst({
+      where: {
+        id: productId,
+        isActive: true,
+      },
     });
 
     if (!product) {
@@ -149,40 +152,43 @@ export async function updateCartItem(
     throw new Error("Cart not found.");
   }
 
-  const item = await prisma.orderItem.findFirst({
-    where: {
-      id: itemId,
-      orderId: order.id,
-    },
-    include: {
-      product: {
-        select: { stock: true },
+  await prisma.$transaction(async (tx) => {
+    const item = await tx.orderItem.findFirst({
+      where: {
+        id: itemId,
+        orderId: order.id,
       },
-    },
-  });
-
-  if (!item) {
-    throw new Error("Cart item not found.");
-  }
-
-  if (safeQuantity <= 0) {
-    await prisma.orderItem.delete({
-      where: { id: itemId },
+      include: {
+        product: {
+          select: { stock: true },
+        },
+      },
     });
-    await recalculateOrderTotal(prisma, order.id);
-    return getCart(userId);
-  }
 
-  if (safeQuantity > item.product.stock) {
-    throw new Error("Selected quantity exceeds available stock.");
-  }
+    if (!item) {
+      throw new Error("Cart item not found.");
+    }
 
-  await prisma.orderItem.update({
-    where: { id: itemId },
-    data: { quantity: safeQuantity },
+    if (safeQuantity <= 0) {
+      await tx.orderItem.delete({
+        where: { id: itemId },
+      });
+      await recalculateOrderTotal(tx, order.id);
+      return;
+    }
+
+    if (safeQuantity > item.product.stock) {
+      throw new Error("Selected quantity exceeds available stock.");
+    }
+
+    await tx.orderItem.update({
+      where: { id: itemId },
+      data: { quantity: safeQuantity },
+    });
+
+    await recalculateOrderTotal(tx, order.id);
   });
 
-  await recalculateOrderTotal(prisma, order.id);
   return getCart(userId);
 }
 
@@ -196,14 +202,17 @@ export async function removeCartItem(
     return getCart(userId);
   }
 
-  await prisma.orderItem.deleteMany({
-    where: {
-      id: itemId,
-      orderId: order.id,
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.orderItem.deleteMany({
+      where: {
+        id: itemId,
+        orderId: order.id,
+      },
+    });
+
+    await recalculateOrderTotal(tx, order.id);
   });
 
-  await recalculateOrderTotal(prisma, order.id);
   return getCart(userId);
 }
 

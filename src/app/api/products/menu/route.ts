@@ -13,6 +13,6 @@ export async function POST() {
     });
   } catch (error) {
     console.error("PRODUCTS_MENU_POST_ERROR", error);
-    return jsonError(getErrorMessage(error, "Failed to fetch product menu"), 500);
+    return jsonError(getErrorMessage(error, "Failed to fetch product menu."), 500);
   }
 }

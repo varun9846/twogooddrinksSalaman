@@ -511,325 +511,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 }
 ````
 
-## File: src/components/shop/ShopPageClient.tsx
-````typescript
-"use client";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import Breadcrumb from "@/components/common/Breadcrumb";
-import ProductCard from "@/components/shop/ProductCard";
-import { productsService } from "@/lib/services/productsService";
-import type { ProductDto } from "@/types/product";
-const SHOP_CATEGORIES = [
-  "Packaged Drinking Water",
-  "Healthy Drinks",
-  "Herbal Infusions",
-  "Natural Drinking Water",
-  "Jeera Drink",
-  "Healthy Snacks",
-];
-function getPriceNumber(price: string) {
-  return Number(price.replace(/[^0-9.]/g, "")) || 0;
-}
-export default function ShopPageClient() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const categoryFromUrl = searchParams.get("category");
-  const queryFromUrl = searchParams.get("q") || "";
-  const [searchQuery, setSearchQuery] = useState(queryFromUrl);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryFromUrl);
-  const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState("latest");
-  const [productsState, setProductsState] = useState<ProductDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    setSelectedCategory(categoryFromUrl);
-    setSearchQuery(queryFromUrl);
-  }, [categoryFromUrl, queryFromUrl]);
-  useEffect(() => {
-    let cancelled = false;
-    async function loadProducts() {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await productsService.getAllProducts(categoryFromUrl || undefined);
-        if (cancelled) return;
-        if (data?.success && Array.isArray(data.products)) {
-          setProductsState(data.products);
-        } else {
-          setProductsState([]);
-          setError("Failed to load products");
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error("Failed to load products", error);
-          setProductsState([]);
-          setError("Failed to load products");
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    loadProducts();
-    return () => {
-      cancelled = true;
-    };
-  }, [categoryFromUrl]);
-  const handleCategoryClick = (category: string) => {
-    if (selectedCategory === category) {
-      router.push("/shop");
-      return;
-    }
-    router.push(`/shop?category=${encodeURIComponent(category)}`);
-  };
-  const handlePriceChange = (range: string) => {
-    setSelectedPrices((prev) =>
-      prev.includes(range) ? prev.filter((item) => item !== range) : [...prev, range],
-    );
-  };
-  const handleTagClick = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag],
-    );
-  };
-  const clearAllFilters = () => {
-    setSearchQuery("");
-    setSelectedPrices([]);
-    setSelectedTags([]);
-    setSortBy("latest");
-    router.push("/shop");
-  };
-  const productTags = useMemo(() => {
-    return Array.from(new Set(productsState.map((product) => product.Tag).filter(Boolean)));
-  }, [productsState]);
-  const filteredAndSortedProducts = useMemo(() => {
-    let result = [...productsState];
-    if (searchQuery.trim()) {
-      const query = searchQuery.trim().toLowerCase();
-      result = result.filter((product) =>
-        [
-          product.product_name,
-          product.product_description,
-          product.product_category,
-          product.Tag,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(query),
-      );
-    }
-    if (selectedTags.length > 0) {
-      result = result.filter((product) => selectedTags.includes(product.Tag));
-    }
-    if (selectedPrices.length > 0) {
-      result = result.filter((product) => {
-        const price = getPriceNumber(product.price);
-        return selectedPrices.some((range) => {
-          if (range === "Under 15") return price < 15;
-          if (range === "15 - 30") return price >= 15 && price <= 30;
-          if (range === "Above 30") return price > 30;
-          return true;
-        });
-      });
-    }
-    if (sortBy === "price-low") {
-      result.sort((a, b) => getPriceNumber(a.price) - getPriceNumber(b.price));
-    }
-    if (sortBy === "price-high") {
-      result.sort((a, b) => getPriceNumber(b.price) - getPriceNumber(a.price));
-    }
-    if (sortBy === "name") {
-      result.sort((a, b) => a.product_name.localeCompare(b.product_name));
-    }
-    return result;
-  }, [productsState, searchQuery, selectedPrices, selectedTags, sortBy]);
-  const hasActiveFilters =
-    Boolean(searchQuery) ||
-    Boolean(selectedCategory) ||
-    selectedPrices.length > 0 ||
-    selectedTags.length > 0;
-  return (
-    <main>
-      <Breadcrumb title={selectedCategory || "Shop"} current={selectedCategory || "Shop"} />
-      <section className="section-category py-[35px]">
-        <div className="bb-container">
-          <div className="grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-4">
-            {SHOP_CATEGORIES.slice(0, 4).map((category, index) => (
-              <button
-                type="button"
-                key={category}
-                onClick={() => handleCategoryClick(category)}
-                className={`rounded-[18px] border p-[20px] text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
-                  selectedCategory === category
-                    ? "border-[#0f766e] bg-[#f0fdfa]"
-                    : "border-[#eee] bg-white"
-                }`}
-                data-aos="fade-up"
-                data-aos-delay={index * 80}
-              >
-                <i className="ri-drop-line mb-[12px] block text-[28px] text-[#0f766e]" />
-                <span className="font-quicksand text-[18px] font-bold text-[#3d4750]">
-                  {category}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="section-shop overflow-x-hidden pb-[60px] max-[767px]:pb-[40px]">
-        <div className="bb-container">
-          <div className="mb-[35px] text-center" data-aos="fade-up">
-            <p className="mb-[8px] font-Poppins text-[14px] font-medium uppercase tracking-[0.18rem] text-[#0f766e]">
-              Hydrate • Heal • Feel Good
-            </p>
-            <h1 className="mb-[10px] font-quicksand text-[34px] font-bold text-[#3d4750] max-[767px]:text-[28px]">
-              {selectedCategory || "Shop Wellness Products"}
-            </h1>
-            <p className="mx-auto max-w-[650px] font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-              Explore packaged drinking water, healthy drinks, herbal infusions, and everyday hydration products.
-            </p>
-          </div>
-          <div className="flex flex-wrap mx-[-12px]">
-            <aside className="order-2 w-full px-[12px] max-[991px]:order-1 max-[991px]:mb-[35px] min-[992px]:w-[25%]">
-              <div className="bb-shop-sidebar sticky top-[150px] space-y-[24px]">
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Search
-                  </h4>
-                  <input
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search products..."
-                    className="bb-input"
-                  />
-                </div>
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="80">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Categories
-                  </h4>
-                  <ul className="space-y-[12px]">
-                    {SHOP_CATEGORIES.map((category) => (
-                      <li key={category}>
-                        <button
-                          type="button"
-                          onClick={() => handleCategoryClick(category)}
-                          className={`flex w-full items-center justify-between rounded-[10px] px-[10px] py-[8px] text-left font-Poppins text-[14px] transition ${
-                            selectedCategory === category
-                              ? "bg-[#f0fdfa] text-[#0f766e]"
-                              : "text-[#777] hover:bg-[#f8f8fb] hover:text-[#0f766e]"
-                          }`}
-                        >
-                          <span>{category}</span>
-                          <i className="ri-arrow-right-s-line" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="120">
-                  <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                    Price Range
-                  </h4>
-                  <div className="space-y-[13px]">
-                    {["Under 15", "15 - 30", "Above 30"].map((range) => (
-                      <label key={range} className="bb-sidebar-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={selectedPrices.includes(range)}
-                          onChange={() => handlePriceChange(range)}
-                        />
-                        {range}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                {productTags.length > 0 ? (
-                  <div className="rounded-[20px] border border-[#eee] bg-white p-[20px] shadow-sm" data-aos="fade-right" data-aos-delay="200">
-                    <h4 className="mb-[18px] font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
-                      Tags
-                    </h4>
-                    <div className="flex flex-wrap gap-[8px]">
-                      {productTags.map((tag) => {
-                        const selected = selectedTags.includes(tag);
-                        return (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() => handleTagClick(tag)}
-                            className={`rounded-full px-[12px] py-[6px] font-Poppins text-[12px] transition ${
-                              selected
-                                ? "bg-[#0f766e] text-white"
-                                : "bg-[#f8f8fb] text-[#686e7d] hover:bg-[#0f766e] hover:text-white"
-                            }`}
-                          >
-                            {tag}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : null}
-                {hasActiveFilters ? (
-                  <button
-                    type="button"
-                    onClick={clearAllFilters}
-                    className="w-full rounded-[10px] bg-[#3d4750] px-[18px] py-[12px] font-Poppins text-[14px] font-medium text-white transition hover:bg-[#0f766e]"
-                  >
-                    Clear Filters
-                  </button>
-                ) : null}
-              </div>
-            </aside>
-            <div className="order-1 w-full px-[12px] max-[991px]:order-2 min-[992px]:w-[75%]">
-              <div className="mb-[24px] flex flex-wrap items-center justify-between gap-[16px] rounded-[20px] border border-[#eee] bg-white p-[18px] shadow-sm" data-aos="fade-up">
-                <p className="font-Poppins text-[14px] text-[#686e7d]">
-                  Showing <span className="font-semibold text-[#3d4750]">{filteredAndSortedProducts.length}</span> products
-                </p>
-                <select
-                  value={sortBy}
-                  onChange={(event) => setSortBy(event.target.value)}
-                  className="rounded-[10px] border border-[#eee] bg-white px-[14px] py-[10px] font-Poppins text-[14px] text-[#686e7d] outline-none focus:border-[#0f766e]"
-                >
-                  <option value="latest">Sort by latest</option>
-                  <option value="name">Sort by name</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                </select>
-              </div>
-              {loading ? (
-                <div className="flex justify-center rounded-[20px] border border-[#eee] bg-white py-[70px]">
-                  <span className="bb-loader-ring" />
-                </div>
-              ) : error ? (
-                <div className="rounded-[20px] border border-red-100 bg-red-50 py-[60px] text-center">
-                  <p className="font-Poppins text-[16px] text-red-600">{error}</p>
-                </div>
-              ) : filteredAndSortedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 gap-[24px] min-[576px]:grid-cols-2 min-[1200px]:grid-cols-3">
-                  {filteredAndSortedProducts.map((product, index) => (
-                    <div key={product.id} data-aos="fade-up" data-aos-delay={(index % 3) * 80}>
-                      <ProductCard product={product} />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-[20px] border border-[#eee] bg-white py-[60px] text-center">
-                  <p className="font-Poppins text-[16px] text-[#686e7d]">
-                    No products match your search criteria.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
-}
-````
-
 ## File: src/lib/apiClient.ts
 ````typescript
 import axios from "axios";
@@ -843,53 +524,6 @@ export const apiClient = axios.create({
   },
 });
 export default apiClient;
-````
-
-## File: src/lib/mappers/cart.mapper.ts
-````typescript
-import type { OrderItem, Product } from "@prisma/client";
-import type { Cart, CartItem } from "@/types/cart";
-import { getLineTotal } from "@/lib/mappers/product.mapper";
-import { roundCurrency, toNumber } from "@/lib/utils/numbers";
-type OrderItemWithProduct = OrderItem & { product: Product };
-export function mapOrderItemsToCart(
-  orderId: string | null,
-  items: OrderItemWithProduct[],
-  orderTotal?: number,
-): Cart {
-  const cartItems: CartItem[] = items.map((item) => ({
-    id: item.id,
-    order_id: item.orderId,
-    product_id: item.productId,
-    quantity: item.quantity,
-    line_total: getLineTotal(item.quantity, item.product.price),
-    product: {
-      id: item.product.id,
-      product_name: item.product.productName,
-      product_description: item.product.productDescription,
-      product_subdescription: item.product.productSubDescription,
-      product_details: item.product.productDetails,
-      product_category: item.product.productCategory,
-      price: toNumber(item.product.price),
-      stock: item.product.stock,
-      image: item.product.image,
-      badge: item.product.badge,
-      tag: item.product.tag,
-    },
-  }));
-  const calculatedTotal =
-    orderTotal ??
-    cartItems.reduce((sum, item) => sum + item.line_total, 0);
-  return {
-    order_id: orderId,
-    total: roundCurrency(calculatedTotal),
-    item_count: cartItems.reduce((sum, item) => sum + item.quantity, 0),
-    items: cartItems,
-  };
-}
-export function emptyCart(): Cart {
-  return mapOrderItemsToCart(null, [], 0);
-}
 ````
 
 ## File: src/lib/prisma.ts
@@ -1282,37 +916,6 @@ declare module "aos" {
     refreshHard: () => void;
   };
   export default AOS;
-}
-````
-
-## File: src/types/cart.ts
-````typescript
-export interface CartProduct {
-  id: string;
-  product_name: string;
-  product_description: string;
-  product_subdescription: string;
-  product_details: string;
-  product_category: string;
-  price: number;
-  stock: number;
-  image: string;
-  badge: string | null;
-  tag: string | null;
-}
-export interface CartItem {
-  id: string;
-  order_id: string;
-  product_id: string;
-  quantity: number;
-  line_total: number;
-  product: CartProduct;
-}
-export interface Cart {
-  order_id: string | null;
-  total: number;
-  item_count: number;
-  items: CartItem[];
 }
 ````
 
@@ -2820,81 +2423,446 @@ export default function MyCartClient() {
 }
 ````
 
-## File: src/lib/mappers/product.mapper.ts
+## File: src/components/shop/ShopPageClient.tsx
 ````typescript
-import type { Product } from "@prisma/client";
+"use client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import Breadcrumb from "@/components/common/Breadcrumb";
+import ProductCard from "@/components/shop/ProductCard";
+import { productsService } from "@/lib/services/productsService";
 import type { ProductDto } from "@/types/product";
-import { formatPrice, toNumber } from "@/lib/utils/numbers";
-export function toProductDto(product: Product): ProductDto {
-  return {
-    id: product.id,
-    product_name: product.productName,
-    product_packsize: product.productPacksize,
-    product_description: product.productDescription,
-    product_subdescription: product.productSubDescription,
-    product_details: product.productDetails,
-    product_category: product.productCategory,
-    price: formatPrice(product.price),
-    Stock: product.stock,
-    image: product.image,
-    Badge: product.badge ?? undefined,
-    Tag: product.tag ?? "",
-    isActive: true,
+const MIN_PRICE = 0;
+const MAX_PRICE = 300;
+type SortOption = "latest" | "name-asc" | "name-desc" | "price-low" | "price-high";
+function getPriceNumber(price: string) {
+  return Number(price.replace(/[^0-9.]/g, "")) || 0;
+}
+function getUniqueValues(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort(
+    (a, b) => a.localeCompare(b),
+  );
+}
+export default function ShopPageClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get("category");
+  const queryFromUrl = searchParams.get("q") || "";
+  const [searchQuery, setSearchQuery] = useState(queryFromUrl);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryFromUrl);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<SortOption>("latest");
+  const [priceRange, setPriceRange] = useState({ min: MIN_PRICE, max: MAX_PRICE });
+  const [productsState, setProductsState] = useState<ProductDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    setSelectedCategory(categoryFromUrl);
+    setSearchQuery(queryFromUrl);
+  }, [categoryFromUrl, queryFromUrl]);
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProducts() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await productsService.getAllProducts();
+        if (cancelled) return;
+        if (data?.success && Array.isArray(data.products)) {
+          setProductsState(data.products);
+        } else {
+          setProductsState([]);
+          setError("Failed to load products");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Failed to load products", error);
+          setProductsState([]);
+          setError("Failed to load products");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadProducts();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const productCategories = useMemo(() => {
+    return getUniqueValues(productsState.map((product) => product.product_category));
+  }, [productsState]);
+  const productTags = useMemo(() => {
+    return getUniqueValues(productsState.map((product) => product.Tag));
+  }, [productsState]);
+  const handleCategoryClick = (category: string) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (selectedCategory === category) {
+      nextParams.delete("category");
+    } else {
+      nextParams.set("category", category);
+    }
+    const queryString = nextParams.toString();
+    router.push(queryString ? `/shop?${queryString}` : "/shop");
   };
-}
-export function toProductDtoList(products: Product[]): ProductDto[] {
-  return products.map(toProductDto);
-}
-export function getLineTotal(quantity: number, price: Product["price"]): number {
-  return toNumber(price) * quantity;
+  const handleTagClick = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag],
+    );
+  };
+  const handleMinPriceChange = (value: number) => {
+    setPriceRange((prev) => ({
+      min: Math.min(value, prev.max),
+      max: prev.max,
+    }));
+  };
+  const handleMaxPriceChange = (value: number) => {
+    setPriceRange((prev) => ({
+      min: prev.min,
+      max: Math.max(value, prev.min),
+    }));
+  };
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedTags([]);
+    setSortBy("latest");
+    setPriceRange({ min: MIN_PRICE, max: MAX_PRICE });
+    router.push("/shop");
+  };
+  const filteredAndSortedProducts = useMemo(() => {
+    let result = [...productsState];
+    if (selectedCategory) {
+      result = result.filter(
+        (product) => product.product_category.toLowerCase() === selectedCategory.toLowerCase(),
+      );
+    }
+    if (searchQuery.trim()) {
+      const query = searchQuery.trim().toLowerCase();
+      result = result.filter((product) =>
+        [
+          product.product_name,
+          product.product_description,
+          product.product_subdescription,
+          product.product_category,
+          product.Tag,
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(query),
+      );
+    }
+    result = result.filter((product) => {
+      const price = getPriceNumber(product.price);
+      return price >= priceRange.min && price <= priceRange.max;
+    });
+    if (selectedTags.length > 0) {
+      result = result.filter((product) => selectedTags.includes(product.Tag));
+    }
+    if (sortBy === "price-low") {
+      result.sort((a, b) => getPriceNumber(a.price) - getPriceNumber(b.price));
+    }
+    if (sortBy === "price-high") {
+      result.sort((a, b) => getPriceNumber(b.price) - getPriceNumber(a.price));
+    }
+    if (sortBy === "name-asc") {
+      result.sort((a, b) => a.product_name.localeCompare(b.product_name));
+    }
+    if (sortBy === "name-desc") {
+      result.sort((a, b) => b.product_name.localeCompare(a.product_name));
+    }
+    return result;
+  }, [productsState, searchQuery, selectedCategory, selectedTags, priceRange, sortBy]);
+  const hasActiveFilters =
+    Boolean(searchQuery) ||
+    Boolean(selectedCategory) ||
+    selectedTags.length > 0 ||
+    priceRange.min !== MIN_PRICE ||
+    priceRange.max !== MAX_PRICE;
+  return (
+    <main>
+      <Breadcrumb title={selectedCategory || "Shop"} current={selectedCategory || "Shop"} />
+      <section className="section-shop overflow-x-hidden py-[50px] max-[767px]:py-[35px]">
+        <div className="bb-container">
+          <div className="mb-[35px] text-center" data-aos="fade-up">
+            <p className="mb-[8px] font-Poppins text-[14px] font-medium uppercase tracking-[0.18rem] text-[#0f766e]">
+              Hydrate • Heal • Feel Good
+            </p>
+            <h1 className="mb-[10px] font-quicksand text-[34px] font-bold text-[#3d4750] max-[767px]:text-[28px]">
+              {selectedCategory || "Shop Wellness Products"}
+            </h1>
+            <p className="mx-auto max-w-[650px] font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
+              Explore packaged drinking water, healthy drinks, herbal infusions, and everyday hydration products.
+            </p>
+          </div>
+          <div className="flex flex-wrap mx-[-12px]">
+            <aside className="w-full px-[12px] max-[991px]:mb-[35px] min-[992px]:w-[25%]">
+              <div className="bb-shop-sidebar sticky top-[150px] overflow-hidden rounded-[20px] border border-[#eee] bg-white shadow-sm">
+                <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right">
+                  <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                    <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                      Search
+                    </h4>
+                    <i className="ri-search-line text-[20px] text-[#0f766e]" />
+                  </div>
+                  <div className="relative">
+                    <input
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search products..."
+                      className="bb-input pr-[42px]"
+                    />
+                    <i className="ri-search-2-line absolute right-[14px] top-1/2 -translate-y-1/2 text-[18px] text-[#9ca3af]" />
+                  </div>
+                </div>
+                <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right" data-aos-delay="80">
+                  <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                    <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                      Categories
+                    </h4>
+                    <i className="ri-list-check-2 text-[20px] text-[#0f766e]" />
+                  </div>
+                  {productCategories.length > 0 ? (
+                    <ul className="space-y-[12px]">
+                      {productCategories.map((category) => {
+                        const isSelected = selectedCategory === category;
+                        const count = productsState.filter(
+                          (product) => product.product_category === category,
+                        ).length;
+                        return (
+                          <li key={category}>
+                            <button
+                              type="button"
+                              onClick={() => handleCategoryClick(category)}
+                              className={`group flex w-full items-center justify-between rounded-[10px] px-[10px] py-[8px] text-left font-Poppins text-[14px] transition ${
+                                isSelected
+                                  ? "bg-[#f0fdfa] text-[#0f766e]"
+                                  : "text-[#777] hover:bg-[#f8f8fb] hover:text-[#0f766e]"
+                              }`}
+                            >
+                              <span className="flex items-center gap-[10px]">
+                                <span
+                                  className={`h-[18px] w-[18px] rounded-[5px] border transition ${
+                                    isSelected
+                                      ? "border-[#0f766e] bg-[#0f766e]"
+                                      : "border-[#eee] bg-white group-hover:border-[#0f766e]"
+                                  }`}
+                                >
+                                  {isSelected ? (
+                                    <i className="ri-check-line block text-center text-[14px] leading-[18px] text-white" />
+                                  ) : null}
+                                </span>
+                                {category}
+                              </span>
+                              <span className="rounded-full bg-[#f8f8fb] px-[8px] py-[2px] text-[12px] text-[#686e7d]">
+                                {count}
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p className="font-Poppins text-[14px] text-[#686e7d]">No categories found.</p>
+                  )}
+                </div>
+                <div className="bb-sidebar-block border-b border-[#eee] p-[20px]" data-aos="fade-right" data-aos-delay="120">
+                  <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                    <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                      Price Range
+                    </h4>
+                    <i className="ri-money-rupee-circle-line text-[20px] text-[#0f766e]" />
+                  </div>
+                  <div className="mb-[16px] rounded-[10px] border border-[#eee] bg-white p-[10px] text-center font-Poppins text-[15px] font-medium text-[#3d4750]">
+                    ₹{priceRange.min} — ₹{priceRange.max}
+                  </div>
+                  <div className="space-y-[14px]">
+                    <div>
+                      <div className="mb-[7px] flex justify-between font-Poppins text-[12px] text-[#686e7d]">
+                        <span>Min</span>
+                        <span>₹{priceRange.min}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={MIN_PRICE}
+                        max={MAX_PRICE}
+                        step={10}
+                        value={priceRange.min}
+                        onChange={(event) => handleMinPriceChange(Number(event.target.value))}
+                        className="w-full accent-[#0f766e]"
+                      />
+                    </div>
+                    <div>
+                      <div className="mb-[7px] flex justify-between font-Poppins text-[12px] text-[#686e7d]">
+                        <span>Max</span>
+                        <span>₹{priceRange.max}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={MIN_PRICE}
+                        max={MAX_PRICE}
+                        step={10}
+                        value={priceRange.max}
+                        onChange={(event) => handleMaxPriceChange(Number(event.target.value))}
+                        className="w-full accent-[#0f766e]"
+                      />
+                    </div>
+                  </div>
+                </div>
+                {productTags.length > 0 ? (
+                  <div className="bb-sidebar-block p-[20px]" data-aos="fade-right" data-aos-delay="200">
+                    <div className="mb-[18px] flex items-center justify-between gap-[12px]">
+                      <h4 className="font-quicksand text-[18px] font-bold tracking-[0.03rem] text-[#3d4750]">
+                        Tags
+                      </h4>
+                      <i className="ri-price-tag-3-line text-[20px] text-[#0f766e]" />
+                    </div>
+                    <div className="flex flex-wrap gap-[8px]">
+                      {productTags.map((tag) => {
+                        const selected = selectedTags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => handleTagClick(tag)}
+                            className={`rounded-[10px] border px-[14px] py-[6px] font-Poppins text-[13px] capitalize leading-[24px] transition ${
+                              selected
+                                ? "border-[#0f766e] bg-[#0f766e] text-white"
+                                : "border-[#eee] bg-white text-[#686e7d] hover:border-[#0f766e] hover:bg-[#0f766e] hover:text-white"
+                            }`}
+                          >
+                            {tag}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="mt-[18px] w-full rounded-[10px] bg-[#3d4750] px-[18px] py-[12px] font-Poppins text-[14px] font-medium text-white transition hover:bg-[#0f766e]"
+                >
+                  Clear Filters
+                </button>
+              ) : null}
+            </aside>
+            <div className="w-full px-[12px] min-[992px]:w-[75%]">
+              <div className="mb-[24px] flex flex-wrap items-center justify-between gap-[16px] rounded-[20px] border border-[#eee] bg-white p-[15px] shadow-sm" data-aos="fade-up">
+                <div className="flex items-center gap-[8px]">
+                  <button
+                    type="button"
+                    aria-label="Grid view"
+                    className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] border border-[#eee] bg-[#3d4750] text-white transition hover:bg-[#0f766e]"
+                  >
+                    <i className="ri-layout-grid-line text-[18px]" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="List view"
+                    className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] border border-[#eee] bg-white text-[#686e7d] transition hover:bg-[#0f766e] hover:text-white"
+                  >
+                    <i className="ri-list-check text-[18px]" />
+                  </button>
+                  <p className="ml-[6px] font-Poppins text-[14px] text-[#686e7d] max-[575px]:w-full max-[575px]:ml-0 max-[575px]:mt-[8px]">
+                    Showing <span className="font-semibold text-[#3d4750]">{filteredAndSortedProducts.length}</span> products
+                  </p>
+                </div>
+                <label className="flex items-center gap-[10px] rounded-[10px] border border-[#eee] bg-[#f8f8fb] px-[12px] py-[8px] font-Poppins text-[14px] text-[#686e7d]">
+                  <i className="ri-sort-desc text-[18px] text-[#0f766e]" />
+                  <span>Sort by</span>
+                  <select
+                    value={sortBy}
+                    onChange={(event) => setSortBy(event.target.value as SortOption)}
+                    className="bg-transparent font-Poppins text-[14px] text-[#3d4750] outline-none"
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="name-asc">Name, A to Z</option>
+                    <option value="name-desc">Name, Z to A</option>
+                    <option value="price-low">Price, low to high</option>
+                    <option value="price-high">Price, high to low</option>
+                  </select>
+                </label>
+              </div>
+              {loading ? (
+                <div className="flex justify-center rounded-[20px] border border-[#eee] bg-white py-[70px]">
+                  <span className="bb-loader-ring" />
+                </div>
+              ) : error ? (
+                <div className="rounded-[20px] border border-red-100 bg-red-50 py-[60px] text-center">
+                  <p className="font-Poppins text-[16px] text-red-600">{error}</p>
+                </div>
+              ) : filteredAndSortedProducts.length > 0 ? (
+                <div className="grid grid-cols-1 gap-[24px] min-[576px]:grid-cols-2 min-[1200px]:grid-cols-3">
+                  {filteredAndSortedProducts.map((product, index) => (
+                    <div key={product.id} data-aos="fade-up" data-aos-delay={(index % 3) * 80}>
+                      <ProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-[20px] border border-[#eee] bg-white py-[60px] text-center">
+                  <i className="ri-inbox-2-line mb-[12px] block text-[40px] text-[#0f766e]" />
+                  <p className="font-Poppins text-[16px] text-[#686e7d]">
+                    No products match your search criteria.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
 }
 ````
 
-## File: src/lib/services/productsService.ts
+## File: src/lib/mappers/cart.mapper.ts
 ````typescript
-import apiClient from "@/lib/apiClient";
-import type { ProductDto } from "@/types/product";
-export type ProductApiResponse = ProductDto;
-export interface ProductMenuItem {
-  id: string;
-  name: string;
-  href: string;
+import type { OrderItem, Product } from "@prisma/client";
+import type { Cart, CartItem } from "@/types/cart";
+import { getLineTotal } from "@/lib/mappers/product.mapper";
+import { roundCurrency, toNumber } from "@/lib/utils/numbers";
+type OrderItemWithProduct = OrderItem & { product: Product };
+export function mapOrderItemsToCart(
+  orderId: string | null,
+  items: OrderItemWithProduct[],
+  orderTotal?: number,
+): Cart {
+  const cartItems: CartItem[] = items.map((item) => ({
+    id: item.id,
+    order_id: item.orderId,
+    product_id: item.productId,
+    quantity: item.quantity,
+    line_total: getLineTotal(item.quantity, item.product.price),
+    product: {
+      id: item.product.id,
+      product_name: item.product.productName,
+      product_description: item.product.productDescription,
+      product_subdescription: item.product.productSubDescription,
+      product_details: item.product.productDetails,
+      product_category: item.product.productCategory,
+      price: toNumber(item.product.price),
+      stock: item.product.stock,
+      image: item.product.image,
+      badge: item.product.badge,
+      tag: item.product.tag,
+    },
+  }));
+  const calculatedTotal =
+    orderTotal ??
+    cartItems.reduce((sum, item) => sum + item.line_total, 0);
+  return {
+    order_id: orderId,
+    total: roundCurrency(calculatedTotal),
+    item_count: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+    items: cartItems,
+  };
 }
-export interface ProductMenuCategory {
-  category: string;
-  href: string;
-  products: ProductMenuItem[];
+export function emptyCart(): Cart {
+  return mapOrderItemsToCart(null, [], 0);
 }
-export const productsService = {
-  getAllProducts: async (category?: string) => {
-    const response = await apiClient.post<{
-      success: boolean;
-      product: ProductApiResponse | null;
-      products: ProductApiResponse[];
-    }>("/api/products", {
-      category,
-    });
-    return response.data;
-  },
-  getProductById: async (productId: string) => {
-    const response = await apiClient.post<{
-      success: boolean;
-      product: ProductApiResponse | null;
-      products: ProductApiResponse[];
-    }>("/api/products", {
-      productId,
-    });
-    return response.data;
-  },
-  getProductMenu: async () => {
-    const response = await apiClient.post<{
-      success: boolean;
-      menu: ProductMenuCategory[];
-    }>("/api/products/menu", {});
-    return response.data;
-  },
-};
-export default productsService;
 ````
 
 ## File: src/lib/utils/numbers.ts
@@ -2925,168 +2893,35 @@ export function parseRequestNumber(value: unknown, fallback = 0): number {
 }
 ````
 
-## File: prisma/schema.prisma
-````prisma
-generator client {
-  provider = "prisma-client-js"
+## File: src/types/cart.ts
+````typescript
+export interface CartProduct {
+  id: string;
+  product_name: string;
+  product_description: string;
+  product_subdescription: string;
+  product_details: string;
+  product_category: string;
+  price: number;
+  stock: number;
+  image: string;
+  badge: string | null;
+  tag: string | null;
 }
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+export interface CartItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  line_total: number;
+  product: CartProduct;
 }
-
-enum OrderStatus {
-  paid
-  pending
-  failed
+export interface Cart {
+  order_id: string | null;
+  total: number;
+  item_count: number;
+  items: CartItem[];
 }
-
-model User {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String   @db.VarChar(150)
-  email       String   @unique @db.VarChar(255)
-  password    String
-  phoneNumber String?  @map("phone_number") @db.VarChar(50)
-  address     String?
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  orders      Order[]
-
-  @@map("users")
-}
-
-model Product {
-  id                    String      @id
-  productName           String      @map("product_name") @db.VarChar(255)
-  productDescription    String      @map("product_description")
-  productSubDescription String      @map("product_subdescription")
-  productDetails        String      @map("product_details")
-  productCategory       String      @map("product_category") @db.VarChar(150)
-  price                 Decimal     @db.Decimal(10, 2)
-  stock                 Int         @default(0)
-  image                 String
-  badge                 String?     @db.VarChar(80)
-  tag                   String?     @db.VarChar(100)
-  createdAt             DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt             DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  orderItems            OrderItem[]
-  isActive              Boolean     @default(true) @map("is_active")
-  productPacksize       Int         @default(12) @map("product_packsize")
-
-  @@map("products")
-}
-
-model Order {
-  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String      @map("user_id") @db.Uuid
-  total     Decimal     @default(0) @db.Decimal(10, 2)
-  status    OrderStatus @default(pending)
-  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     OrderItem[]
-
-  @@index([userId, status])
-  @@map("orders")
-}
-
-model OrderItem {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId   String   @map("order_id") @db.Uuid
-  productId String   @map("product_id")
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-
-  @@unique([orderId, productId])
-  @@index([orderId])
-  @@index([productId])
-  @@map("order_items")
-}
-````
-
-## File: sql/01_schema.sql
-````sql
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(150) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  password TEXT NOT NULL,
-  phone_number VARCHAR(50),
-  address TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE TABLE IF NOT EXISTS products (
-  id VARCHAR(255) PRIMARY KEY,
-  product_name VARCHAR(255) NOT NULL,
-  product_description TEXT NOT NULL,
-  product_subdescription TEXT NOT NULL,
-  product_details TEXT NOT NULL,
-  product_category VARCHAR(150) NOT NULL,
-  product_packsize INTEGER NOT NULL DEFAULT 1 CHECK (product_packsize > 0),
-  is_active BOOLEAN NOT NULL DEFAULT TRUE,
-  price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
-  stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
-  image TEXT NOT NULL,
-  badge VARCHAR(80),
-  tag VARCHAR(100),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE TABLE IF NOT EXISTS orders (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  total NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (total >= 0),
-  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('paid', 'pending', 'failed')),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE TABLE IF NOT EXISTS order_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE(order_id, product_id)
-);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(LOWER(email));
-CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status);
-CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
-CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
-CREATE OR REPLACE FUNCTION set_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-DROP TRIGGER IF EXISTS users_set_updated_at ON users;
-CREATE TRIGGER users_set_updated_at
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
-DROP TRIGGER IF EXISTS products_set_updated_at ON products;
-CREATE TRIGGER products_set_updated_at
-BEFORE UPDATE ON products
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
-DROP TRIGGER IF EXISTS orders_set_updated_at ON orders;
-CREATE TRIGGER orders_set_updated_at
-BEFORE UPDATE ON orders
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
-DROP TRIGGER IF EXISTS order_items_set_updated_at ON order_items;
-CREATE TRIGGER order_items_set_updated_at
-BEFORE UPDATE ON order_items
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
 ````
 
 ## File: src/app/(auth)/login/page.tsx
@@ -3382,6 +3217,36 @@ export default function HerbalBenefitsPage() {
 }
 ````
 
+## File: src/lib/mappers/product.mapper.ts
+````typescript
+import type { Product } from "@prisma/client";
+import type { ProductDto } from "@/types/product";
+import { formatPrice, toNumber } from "@/lib/utils/numbers";
+export function toProductDto(product: Product): ProductDto {
+  return {
+    id: product.id,
+    product_name: product.productName,
+    product_packsize: product.productPacksize,
+    product_description: product.productDescription,
+    product_subdescription: product.productSubDescription,
+    product_details: product.productDetails,
+    product_category: product.productCategory,
+    price: formatPrice(product.price),
+    Stock: product.stock,
+    image: product.image,
+    Badge: product.badge ?? undefined,
+    Tag: product.tag ?? "",
+    isActive: true,
+  };
+}
+export function toProductDtoList(products: Product[]): ProductDto[] {
+  return products.map(toProductDto);
+}
+export function getLineTotal(quantity: number, price: Product["price"]): number {
+  return toNumber(price) * quantity;
+}
+````
+
 ## File: src/lib/products.data.ts
 ````typescript
 import type { ProductDto } from "@/types/product";
@@ -3531,85 +3396,48 @@ export const productCategories = Array.from(new Set(products.map((product) => pr
 export const productTags = Array.from(new Set(products.map((product) => product.Tag)));
 ````
 
-## File: src/lib/services/product.service.ts
+## File: src/lib/services/productsService.ts
 ````typescript
-import { Prisma } from "@prisma/client";
-import { toProductDto, toProductDtoList } from "@/lib/mappers/product.mapper";
-import { prisma } from "@/lib/prisma";
+import apiClient from "@/lib/apiClient";
 import type { ProductDto } from "@/types/product";
-export const PRODUCT_MENU_CATEGORIES = [
-  "Healthy Drinks",
-  "Packaged Drinking Water",
-  "Herbal Infusions",
-] as const;
-export type ProductMenuCategoryName =
-  (typeof PRODUCT_MENU_CATEGORIES)[number];
+export type ProductApiResponse = ProductDto;
+export interface ProductsApiResponse {
+  success: boolean;
+  product: ProductApiResponse | null;
+  products: ProductApiResponse[];
+}
 export interface ProductMenuItem {
   id: string;
   name: string;
   href: string;
 }
 export interface ProductMenuCategory {
-  category: ProductMenuCategoryName;
+  category: string;
   href: string;
   products: ProductMenuItem[];
 }
-export async function getAllProducts(category?: string): Promise<ProductDto[]> {
-  const where: Prisma.ProductWhereInput = {};
-  if (category) {
-    where.productCategory = {
-      equals: category,
-      mode: "insensitive",
-    };
-  }
-  const products = await prisma.product.findMany({
-    where :{isActive: true},
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-  return toProductDtoList(products);
-}
-export async function getProductById(
-  productId: string,
-): Promise<ProductDto | null> {
-  const product = await prisma.product.findUnique({
-    where: {
-      isActive: true,
-      id: productId,
-    },
-  });
-  return product ? toProductDto(product) : null;
-}
-export async function getProductMenu(): Promise<ProductMenuCategory[]> {
-  const products = await prisma.product.findMany({
-    where: {
-      isActive: true,
-      productCategory: {
-        in: [...PRODUCT_MENU_CATEGORIES],
-      },
-    },
-    select: {id: true,productName: true,productCategory: true,},
-    orderBy: [{productCategory: "desc",},{productName: "desc",},],
-  });
-  return PRODUCT_MENU_CATEGORIES.map((category) => ({
-    category,
-    href: `/shop?category=${encodeURIComponent(category)}`,
-    products: products
-      .filter((product) => product.productCategory === category)
-      .map((product) => ({
-        id: product.id,
-        name: product.productName,
-        href: `/shop/${product.id}`,
-      })),
-  }));
-}
-export const productService = {
-  getAllProducts,
-  getProductById,
-  getProductMenu,
+export const productsService = {
+  getAllProducts: async (category?: string) => {
+    const response = await apiClient.post<ProductsApiResponse>("/api/products", {
+      category,
+    });
+    return response.data;
+  },
+  getProductById: async (productId: string) => {
+    const response = await apiClient.post<ProductsApiResponse>("/api/products", {
+      productId,
+    });
+    return response.data;
+  },
+  getProductMenu: async () => {
+    const response = await apiClient.post<{
+      success: boolean;
+      menu: ProductMenuCategory[];
+    }>("/api/products/menu", {});
+    return response.data;
+  },
 };
-export default productService;
+export default productsService;
 ````
 
 ## File: src/store/useCartStore.ts
@@ -3702,33 +3530,168 @@ export const useCartStore = create<CartState>((set) => ({
 }));
 ````
 
-## File: src/types/product.ts
-````typescript
-export interface ProductDto {
-  id: string;
-  product_name: string;
-  product_description: string;
-  product_subdescription: string;
-  product_details: string;
-  product_category: string;
-  price: string;
-  Stock: number;
-  image: string;
-  Badge?: string | null;
-  Tag: string;
-  isActive?: boolean;
-  product_packsize?: number | null;
+## File: prisma/schema.prisma
+````prisma
+generator client {
+  provider = "prisma-client-js"
 }
-export interface ProductsListResponse {
-  success: boolean;
-  products: ProductDto[];
-  product?: ProductDto | null;
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
-export interface ProductDetailResponse {
-  success: boolean;
-  product: ProductDto | null;
-  products: ProductDto[];
+
+enum OrderStatus {
+  paid
+  pending
+  failed
 }
+
+model User {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(150)
+  email       String   @unique @db.VarChar(255)
+  password    String
+  phoneNumber String?  @map("phone_number") @db.VarChar(50)
+  address     String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  orders      Order[]
+
+  @@map("users")
+}
+
+model Product {
+  id                    String      @id
+  productName           String      @map("product_name") @db.VarChar(255)
+  productDescription    String      @map("product_description")
+  productSubDescription String      @map("product_subdescription")
+  productDetails        String      @map("product_details")
+  productCategory       String      @map("product_category") @db.VarChar(150)
+  price                 Decimal     @db.Decimal(10, 2)
+  stock                 Int         @default(0)
+  image                 String
+  badge                 String?     @db.VarChar(80)
+  tag                   String?     @db.VarChar(100)
+  createdAt             DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  orderItems            OrderItem[]
+  isActive              Boolean     @default(true) @map("is_active")
+  productPacksize       Int         @default(12) @map("product_packsize")
+
+  @@map("products")
+}
+
+model Order {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  total     Decimal     @default(0) @db.Decimal(10, 2)
+  status    OrderStatus @default(pending)
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     OrderItem[]
+
+  @@index([userId, status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId   String   @map("order_id") @db.Uuid
+  productId String   @map("product_id")
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, productId])
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+````
+
+## File: sql/01_schema.sql
+````sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(150) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  phone_number VARCHAR(50),
+  address TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS products (
+  id VARCHAR(255) PRIMARY KEY,
+  product_name VARCHAR(255) NOT NULL,
+  product_description TEXT NOT NULL,
+  product_subdescription TEXT NOT NULL,
+  product_details TEXT NOT NULL,
+  product_category VARCHAR(150) NOT NULL,
+  product_packsize INTEGER NOT NULL DEFAULT 1 CHECK (product_packsize > 0),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+  stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
+  image TEXT NOT NULL,
+  badge VARCHAR(80),
+  tag VARCHAR(100),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  total NUMERIC(10, 2) NOT NULL DEFAULT 0 CHECK (total >= 0),
+  status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('paid', 'pending', 'failed')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS order_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id VARCHAR(255) NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(order_id, product_id)
+);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(LOWER(email));
+CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS users_set_updated_at ON users;
+CREATE TRIGGER users_set_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS products_set_updated_at ON products;
+CREATE TRIGGER products_set_updated_at
+BEFORE UPDATE ON products
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS orders_set_updated_at ON orders;
+CREATE TRIGGER orders_set_updated_at
+BEFORE UPDATE ON orders
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+DROP TRIGGER IF EXISTS order_items_set_updated_at ON order_items;
+CREATE TRIGGER order_items_set_updated_at
+BEFORE UPDATE ON order_items
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
 ````
 
 ## File: src/app/(auth)/register/page.tsx
@@ -4497,6 +4460,289 @@ export default function CartSidebar() {
 }
 ````
 
+## File: src/components/shop/ProductActions.tsx
+````typescript
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useCartStore } from "@/store/useCartStore";
+import { useUiStore } from "@/store/useUiStore";
+interface ProductActionsProps {
+  productId: string;
+  compact?: boolean;
+}
+export default function ProductActions({ productId, compact = false }: ProductActionsProps) {
+  const router = useRouter();
+  const { status } = useSession();
+  const addToCart = useCartStore((state) => state.addToCart);
+  const isLoading = useCartStore((state) => state.isLoading);
+  const toggleCart = useUiStore((state) => state.toggleCart);
+  const [message, setMessage] = useState<string | null>(null);
+  const redirectToLogin = (callbackUrl: string) => {
+    alert("Please login first to continue.");
+    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  };
+  const handleAddToCart = async () => {
+    setMessage(null);
+    if (status !== "authenticated") {
+      redirectToLogin("/shop");
+      return;
+    }
+    try {
+      await addToCart(productId, 1);
+      setMessage("Added to cart");
+      toggleCart();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to add product.");
+    }
+  };
+  const handleBuyNow = async () => {
+    setMessage(null);
+    if (status !== "authenticated") {
+      redirectToLogin(`/my-cart?buyNow=${productId}`);
+      return;
+    }
+    try {
+      await addToCart(productId, 1);
+      router.push("/my-cart");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to continue.");
+    }
+  };
+  return (
+    <div className={compact ? "mt-[16px]" : "mt-[24px]"}>
+      <div className={compact ? "flex flex-col gap-[10px]" : "flex flex-wrap gap-[12px]"}>
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={isLoading || status === "loading"}
+          className="flex-1 rounded-[10px] border border-[#0f766e] bg-white px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-[#0f766e] transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <i className="ri-shopping-cart-line mr-[6px]" />
+          Add To Cart
+        </button>
+        <button
+          type="button"
+          onClick={handleBuyNow}
+          disabled={isLoading || status === "loading"}
+          className="flex-1 rounded-[10px] bg-[#0f766e] px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5f59] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Buy Now
+        </button>
+      </div>
+      {message ? (
+        <p className="mt-[10px] text-center font-Poppins text-[12px] text-[#0f766e]">
+          {message}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+````
+
+## File: src/lib/services/product.service.ts
+````typescript
+import { Prisma } from "@prisma/client";
+import { toProductDto, toProductDtoList } from "@/lib/mappers/product.mapper";
+import { prisma } from "@/lib/prisma";
+import type { ProductDto } from "@/types/product";
+export interface ProductMenuItem {
+  id: string;
+  name: string;
+  href: string;
+}
+export interface ProductMenuCategory {
+  category: string;
+  href: string;
+  products: ProductMenuItem[];
+}
+function normalizeCategory(category: string) {
+  return category.trim();
+}
+export async function getAllProducts(category?: string): Promise<ProductDto[]> {
+  const where: Prisma.ProductWhereInput = {
+    isActive: true,
+  };
+  const cleanCategory = category?.trim();
+  if (cleanCategory) {
+    where.productCategory = {
+      equals: cleanCategory,
+      mode: "insensitive",
+    };
+  }
+  const products = await prisma.product.findMany({
+    where,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  return toProductDtoList(products);
+}
+export async function getProductById(
+  productId: string,
+): Promise<ProductDto | null> {
+  const product = await prisma.product.findFirst({
+    where: {
+      id: productId,
+      isActive: true,
+    },
+  });
+  return product ? toProductDto(product) : null;
+}
+export async function getProductMenu(): Promise<ProductMenuCategory[]> {
+  const products = await prisma.product.findMany({
+    where: {
+      isActive: true,
+    },
+    select: {
+      id: true,
+      productName: true,
+      productCategory: true,
+    },
+    orderBy: [
+      {
+        productCategory: "asc",
+      },
+      {
+        productName: "asc",
+      },
+    ],
+  });
+  const menuMap = new Map<string, ProductMenuItem[]>();
+  products.forEach((product) => {
+    const category = normalizeCategory(product.productCategory);
+    if (!category) return;
+    const currentProducts = menuMap.get(category) ?? [];
+    currentProducts.push({
+      id: product.id,
+      name: product.productName,
+      href: `/shop/${product.id}`,
+    });
+    menuMap.set(category, currentProducts);
+  });
+  return Array.from(menuMap.entries())
+    .sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB))
+    .map(([category, products]) => ({
+      category,
+      href: `/shop?category=${encodeURIComponent(category)}`,
+      products,
+    }));
+}
+export const productService = {
+  getAllProducts,
+  getProductById,
+  getProductMenu,
+};
+export default productService;
+````
+
+## File: src/types/product.ts
+````typescript
+export interface ProductDto {
+  id: string;
+  product_name: string;
+  product_description: string;
+  product_subdescription: string;
+  product_details: string;
+  product_category: string;
+  price: string;
+  Stock: number;
+  image: string;
+  Badge?: string | null;
+  Tag: string;
+  isActive?: boolean;
+  product_packsize?: number | null;
+}
+export interface ProductsListResponse {
+  success: boolean;
+  products: ProductDto[];
+  product?: ProductDto | null;
+}
+export interface ProductDetailResponse {
+  success: boolean;
+  product: ProductDto | null;
+  products: ProductDto[];
+}
+````
+
+## File: src/components/common/AboutSection.tsx
+````typescript
+"use client";
+import Link from "next/link";
+import { aboutContent } from "@/lib/site-content";
+type AboutSectionProps = {
+  variant?: "home" | "page";
+};
+export default function AboutSection({ variant = "page" }: AboutSectionProps) {
+  const isHome = variant === "home";
+  return (
+    <section className={isHome ? "mx-auto max-w-7xl px-4 py-16 md:px-6" : ""}>
+      <div className="rounded-[32px] bg-white p-8 shadow-sm md:p-12 lg:p-16">
+        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          <div>
+            <p className="mb-4 text-xl font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
+              {aboutContent.eyebrow}
+            </p>
+            <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+              {isHome ? aboutContent.homeTitle : aboutContent.heroTitle}
+            </h2>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
+              {isHome ? aboutContent.homeDescription : aboutContent.heroDescription}
+            </p>
+            {!isHome ? (
+              <div className="mt-8 space-y-5 text-sm leading-7 text-slate-600 md:text-base md:leading-8">
+                {aboutContent.storyParagraphs.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            ) : null}
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/shop"
+                className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold !text-white transition hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
+              >
+                Order Water
+              </Link>
+              <Link
+                href="/contact-us"
+                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#0f766e] hover:text-[#0f766e]"
+              >
+                Contact Us
+              </Link>
+            </div>
+          </div>
+          <div className="rounded-[28px] bg-[#f8fafc] p-8">
+            <h3 className="text-2xl font-semibold text-slate-900">
+              What makes us reliable?
+            </h3>
+            <ul className="mt-6 space-y-5 text-slate-600">
+              {aboutContent.highlights.map((highlight) => (
+                <li key={highlight} className="flex gap-3">
+                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
+                    ✓
+                  </span>
+                  <span>{highlight}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 rounded-[24px] bg-white p-6 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0f766e]">
+                Our promise
+              </p>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                Tested, trusted, and delivered fresh — every bottle is handled
+                with the care your family deserves.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+````
+
 ## File: src/components/home/HomePageClient.tsx
 ````typescript
 "use client";
@@ -4901,8 +5147,6 @@ export default function HomePageClient() {
           </div>
         </div>
       </section>
-{
-}
       <section className="section-testimonials py-[50px] max-[1199px]:py-[35px]">
         <div className="bb-container">
           <SectionHeading
@@ -4948,167 +5192,9 @@ export default function HomePageClient() {
 }
 ````
 
-## File: src/components/shop/ProductActions.tsx
-````typescript
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useCartStore } from "@/store/useCartStore";
-import { useUiStore } from "@/store/useUiStore";
-interface ProductActionsProps {
-  productId: string;
-  compact?: boolean;
-}
-export default function ProductActions({ productId, compact = false }: ProductActionsProps) {
-  const router = useRouter();
-  const { status } = useSession();
-  const addToCart = useCartStore((state) => state.addToCart);
-  const isLoading = useCartStore((state) => state.isLoading);
-  const toggleCart = useUiStore((state) => state.toggleCart);
-  const [message, setMessage] = useState<string | null>(null);
-  const redirectToLogin = (callbackUrl: string) => {
-    alert("Please login first to continue.");
-    router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-  };
-  const handleAddToCart = async () => {
-    setMessage(null);
-    if (status !== "authenticated") {
-      redirectToLogin("/shop");
-      return;
-    }
-    try {
-      await addToCart(productId, 1);
-      setMessage("Added to cart");
-      toggleCart();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to add product.");
-    }
-  };
-  const handleBuyNow = async () => {
-    setMessage(null);
-    if (status !== "authenticated") {
-      redirectToLogin(`/my-cart?buyNow=${productId}`);
-      return;
-    }
-    try {
-      await addToCart(productId, 1);
-      router.push("/my-cart");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to continue.");
-    }
-  };
-  return (
-    <div className={compact ? "mt-[16px]" : "mt-[24px]"}>
-      <div className={compact ? "flex flex-col gap-[10px]" : "flex flex-wrap gap-[12px]"}>
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          disabled={isLoading || status === "loading"}
-          className="flex-1 rounded-[10px] border border-[#0f766e] bg-white px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-[#0f766e] transition-all duration-300 hover:-translate-y-1 hover:bg-[#0f766e] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <i className="ri-shopping-cart-line mr-[6px]" />
-          Add To Cart
-        </button>
-        <button
-          type="button"
-          onClick={handleBuyNow}
-          disabled={isLoading || status === "loading"}
-          className="flex-1 rounded-[10px] bg-[#0f766e] px-[18px] py-[11px] font-Poppins text-[14px] font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-[#0c5f59] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          Buy Now
-        </button>
-      </div>
-      {message ? (
-        <p className="mt-[10px] text-center font-Poppins text-[12px] text-[#0f766e]">
-          {message}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-````
-
 ## File: src/lib/products.ts
 ````typescript
 
-````
-
-## File: src/components/common/AboutSection.tsx
-````typescript
-"use client";
-import Link from "next/link";
-import { aboutContent } from "@/lib/site-content";
-type AboutSectionProps = {
-  variant?: "home" | "page";
-};
-export default function AboutSection({ variant = "page" }: AboutSectionProps) {
-  const isHome = variant === "home";
-  return (
-    <section className={isHome ? "mx-auto max-w-7xl px-4 py-16 md:px-6" : ""}>
-      <div className="rounded-[32px] bg-white p-8 shadow-sm md:p-12 lg:p-16">
-        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-          <div>
-            <p className="mb-4 text-xl font-semibold uppercase tracking-[0.24em] text-[#0f766e]">
-              {aboutContent.eyebrow}
-            </p>
-            <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              {isHome ? aboutContent.homeTitle : aboutContent.heroTitle}
-            </h2>
-            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-              {isHome ? aboutContent.homeDescription : aboutContent.heroDescription}
-            </p>
-            {!isHome ? (
-              <div className="mt-8 space-y-5 text-sm leading-7 text-slate-600 md:text-base md:leading-8">
-                {aboutContent.storyParagraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
-            ) : null}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/shop"
-                className="rounded-full bg-[#0f766e] px-6 py-3 text-sm font-semibold !text-white transition hover:-translate-y-1 hover:bg-[#0c5a52] hover:text-white"
-              >
-                Order Water
-              </Link>
-              <Link
-                href="/contact-us"
-                className="rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#0f766e] hover:text-[#0f766e]"
-              >
-                Contact Us
-              </Link>
-            </div>
-          </div>
-          <div className="rounded-[28px] bg-[#f8fafc] p-8">
-            <h3 className="text-2xl font-semibold text-slate-900">
-              What makes us reliable?
-            </h3>
-            <ul className="mt-6 space-y-5 text-slate-600">
-              {aboutContent.highlights.map((highlight) => (
-                <li key={highlight} className="flex gap-3">
-                  <span className="mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0f766e]/10 text-[#0f766e]">
-                    ✓
-                  </span>
-                  <span>{highlight}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-8 rounded-[24px] bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#0f766e]">
-                Our promise
-              </p>
-              <p className="mt-3 text-sm leading-7 text-slate-600">
-                Tested, trusted, and delivered fresh — every bottle is handled
-                with the care your family deserves.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 ````
 
 ## File: src/app/contact-us/page.tsx
@@ -5834,6 +5920,13 @@ const productHighlights = [
   { icon: "ri-truck-line", label: "Fast delivery" },
   { icon: "ri-customer-service-2-line", label: "Bulk support" },
 ];
+function splitProductDetails(details?: string | null) {
+  if (!details) return [];
+  return details
+    .split(/\r?\n|•|,|;/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 export default async function ProductDetailsPage({ params }: ProductDetailsPageProps) {
   const { productId } = await params;
   const product = await getProductById(productId);
@@ -5845,6 +5938,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
     .filter((item) => item.id !== product.id)
     .slice(0, 4);
   const packSize = product.product_packsize ? `${product.product_packsize} ml` : "Standard pack";
+  const productDetails = splitProductDetails(product.product_details);
   return (
     <main>
       <Breadcrumb
@@ -5873,8 +5967,15 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
               </div>
               <div className="mt-[16px] grid grid-cols-3 gap-[12px]">
                 {[product.image, product.image, product.image].map((image, index) => (
-                  <div key={`${image}-${index}`} className="rounded-[16px] border border-[#eee] bg-[#f8f8fb] p-[10px]">
-                    <img src={image} alt={`${product.product_name} ${index + 1}`} className="h-[95px] w-full object-contain" />
+                  <div
+                    key={`${image}-${index}`}
+                    className="rounded-[16px] border border-[#eee] bg-[#f8f8fb] p-[10px]"
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.product_name} ${index + 1}`}
+                      className="h-[95px] w-full object-contain"
+                    />
                   </div>
                 ))}
               </div>
@@ -5896,7 +5997,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
                 <span className="font-Poppins text-[13px] text-[#686e7d]">Fresh stock available</span>
               </div>
               <p className="mt-[18px] font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-                {product.product_description}
+                {product.product_subdescription || product.product_description}
               </p>
               <div className="mt-[22px] flex flex-wrap items-center gap-[14px]">
                 <span className="font-quicksand text-[30px] font-bold text-[#3d4750]">
@@ -5917,7 +6018,10 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
               <ProductActions productId={product.id} />
               <div className="mt-[28px] grid gap-[12px] sm:grid-cols-3">
                 {productHighlights.map((item) => (
-                  <div key={item.label} className="rounded-[14px] border border-[#eee] bg-[#f8f8fb] p-[14px] text-center">
+                  <div
+                    key={item.label}
+                    className="rounded-[14px] border border-[#eee] bg-[#f8f8fb] p-[14px] text-center"
+                  >
                     <i className={`${item.icon} mb-[6px] block text-[24px] text-[#0f766e]`} />
                     <p className="font-Poppins text-[13px] text-[#4b5563]">{item.label}</p>
                   </div>
@@ -5930,7 +6034,10 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
                 <p className="font-Poppins text-[14px] font-light leading-[25px] text-[#686e7d]">
                   Bulk order rates are negotiable based on quantity requirements. Contact us for a custom quotation.
                 </p>
-                <Link href="/contact-us" className="mt-[14px] inline-flex font-Poppins text-[14px] font-semibold text-[#0f766e] hover:text-[#3d4750]">
+                <Link
+                  href="/contact-us"
+                  className="mt-[14px] inline-flex font-Poppins text-[14px] font-semibold text-[#0f766e] hover:text-[#3d4750]"
+                >
                   Contact for bulk orders <i className="ri-arrow-right-line ml-[5px]" />
                 </Link>
               </div>
@@ -5940,14 +6047,48 @@ export default async function ProductDetailsPage({ params }: ProductDetailsPageP
       </section>
       <section className="section-product-description pb-[50px] max-[767px]:pb-[35px]">
         <div className="bb-container">
-          <div className="rounded-[24px] border border-[#eee] bg-white p-[28px] shadow-sm" data-aos="fade-up">
-            <h2 className="mb-[12px] font-quicksand text-[24px] font-bold text-[#3d4750]">
-              Description
-            </h2>
-            <p className="font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
-              {product.product_description} This product is suitable for daily hydration, office use, retail supply,
-              event requirements, and bulk order planning based on your quantity needs.
-            </p>
+          <div className="rounded-[24px] border border-[#eee] bg-white shadow-sm" data-aos="fade-up">
+            <div className="flex flex-wrap border-b border-[#eee]">
+              <div className="border-r border-[#eee] px-[24px] py-[16px]">
+                <span className="font-quicksand text-[17px] font-bold text-[#0f766e]">
+                  Description
+                </span>
+              </div>
+              <div className="px-[24px] py-[16px]">
+                <span className="font-quicksand text-[17px] font-bold text-[#3d4750]">
+                  Product Details
+                </span>
+              </div>
+            </div>
+            <div className="grid gap-[30px] p-[28px] lg:grid-cols-2">
+              <div>
+                <h2 className="mb-[12px] font-quicksand text-[24px] font-bold text-[#3d4750]">
+                  Product Description
+                </h2>
+                <p className="font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem] text-[#686e7d]">
+                  {product.product_description}
+                </p>
+              </div>
+              <div>
+                <h2 className="mb-[12px] font-quicksand text-[24px] font-bold text-[#3d4750]">
+                  Product Details
+                </h2>
+                {productDetails.length > 0 ? (
+                  <ul className="space-y-[12px]">
+                    {productDetails.map((detail) => (
+                      <li key={detail} className="flex gap-[10px] font-Poppins text-[15px] font-light leading-[26px] text-[#686e7d]">
+                        <i className="ri-check-double-line mt-[4px] text-[18px] text-[#0f766e]" />
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="font-Poppins text-[15px] font-light leading-[28px] text-[#686e7d]">
+                    Product details will be updated soon.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -6348,7 +6489,7 @@ export default function Header() {
   };
   const closeMobile = () => setMobileOpen(false);
   return (
-    <header className="bb-header  border-b border-[#eee] bg-white/95 font-Poppins shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_12px_35px_rgba(15,23,42,0.08)]">
+    <header className="bb-header relative z-[1000] border-b border-[#eee] bg-white/95 font-Poppins shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_12px_35px_rgba(15,23,42,0.08)]">
       <div className="top-header bg-[#3d4750] py-[6px] max-[991px]:hidden">
         <div className="bb-container flex items-center justify-between">
           <Link

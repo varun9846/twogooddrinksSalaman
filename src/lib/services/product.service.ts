@@ -1,19 +1,11 @@
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { toProductDto, toProductDtoList } from "@/lib/mappers/product.mapper";
 import { prisma } from "@/lib/prisma";
 import type { ProductDto } from "@/types/product";
-
-export interface ProductMenuItem {
-  id: string;
-  name: string;
-  href: string;
-}
-
-export interface ProductMenuCategory {
-  category: string;
-  href: string;
-  products: ProductMenuItem[];
-}
+import type {
+  ProductMenuCategory,
+  ProductMenuItem,
+} from "@/types/product.response";
 
 function normalizeCategory(category: string) {
   return category.trim();
@@ -46,9 +38,13 @@ export async function getAllProducts(category?: string): Promise<ProductDto[]> {
 export async function getProductById(
   productId: string,
 ): Promise<ProductDto | null> {
+  const cleanProductId = productId.trim();
+
+  if (!cleanProductId) return null;
+
   const product = await prisma.product.findFirst({
     where: {
-      id: productId,
+      id: cleanProductId,
       isActive: true,
     },
   });
@@ -80,7 +76,6 @@ export async function getProductMenu(): Promise<ProductMenuCategory[]> {
 
   products.forEach((product) => {
     const category = normalizeCategory(product.productCategory);
-
     if (!category) return;
 
     const currentProducts = menuMap.get(category) ?? [];
